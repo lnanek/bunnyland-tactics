@@ -76,6 +76,21 @@ public class MenuScreenController extends ScreenController {
 		// computers/networks
 		refreshGamesTableTimer.scheduleRepeating(GAME_LIST_REFRESH_INTERVAL);
 
+		//Play some background music.
+		//TODO loop or fade out
+		/*
+		final String MENU_BACKGROUND_MUSIC_SOUND_ID = "MENU_BACKGROUND_MUSIC_SOUND_ID";
+		final SoundManager sm = SoundManager.getInstance();
+		sm.onLoad(new Callback() {
+			@Override
+			public void execute() {
+				//sm.createSound(MENU_BACKGROUND_MUSIC_SOUND_ID, "sound/menu_background_music.ogg");
+				//sm.play(MENU_BACKGROUND_MUSIC_SOUND_ID);
+				sm.play(MENU_BACKGROUND_MUSIC_SOUND_ID, "sound/menu_background_music.ogg");
+				sm.destroySound(MENU_BACKGROUND_MUSIC_SOUND_ID);
+			}
+		});
+		*/
 		return null;
 	}
 
