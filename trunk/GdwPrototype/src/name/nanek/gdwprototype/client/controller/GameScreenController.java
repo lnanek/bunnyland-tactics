@@ -232,7 +232,9 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		if (boardInitialized) {
 			return;
 		}
-		
+
+		gameScreen.content.setVisible(true);
+
 		//Load piece settings.
 		//TODO just use pieces from settings, don't have a static copy on client?
 		for( Marker settingsMarker : info.markers ) {
@@ -551,21 +553,29 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 
 	@Override
 	public void hideScreen() {
-		gameScreen.content.setVisible(false);
+		resetForNewGame();	
+	}
+	
+	public void resetForNewGame() {
 		refreshGameBoardTimer.cancel();
+		currentGameId = null;
+		playingAs = null;
+		fogOfWarAs = null;
+		dragInProgress = false;
+		boardInitialized = false;
+		updatesRequired = true;
 		lastInfo = null;
+		gameScreen.publishMapButton.setVisible(false);
+		gameScreen.surrenderButton.setVisible(false);
+		gameScreen.mapBuilderPalettePanel.setVisible(false);
+		gameScreen.content.setVisible(false);
 	}
 
 	@Override
 	public String showScreen(final PageController pageController, Long showGameId) {
 		super.showScreen(pageController, showGameId);
-	
-		boardInitialized = false;
-		lastInfo = null;
-		gameScreen.publishMapButton.setVisible(false);
-		gameScreen.surrenderButton.setVisible(false);
 
-				
+		resetForNewGame();			
 		currentGameId = showGameId;
 
 		pageController.gameDataService.getGameListingById(currentGameId, new AsyncCallback<GameListingInfo>() {
@@ -585,9 +595,6 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 
 		updateGameBoard();
 
-		gameScreen.content.setVisible(true);
-
-		refreshGameBoardTimer.cancel();
 		//TODO only schedule a new screen update when the previous finishes? repeating might build up a queue if updates are slower than refresh interval
 		refreshGameBoardTimer.scheduleRepeating(GAME_BOARD_REFRESH_INTERVAL);
 
