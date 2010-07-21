@@ -83,6 +83,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 	@Override
 	public void onFogOfWarChange(Player newFogOfWarAs) {
 		fogOfWarAs = newFogOfWarAs;
+		updatesRequired = true;
 		updateGameBoard();
 	}
 	
