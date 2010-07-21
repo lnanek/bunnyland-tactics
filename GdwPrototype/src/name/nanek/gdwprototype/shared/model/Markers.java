@@ -13,9 +13,9 @@ public class Markers {
 	private static final Marker PLAYER_TWO_WARREN = 
 		new Marker("Player 2 Warren", "piece_player2_warren.jpg", Player.TWO, 1, 0);
 	
-	public static final Marker FOG_OF_WAR = new Marker("tile_fow.png");
+	public static final Marker FOG_OF_WAR = new Marker("tile_fog_of_war.png");
 	
-	public static final Marker GRASS = new Marker("tile_grass.jpg");
+	public static final Marker BLANK = new Marker("tile_blank.png");
 	
 	public static final Marker[] PLAYING_PIECES = new Marker[] { 
 		PLAYER_ONE_WARREN,
@@ -28,12 +28,10 @@ public class Markers {
 	};
 	
 	public static final Marker[] TERRAIN_ONLY_MARKERS = new Marker[] { 
-		GRASS,
-		new Marker("tile_flowers_1.jpg"),
-		new Marker("tile_flowers_2.jpg"), 
-		new Marker("tile_rocks.jpg"), 
-		new Marker("tile_tree.jpg"), 
-		new Marker("tile_carrot.jpg"), 
+		BLANK,
+		new Marker("tile_carrot.png"),
+		new Marker("tile_tree.png"), 
+		new Marker("tile_grass.png"), 
 	};
 	
 	public static final Marker[] ALL_MARKERS;

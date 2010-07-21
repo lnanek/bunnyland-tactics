@@ -70,6 +70,12 @@ public class GameScreenDropController extends SimpleDropController {
 		// if ( ((PickupDragController)
 		// context.dragController).getBehaviorDragProxy() ) {
 		
+		//Game isn't loaded yet.
+		//TODO previous game flashes on screen when starting a new game, fix that so we don't get these spurious drags from stale game displays
+		if ( null == gameScreenController.lastInfo ) {
+			throw new VetoDragException();
+		}
+		
 		// Veto drops to source, so picking up and dropping doesn't count as move.
 		if ( dropTarget.getWidget() == context.draggable ) {
 			throw new VetoDragException();

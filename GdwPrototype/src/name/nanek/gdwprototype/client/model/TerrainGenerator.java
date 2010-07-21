@@ -23,9 +23,9 @@ public class TerrainGenerator {
 	}
 
 	public static Marker getRandomTerrainMarker() {
-		//Pick grass half the time without considering anything else to keep board from looking too crowded.
-		if ( Random.nextBoolean() ) {
-			return Markers.GRASS;
+		//Pick blank 3/4 the time without considering anything else to keep board from looking too crowded.
+		if ( Random.nextInt(4) != 0 ) {
+			return Markers.BLANK;
 		}
 		//Pick randomly other than that.
 		int index = Random.nextInt(Markers.TERRAIN_ONLY_MARKERS.length);
