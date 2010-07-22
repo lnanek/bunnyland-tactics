@@ -49,6 +49,13 @@ public class Markers {
 		return currentUsersTurn == Player.ONE ? PLAYER_TWO_WARREN : PLAYER_ONE_WARREN;
 	}
 
+	public static Marker getPlayerWarren(Player currentUsersTurn) {
+		if ( null == currentUsersTurn ) {
+			return null;
+		}
+		return currentUsersTurn == Player.ONE ? PLAYER_ONE_WARREN : PLAYER_TWO_WARREN;
+	}
+
 	public static Map<String, Marker> markerBySource = new HashMap<String, Marker>();
 	static {
 		for (int i = 0; i < ALL_MARKERS.length; i++) {
