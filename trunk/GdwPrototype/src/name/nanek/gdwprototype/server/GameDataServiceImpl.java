@@ -76,12 +76,18 @@ public class GameDataServiceImpl extends RemoteServiceServlet implements GameDat
 							throw new UserFriendlyMessageException("Only stompers may land on enemey units to remove them.");
 						}
 						
-						//Check if got enemy warren.
 						if ( null != game.getCurrentUsersTurn() ) {
+							//Check if got enemy warren.
 							Marker enemyWarren = Markers.getEnemyWarren(game.getCurrentUsersTurn());
 							if (removeCandidate.endsWith(enemyWarren.source)) {
 								game.setWinner(game.getCurrentUsersTurn());
 								game.setEnded(true);
+							}
+
+							//Can't go on your own warren for now.
+							Marker playerWarren = Markers.getPlayerWarren(game.getCurrentUsersTurn());
+							if (removeCandidate.endsWith(playerWarren.source)) {
+								throw new UserFriendlyMessageException("You can't stomp your own warren! Think of the children!");
 							}
 						}
 					}

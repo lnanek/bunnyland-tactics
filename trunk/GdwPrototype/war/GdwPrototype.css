@@ -26,7 +26,11 @@ h1 {
 .grid td, .grid th {
 	width: 50px;
 	height: 50px;
-	border: 3px solid Black;
+	border: 3px solid Gray;
+}
+
+img {
+	border: 0;	
 }
 
 .grid td.validDropTarget, .grid th.validDropTarget {
