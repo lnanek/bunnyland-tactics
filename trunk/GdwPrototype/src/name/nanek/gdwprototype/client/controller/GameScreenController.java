@@ -179,7 +179,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		//Setup surrender button.
 		class SurrenderCallback implements AsyncCallback<Void> {
 			public void onFailure(Throwable caught) {
-				pageController.dialogController.showError(
+				new DialogController().showError(
 						"Error Surrendering",								
 						"An error occurred asking the game server to surrender.",
 						true,
@@ -206,7 +206,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		//Setup publish map button.
 		class PublishMapCallback implements AsyncCallback<Void> {
 			public void onFailure(Throwable caught) {
-				pageController.dialogController.showError(
+				new DialogController().showError(
 						"Error Publishing Map",								
 						"An error occurred asking the game server to publish the map.",
 						true,
@@ -304,7 +304,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		pageController.gameDataService.moveMarker(currentGameId, sourceRow, sourceColumn, destRow, destColumn,
 				newImageSource, new AsyncCallback<GamePlayInfo>() {
 					public void onFailure(Throwable caught) {
-						pageController.dialogController.showError(
+						new DialogController().showError(
 								"Error Moving Piece",								
 								"An error occurred asking the game server to move the requested piece.",
 								true,
@@ -329,7 +329,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 
 		pageController.gameDataService.getPositionsByGameId(currentGameId, new AsyncCallback<GamePlayInfo>() {
 			public void onFailure(Throwable caught) {
-				pageController.dialogController.showError(
+				new DialogController().showError(
 						"Error Getting Positions",								
 						"An error occurred asking the server for the current game piece positions.",
 						true,
@@ -580,7 +580,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 
 		pageController.gameDataService.getGameListingById(currentGameId, new AsyncCallback<GameListingInfo>() {
 			public void onFailure(Throwable caught) {
-				pageController.dialogController.showError(
+				new DialogController().showError(
 						"Error Finding Game",								
 						"An error occurred finding the requested game.",
 						true,

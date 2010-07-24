@@ -21,18 +21,10 @@ public class PageController {
 	// View
 	private final Page page = new Page();
 
-	// Controllers
-	private final GameScreenController gameScreenController = new GameScreenController();
-	private final MenuScreenController menuScreenController = new MenuScreenController();
-	private final StartScreenController startScreenController = new StartScreenController();
-	public final DialogController dialogController;
-
+	// Controller
 	private ScreenController activeScreenController;
 
-	public PageController(DialogController dialogController) {
-
-		this.dialogController = dialogController;
-
+	public PageController() {
 		// Show requested page when history changes.
 		History.addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
@@ -49,6 +41,7 @@ public class PageController {
 		if ( null != activeScreenController ) {
 			activeScreenController.hideScreen();
 		}
+		page.allContent.clear();
 		activeScreenController = controllerToShow;
 		return controllerToShow.showScreen(this, modelId);
 	}
@@ -66,17 +59,17 @@ public class PageController {
 		//Show start game screen.
 		if ( START_GAME_SCREEN_HISTORY_TOKEN.equals(historyToken) ) {
 			GWT.log("AppPageController#showPage: showing start game screen.");
-			screenTitle = showScreenAndGetTitle(startScreenController, null);
+			screenTitle = showScreenAndGetTitle(new StartScreenController(), null);
 			
 		//Show main menu.	
 		} else if (null == currentGameId) {
 			GWT.log("AppPageController#showPage: showing menu screen.");
-			screenTitle = showScreenAndGetTitle(menuScreenController, null);
+			screenTitle = showScreenAndGetTitle(new MenuScreenController(), null);
 
 		//Show game screen.
 		} else {
 			GWT.log("AppPageController#showPage: showing game screen.");
-			screenTitle = showScreenAndGetTitle(gameScreenController, currentGameId);
+			screenTitle = showScreenAndGetTitle(new GameScreenController(), currentGameId);
 
 		}
 
