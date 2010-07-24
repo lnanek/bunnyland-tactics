@@ -16,8 +16,6 @@ import com.google.gwt.user.client.DeferredCommand;
  */
 public class GdwPrototype implements EntryPoint {
 
-	private final DialogController dialogController = new DialogController();
-
 	public void onModuleLoad() {
 		
 		//TODO fix statuscodeexception dialog sometimes flashed when leaving app while an async request is in progress
@@ -25,7 +23,7 @@ public class GdwPrototype implements EntryPoint {
 		// Catch uncaught exceptions.
 		class ShowInDialogExceptionHandler implements GWT.UncaughtExceptionHandler {
 			public void onUncaughtException(Throwable throwable) {
-				dialogController.showError("Unexpected Error", 
+				new DialogController().showError("Unexpected Error", 
 						"Sorry, an unexpected error occured running the game.", 
 						true, 
 						throwable);
@@ -42,7 +40,7 @@ public class GdwPrototype implements EntryPoint {
 	}
 
 	private void onModuleLoadExceptionsCaught() {
-		new PageController(dialogController);
+		new PageController();
 	}
 
 }

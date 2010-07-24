@@ -40,7 +40,7 @@ public class MenuScreenController extends ScreenController {
 		//TODO don't show games that need a second player here
 		pageController.gameDataService.getObservableGameNames(new AsyncCallback<GameListingInfo[]>() {
 			public void onFailure(Throwable throwable) {
-				pageController.dialogController.showError("Error Getting Games", 
+				new DialogController().showError("Error Getting Games", 
 					"An error occurred getting the current games from the server.", 
 					true, 
 					throwable);

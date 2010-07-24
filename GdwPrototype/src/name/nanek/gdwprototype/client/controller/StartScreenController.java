@@ -100,7 +100,7 @@ public class StartScreenController extends ScreenController {
 		startGameScreen.createGameButton.setEnabled(false);
 		pageController.gameDataService.createGame(gameName, settings, mapId, new AsyncCallback<GameListingInfo>() {
 			public void onFailure(Throwable throwable) {
-				pageController.dialogController.showError("Error Creating Game", 
+				new DialogController().showError("Error Creating Game", 
 						"An error occurred requesting the server create the game.", 
 						true, 
 						throwable,
@@ -157,7 +157,7 @@ public class StartScreenController extends ScreenController {
 	AsyncCallback<GameListingInfo> attemptToJoinGame = new AsyncCallback<GameListingInfo>() {
 		@Override
 		public void onFailure(Throwable throwable) {
-			pageController.dialogController.showError("Error Joining Game", 
+			new DialogController().showError("Error Joining Game", 
 					"An error occurred joining the game on the server.", 
 					true, 
 					throwable);
@@ -166,7 +166,7 @@ public class StartScreenController extends ScreenController {
 		@Override
 		public void onSuccess(GameListingInfo result) {
 			if (null == result) {
-				pageController.dialogController.showError("Error Joining Game", 
+				new DialogController().showError("Error Joining Game", 
 						"Sorry, someone else joined the game just before you!", 
 						false, 
 						null);
@@ -181,7 +181,7 @@ public class StartScreenController extends ScreenController {
 	private void updateMapListing() {
 		pageController.gameDataService.getMapNames(new AsyncCallback<GameListingInfo[]>() {
 			public void onFailure(Throwable throwable) {
-				pageController.dialogController.showError("Error Getting Maps", 
+				new DialogController().showError("Error Getting Maps", 
 						"An error occurred getting the maps from the server.", 
 						true, 
 						throwable);
@@ -216,7 +216,7 @@ public class StartScreenController extends ScreenController {
 	private void updateGamesListing() {
 		pageController.gameDataService.getJoinableGameNames(new AsyncCallback<GameListingInfo[]>() {
 			public void onFailure(Throwable throwable) {
-				pageController.dialogController.showError("Error Getting Games", 
+				new DialogController().showError("Error Getting Games", 
 						"An error occurred getting the current games from the server.", 
 						true, 
 						throwable);
@@ -259,7 +259,7 @@ public class StartScreenController extends ScreenController {
 		
 		pageController.gameDataService.getLoginUrlIfNeeded(returnUrl, new AsyncCallback<String>() {
 			public void onFailure(Throwable throwable) {
-				pageController.dialogController.showError("Error Logging In", 
+				new DialogController().showError("Error Logging In", 
 						"An error occurred checking if you are logged in.", 
 						true, 
 						throwable);
