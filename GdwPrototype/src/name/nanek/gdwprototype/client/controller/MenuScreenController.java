@@ -4,6 +4,8 @@ import name.nanek.gdwprototype.client.model.GameListingInfo;
 import name.nanek.gdwprototype.client.view.screen.MenuScreen;
 import name.nanek.gdwprototype.client.view.widget.GameAnchor;
 
+import com.allen_sauer.gwt.voices.client.Sound;
+import com.allen_sauer.gwt.voices.client.SoundController;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
@@ -78,19 +80,13 @@ public class MenuScreenController extends ScreenController {
 
 		//Play some background music.
 		//TODO loop or fade out
-		/*
-		final String MENU_BACKGROUND_MUSIC_SOUND_ID = "MENU_BACKGROUND_MUSIC_SOUND_ID";
-		final SoundManager sm = SoundManager.getInstance();
-		sm.onLoad(new Callback() {
-			@Override
-			public void execute() {
-				//sm.createSound(MENU_BACKGROUND_MUSIC_SOUND_ID, "sound/menu_background_music.ogg");
-				//sm.play(MENU_BACKGROUND_MUSIC_SOUND_ID);
-				sm.play(MENU_BACKGROUND_MUSIC_SOUND_ID, "sound/menu_background_music.ogg");
-				sm.destroySound(MENU_BACKGROUND_MUSIC_SOUND_ID);
-			}
-		});
-		*/
+	    SoundController soundController = new SoundController();
+	    String MIME_TYPE_AUDIO_OGG_VORBIS = "audio/ogg; codecs=vorbis";
+	    Sound sound = soundController.createSound(MIME_TYPE_AUDIO_OGG_VORBIS,
+	        "sound/menu_background_music.ogg");
+	    int BACKGROUND_VOLUME = 50;
+	    sound.setVolume(BACKGROUND_VOLUME);
+	    sound.play();
 		return null;
 	}
 
