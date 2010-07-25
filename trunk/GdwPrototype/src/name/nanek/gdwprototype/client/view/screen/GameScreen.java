@@ -12,6 +12,12 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
+/**
+ * Holds widgets for the game screen.
+ * 
+ * @author Lance Nanek
+ *
+ */
 public class GameScreen {
 
 	public VerticalPanel content = new VerticalPanel();

@@ -8,6 +8,8 @@ import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**
  * Browser page that all other content in the application is shown inside.
+ * 
+ * @author Lance Nanek
  */
 public class Page {
 
@@ -24,6 +26,10 @@ public class Page {
 		errorLabel.addStyleName("serverResponseLabelError");
 		allContent.add(errorLabel);
 		RootPanel root = RootPanel.get("contentContainer");
+		
+		//Clear loading message in static HTML.
+		root.getElement().setInnerText("");
+		
 		root.add(allContent);
 	}
 

@@ -9,6 +9,12 @@ import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Command;
 
+/**
+ * Controls a dialog that can be shown to the user in front of the normal page content.
+ * 
+ * @author Lance Nanek
+ *
+ */
 public class DialogController {
 
 	private static final String POSSIBLE_NETWORK_ERROR = " Please check you have an internet connection and try again. ";

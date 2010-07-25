@@ -1,21 +1,36 @@
-package name.nanek.gdwprototype.client.controller;
+package name.nanek.gdwprototype.client.controller.screen;
 
-import name.nanek.gdwprototype.client.model.GameListingInfo;
+import name.nanek.gdwprototype.client.controller.DialogController;
+import name.nanek.gdwprototype.client.controller.PageController;
+import name.nanek.gdwprototype.client.controller.SoundPlayer;
+import name.nanek.gdwprototype.client.model.GameListing;
 import name.nanek.gdwprototype.client.view.screen.MenuScreen;
+import name.nanek.gdwprototype.client.view.screen.StartObservationScreen;
 import name.nanek.gdwprototype.client.view.widget.GameAnchor;
 
 import com.allen_sauer.gwt.voices.client.Sound;
 import com.allen_sauer.gwt.voices.client.SoundController;
+import com.allen_sauer.gwt.voices.client.handler.PlaybackCompleteEvent;
+import com.allen_sauer.gwt.voices.client.handler.SoundHandler;
+import com.allen_sauer.gwt.voices.client.handler.SoundLoadStateChangeEvent;
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Hyperlink;
 
-public class MenuScreenController extends ScreenController {
+/**
+ * Controls screen where a game to observe is selected.
+ * 
+ * @author Lance Nanek
+ *
+ */
+public class StartObservationScreenController extends ScreenController {
 
 	private static final int GAME_LIST_REFRESH_INTERVAL = 5000; // ms
 
-	MenuScreen menuScreen = new MenuScreen();
+	StartObservationScreen screen = new StartObservationScreen();
+	
+	SoundPlayer soundPlayer = new SoundPlayer();
 
 	Timer refreshGamesTableTimer = new Timer() {
 		@Override
@@ -26,7 +41,7 @@ public class MenuScreenController extends ScreenController {
 	
 	private PageController pageController;
 
-	public MenuScreenController() {
+	public StartObservationScreenController() {
 	}
 	
 	@Override
@@ -34,13 +49,13 @@ public class MenuScreenController extends ScreenController {
 
 		this.pageController = pageController;
 
-		pageController.addScreen(menuScreen.content);
+		pageController.addScreen(screen.content);
 
 	}
 
 	private void updateGamesListing() {
 		//TODO don't show games that need a second player here
-		pageController.gameDataService.getObservableGameNames(new AsyncCallback<GameListingInfo[]>() {
+		pageController.gameDataService.getObservableGameNames(new AsyncCallback<GameListing[]>() {
 			public void onFailure(Throwable throwable) {
 				new DialogController().showError("Error Getting Games", 
 					"An error occurred getting the current games from the server.", 
@@ -48,17 +63,17 @@ public class MenuScreenController extends ScreenController {
 					throwable);
 			}
 
-			public void onSuccess(final GameListingInfo[] gamesListing) {
-				GWT.log("MenuScreenController got list of observable games.");
-				menuScreen.currentGamesTable.clear();
+			public void onSuccess(final GameListing[] gamesListing) {
+				GWT.log("got list of observable games.");
+				screen.observableGamesTable.clear();
 				int i = 0;
-				for (final GameListingInfo gameListing : gamesListing) {
+				for (final GameListing gameListing : gamesListing) {
 					String anchor = GameAnchor.generateAnchor(gameListing);
 					Hyperlink link = new Hyperlink(gameListing.getName(), anchor);
-					menuScreen.currentGamesTable.setWidget(i++, 0, link);
+					screen.observableGamesTable.setWidget(i++, 0, link);
 				}
 				if ( 0 == i ) {
-					menuScreen.currentGamesTable.setText(0, 0, "No games in progress found.");
+					screen.observableGamesTable.setText(0, 0, "No games in progress found.");
 				}
 			}
 		});
@@ -68,8 +83,6 @@ public class MenuScreenController extends ScreenController {
 	public String showScreen(final PageController pageController, Long modelId) {
 		super.showScreen(pageController, modelId);
 
-		menuScreen.content.setVisible(true);
-
 		updateGamesListing();
 		
 		refreshGamesTableTimer.cancel();
@@ -78,21 +91,14 @@ public class MenuScreenController extends ScreenController {
 		// computers/networks
 		refreshGamesTableTimer.scheduleRepeating(GAME_LIST_REFRESH_INTERVAL);
 
-		//Play some background music.
-		//TODO loop or fade out
-	    SoundController soundController = new SoundController();
-	    String MIME_TYPE_AUDIO_OGG_VORBIS = "audio/ogg; codecs=vorbis";
-	    Sound sound = soundController.createSound(MIME_TYPE_AUDIO_OGG_VORBIS,
-	        "sound/menu_background_music.ogg");
-	    int BACKGROUND_VOLUME = 50;
-	    sound.setVolume(BACKGROUND_VOLUME);
-	    sound.play();
-		return null;
+		soundPlayer.startMenuBackgroundMusic();
+	    
+		return "Select a Game to Observe";
 	}
 
 	@Override
 	public void hideScreen() {
-		menuScreen.content.setVisible(false);
+		soundPlayer.stopMenuBackgroundMusic();
 		refreshGamesTableTimer.cancel();
 	}
 

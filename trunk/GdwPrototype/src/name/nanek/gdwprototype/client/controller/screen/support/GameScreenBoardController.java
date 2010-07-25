@@ -1,4 +1,6 @@
-package name.nanek.gdwprototype.client.controller;
+package name.nanek.gdwprototype.client.controller.screen.support;
+
+import name.nanek.gdwprototype.client.controller.screen.GameScreenController;
 
 public class GameScreenBoardController {
 

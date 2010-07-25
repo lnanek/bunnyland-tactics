@@ -16,6 +16,12 @@ import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
+/**
+ * Holds widgets for starting or joining a game.
+ * 
+ * @author Lance Nanek
+ *
+ */
 public class StartScreen {
 	
 	public final VerticalPanel content = new VerticalPanel();

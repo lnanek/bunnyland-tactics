@@ -2,7 +2,7 @@ package name.nanek.gdwprototype.client.model;
 
 import java.io.Serializable;
 
-public class GameListingInfo implements Serializable {
+public class GameListing implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -10,10 +10,10 @@ public class GameListingInfo implements Serializable {
 
 	private long id;
 
-	private GameListingInfo() {
+	private GameListing() {
 	}
 
-	public GameListingInfo(String name, long id) {
+	public GameListing(String name, long id) {
 		this.name = name;
 		this.id = id;
 	}
