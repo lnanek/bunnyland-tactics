@@ -41,7 +41,9 @@ public class SoundPlayer {
 	}
 
 	private final SoundController soundController = new SoundController();
-    
+
+	private boolean backgroundMusicPlaying;
+
     private final Sound sound = soundController.createSound(
     		Sound.MIME_TYPE_AUDIO_MPEG, "sound/menu_background_music.mp3");
 			//OGG worked, but onPlaybackCompelte not supported.
@@ -52,15 +54,18 @@ public class SoundPlayer {
     
     private final SoundHandler manualLooper = new ManualSoundLooper(sound);
 	
-    //TODO having individual screens call these results in music stopping and restarting
-    //even when the same song is played. look into way to continue playing it, maybe even
-    //fade out old song and fade in new song when it changes.
-	public void startMenuBackgroundMusic() {
+	public void playMenuBackgroundMusic() {
+		if ( backgroundMusicPlaying ) {
+			return;
+		}
+		backgroundMusicPlaying = true;
 		sound.addEventHandler(manualLooper);
 	    sound.play();		
 	}
-	
+
+	//TODO fade out/in when change music?
 	public void stopMenuBackgroundMusic() {		
+		backgroundMusicPlaying = false;
 		sound.removeEventHandler(manualLooper);
 		sound.stop();
 	}

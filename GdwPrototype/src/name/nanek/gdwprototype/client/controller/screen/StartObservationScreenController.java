@@ -30,8 +30,6 @@ public class StartObservationScreenController extends ScreenController {
 
 	StartObservationScreen screen = new StartObservationScreen();
 	
-	SoundPlayer soundPlayer = new SoundPlayer();
-
 	Timer refreshGamesTableTimer = new Timer() {
 		@Override
 		public void run() {
@@ -44,20 +42,11 @@ public class StartObservationScreenController extends ScreenController {
 	public StartObservationScreenController() {
 	}
 	
-	@Override
-	public void createScreen(PageController pageController) {
-
-		this.pageController = pageController;
-
-		pageController.addScreen(screen.content);
-
-	}
-
 	private void updateGamesListing() {
 		//TODO don't show games that need a second player here
 		pageController.gameService.getObservableGameNames(new AsyncCallback<GameListing[]>() {
 			public void onFailure(Throwable throwable) {
-				new DialogController().showError("Error Getting Games", 
+				pageController.getDialogController().showError("Error Getting Games", 
 					"An error occurred getting the current games from the server.", 
 					true, 
 					throwable);
@@ -80,9 +69,11 @@ public class StartObservationScreenController extends ScreenController {
 	}
 
 	@Override
-	public String showScreen(final PageController pageController, Long modelId) {
-		super.showScreen(pageController, modelId);
+	public void createScreen(final PageController pageController, Long modelId) {
+		this.pageController = pageController;
 
+		pageController.addScreen(screen.content);
+		
 		updateGamesListing();
 		
 		refreshGamesTableTimer.cancel();
@@ -91,14 +82,13 @@ public class StartObservationScreenController extends ScreenController {
 		// computers/networks
 		refreshGamesTableTimer.scheduleRepeating(GAME_LIST_REFRESH_INTERVAL);
 
-		soundPlayer.startMenuBackgroundMusic();
-	    
-		return "Select a Game to Observe";
+		pageController.getSoundPlayer().playMenuBackgroundMusic();
+	    pageController.setScreenTitle("Select a Game to Observe");
+		pageController.setLinkHeadingToHome(true);
 	}
 
 	@Override
 	public void hideScreen() {
-		soundPlayer.stopMenuBackgroundMusic();
 		refreshGamesTableTimer.cancel();
 	}
 
