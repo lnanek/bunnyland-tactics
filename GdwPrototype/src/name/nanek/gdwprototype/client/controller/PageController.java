@@ -1,5 +1,7 @@
 package name.nanek.gdwprototype.client.controller;
 
+import name.nanek.gdwprototype.client.controller.screen.ScreenController;
+import name.nanek.gdwprototype.client.controller.support.ScreenControllers;
 import name.nanek.gdwprototype.client.service.GameDataService;
 import name.nanek.gdwprototype.client.service.GameDataServiceAsync;
 import name.nanek.gdwprototype.client.view.Page;
@@ -11,10 +13,18 @@ import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.ui.Widget;
 
+/**
+ * Controls permanent parts of web page shown in the browser like the title and heading.
+ * Defers to other controllers for the current content of the page, like a menu screen, 
+ * or the play screen.
+ * 
+ * @author Lance Nanek
+ *
+ */
 public class PageController {
+	//TODO work on long load time when first come to game
+	//break everything up into separate pieces using runAsync? have splash screen?
 
-	public static final String START_GAME_SCREEN_HISTORY_TOKEN = "start_game";
-	
 	// Services
 	public final GameDataServiceAsync gameDataService = GWT.create(GameDataService.class);
 
@@ -22,7 +32,7 @@ public class PageController {
 	private final Page page = new Page();
 
 	// Controller
-	private ScreenController activeScreenController;
+	private ScreenController currentController;
 
 	public PageController() {
 		// Show requested page when history changes.
@@ -36,13 +46,15 @@ public class PageController {
 		// Show requested page when first started.
 		History.fireCurrentHistoryState();
 	}
+	
+
 
 	public String showScreenAndGetTitle(ScreenController controllerToShow, Long modelId) {
-		if ( null != activeScreenController ) {
-			activeScreenController.hideScreen();
+		if ( null != currentController ) {
+			currentController.hideScreen();
 		}
 		page.allContent.clear();
-		activeScreenController = controllerToShow;
+		currentController = controllerToShow;
 		return controllerToShow.showScreen(this, modelId);
 	}
 	
@@ -52,27 +64,13 @@ public class PageController {
 
 	private void showPage(String historyToken) {
 		GWT.log("AppPageController#showPage: historyToken = " + historyToken);
+
+		
 		
 		Long currentGameId = GameAnchor.getIdFromAnchor(historyToken);
-		String screenTitle;
 		
-		//Show start game screen.
-		if ( START_GAME_SCREEN_HISTORY_TOKEN.equals(historyToken) ) {
-			GWT.log("AppPageController#showPage: showing start game screen.");
-			screenTitle = showScreenAndGetTitle(new StartScreenController(), null);
-			
-		//Show main menu.	
-		} else if (null == currentGameId) {
-			GWT.log("AppPageController#showPage: showing menu screen.");
-			screenTitle = showScreenAndGetTitle(new MenuScreenController(), null);
-
-		//Show game screen.
-		} else {
-			GWT.log("AppPageController#showPage: showing game screen.");
-			screenTitle = showScreenAndGetTitle(new GameScreenController(), currentGameId);
-
-		}
-
+		ScreenController controller = ScreenControllers.getController(historyToken);
+		String screenTitle = showScreenAndGetTitle(controller, currentGameId);
 		setErrorLabel("");
 		setScreenTitle(screenTitle);
 	}

@@ -1,11 +1,13 @@
-package name.nanek.gdwprototype.client.controller;
+package name.nanek.gdwprototype.client.controller.screen;
 
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import name.nanek.gdwprototype.client.model.GameListingInfo;
+import name.nanek.gdwprototype.client.controller.DialogController;
+import name.nanek.gdwprototype.client.controller.PageController;
+import name.nanek.gdwprototype.client.model.GameListing;
 import name.nanek.gdwprototype.client.view.screen.StartScreen;
 import name.nanek.gdwprototype.client.view.widget.GameAnchor;
 import name.nanek.gdwprototype.shared.FieldVerifier;
@@ -27,7 +29,13 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.TextBox;
 
-public class StartScreenController extends ScreenController {
+/**
+ * Controls the screen for starting or joining a game.
+ * 
+ * @author Lance Nanek
+ *
+ */
+public class StartGameScreenController extends ScreenController {
 	
 	//TODO split creategameormapscreen out of startgamescreen
 
@@ -52,7 +60,7 @@ public class StartScreenController extends ScreenController {
 		}
 	};
 
-	public StartScreenController() {
+	public StartGameScreenController() {
 	}
 
 	private void createGame(boolean createMap) {
@@ -98,7 +106,7 @@ public class StartScreenController extends ScreenController {
 		
 		// Then, we send the input to the server.
 		startGameScreen.createGameButton.setEnabled(false);
-		pageController.gameDataService.createGame(gameName, settings, mapId, new AsyncCallback<GameListingInfo>() {
+		pageController.gameDataService.createGame(gameName, settings, mapId, new AsyncCallback<GameListing>() {
 			public void onFailure(Throwable throwable) {
 				new DialogController().showError("Error Creating Game", 
 						"An error occurred requesting the server create the game.", 
@@ -107,7 +115,7 @@ public class StartScreenController extends ScreenController {
 						enableCreateGame);
 			}
 
-			public void onSuccess(GameListingInfo gameListing) {
+			public void onSuccess(GameListing gameListing) {
 				enableCreateGame.execute();
 				//updateGamesListing();
 				final String anchor = GameAnchor.generateAnchor(gameListing);
@@ -154,7 +162,7 @@ public class StartScreenController extends ScreenController {
 		startGameScreen.createMapButton.addClickHandler(new CreateMapHandler());
 	}
 	
-	AsyncCallback<GameListingInfo> attemptToJoinGame = new AsyncCallback<GameListingInfo>() {
+	AsyncCallback<GameListing> attemptToJoinGame = new AsyncCallback<GameListing>() {
 		@Override
 		public void onFailure(Throwable throwable) {
 			new DialogController().showError("Error Joining Game", 
@@ -164,7 +172,7 @@ public class StartScreenController extends ScreenController {
 		}
 
 		@Override
-		public void onSuccess(GameListingInfo result) {
+		public void onSuccess(GameListing result) {
 			if (null == result) {
 				new DialogController().showError("Error Joining Game", 
 						"Sorry, someone else joined the game just before you!", 
@@ -179,7 +187,7 @@ public class StartScreenController extends ScreenController {
 	};
 	
 	private void updateMapListing() {
-		pageController.gameDataService.getMapNames(new AsyncCallback<GameListingInfo[]>() {
+		pageController.gameDataService.getMapNames(new AsyncCallback<GameListing[]>() {
 			public void onFailure(Throwable throwable) {
 				new DialogController().showError("Error Getting Maps", 
 						"An error occurred getting the maps from the server.", 
@@ -187,12 +195,12 @@ public class StartScreenController extends ScreenController {
 						throwable);
 			}
 
-			public void onSuccess(final GameListingInfo[] gamesListing) {
+			public void onSuccess(final GameListing[] gamesListing) {
 				int previouslySelected = startGameScreen.createGameMaps.getSelectedIndex();
 				
 				startGameScreen.createGameMaps.clear();
 				boolean foundMap = false;
-				for (final GameListingInfo gameListing : gamesListing) {
+				for (final GameListing gameListing : gamesListing) {
 					if ( null != gameListing ) {
 						startGameScreen.createGameMaps.addItem(gameListing.getName(),Long.toString(gameListing.getId()));
 						foundMap = true;
@@ -214,7 +222,7 @@ public class StartScreenController extends ScreenController {
 	}
 	
 	private void updateGamesListing() {
-		pageController.gameDataService.getJoinableGameNames(new AsyncCallback<GameListingInfo[]>() {
+		pageController.gameDataService.getJoinableGameNames(new AsyncCallback<GameListing[]>() {
 			public void onFailure(Throwable throwable) {
 				new DialogController().showError("Error Getting Games", 
 						"An error occurred getting the current games from the server.", 
@@ -222,10 +230,10 @@ public class StartScreenController extends ScreenController {
 						throwable);
 			}
 
-			public void onSuccess(final GameListingInfo[] gamesListing) {
+			public void onSuccess(final GameListing[] gamesListing) {
 				startGameScreen.joinableGamesTable.clear();
 				int i = 0;
-				for (final GameListingInfo gameListing : gamesListing) {
+				for (final GameListing gameListing : gamesListing) {
 					if ( null != gameListing ) {
 						Anchor link = new Anchor(gameListing.getName());
 						link.addClickHandler(new ClickHandler() {

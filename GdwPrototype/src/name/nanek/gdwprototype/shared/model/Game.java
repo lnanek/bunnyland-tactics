@@ -12,7 +12,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 
-import name.nanek.gdwprototype.client.model.GameListingInfo;
+import name.nanek.gdwprototype.client.model.GameListing;
 import name.nanek.gdwprototype.client.model.Player;
 
 import org.datanucleus.jpa.annotations.Extension;
@@ -120,8 +120,8 @@ public class Game implements Serializable {
 		this.name = name;
 	}
 
-	public GameListingInfo getListing() {
-		return new GameListingInfo(name, keyId);
+	public GameListing getListing() {
+		return new GameListing(name, keyId);
 	}
 
 	public Set<Position> getPositions() {

@@ -7,9 +7,10 @@ import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
+import javax.persistence.FlushModeType;
 import javax.persistence.Query;
 
-import name.nanek.gdwprototype.client.model.GameListingInfo;
+import name.nanek.gdwprototype.client.model.GameListing;
 import name.nanek.gdwprototype.client.model.GamePlayInfo;
 import name.nanek.gdwprototype.client.model.Player;
 import name.nanek.gdwprototype.client.service.GameDataService;
@@ -239,7 +240,7 @@ public class GameDataServiceImpl extends RemoteServiceServlet implements GameDat
 		}
 	}
 	
-	public GameListingInfo getGameListingById(Long id) throws ServerException {
+	public GameListing getGameListingById(Long id) throws ServerException {
 		EntityManager em = DbUtil.createEntityManager();
 		em.getTransaction().begin();
 
@@ -253,7 +254,7 @@ public class GameDataServiceImpl extends RemoteServiceServlet implements GameDat
 			if (null == game) {
 				return null;
 			}
-			GameListingInfo listing = game.getListing();
+			GameListing listing = game.getListing();
 
 			return listing;
 		} finally {
@@ -262,7 +263,7 @@ public class GameDataServiceImpl extends RemoteServiceServlet implements GameDat
 		}
 	}
 
-	public GameListingInfo createGame(String name, GameSettings settings, Long mapId) throws ServerException {
+	public GameListing createGame(String name, GameSettings settings, Long mapId) throws ServerException {
 		FieldVerifier.validateGameName(name);
 
 		UserService userService = UserServiceFactory.getUserService();
@@ -326,7 +327,7 @@ public class GameDataServiceImpl extends RemoteServiceServlet implements GameDat
 		return game.getListing();
 	}
 	
-	public GameListingInfo attemptToJoinGame(Long id) throws ServerException {
+	public GameListing attemptToJoinGame(Long id) throws ServerException {
 
 		UserService userService = UserServiceFactory.getUserService();
 		User user = userService.getCurrentUser();
@@ -375,16 +376,18 @@ public class GameDataServiceImpl extends RemoteServiceServlet implements GameDat
         }
 	}
 	
-	public GameListingInfo[] getMapNames() throws ServerException {
+	public GameListing[] getMapNames() throws ServerException {
 
 		EntityManager em = DbUtil.createEntityManager();
-		em.getTransaction().begin();
-
+		EntityTransaction tx = null;
 		try {
+			tx = em.getTransaction();
+			tx.begin();
+			
 			Query query = em.createQuery("SELECT FROM " + Game.class.getName());
 			List<Game> games = query.getResultList();
 
-			ArrayList<GameListingInfo> list = new ArrayList<GameListingInfo>();
+			ArrayList<GameListing> list = new ArrayList<GameListing>();
 			for (Game game : games) {
 				//TODO change query to do this for better performance
 				if ( game.isStartingMap() && game.isEnded() ) {
@@ -392,15 +395,19 @@ public class GameDataServiceImpl extends RemoteServiceServlet implements GameDat
 				}			
 			}
 
-			GameListingInfo[] array = list.toArray(new GameListingInfo[] {});
+			GameListing[] array = list.toArray(new GameListing[] {});
 			return array;
+			
+			//Don't bother committing, this was read only anyway.
 		} finally {
-			em.getTransaction().commit();
+			if ( null != tx && tx.isActive() ) {
+				tx.rollback();
+			}
 			em.close();
 		}
 	}
 
-	public GameListingInfo[] getJoinableGameNames() throws ServerException {
+	public GameListing[] getJoinableGameNames() throws ServerException {
 
 		EntityManager em = DbUtil.createEntityManager();
 		em.getTransaction().begin();
@@ -409,7 +416,7 @@ public class GameDataServiceImpl extends RemoteServiceServlet implements GameDat
 			Query query = em.createQuery("SELECT FROM " + Game.class.getName());
 			List<Game> games = query.getResultList();
 
-			ArrayList<GameListingInfo> list = new ArrayList<GameListingInfo>();
+			ArrayList<GameListing> list = new ArrayList<GameListing>();
 			for (Game game : games) {
 				//TODO change query to do this for better performance	
 				//TODO include games where one of the players matches the user's userid,
@@ -418,7 +425,7 @@ public class GameDataServiceImpl extends RemoteServiceServlet implements GameDat
 					list.add(game.getListing());
 				}					
 			}
-			GameListingInfo[] array = list.toArray(new GameListingInfo[] {});
+			GameListing[] array = list.toArray(new GameListing[] {});
 			return array;
 		} finally {
 			em.getTransaction().commit();
@@ -442,31 +449,40 @@ public class GameDataServiceImpl extends RemoteServiceServlet implements GameDat
 		throw new IllegalStateException("Can't determine the current user.");
 	}
 	
-	public GameListingInfo[] getObservableGameNames() throws ServerException {
+	public GameListing[] getObservableGameNames() throws ServerException {
 
 		EntityManager em = DbUtil.createEntityManager();
-		em.getTransaction().begin();
-
+		EntityTransaction tx = null;
 		try {
-			Query query = em.createQuery("SELECT FROM " + Game.class.getName());
+			tx = em.getTransaction();
+			tx.begin();
+			
+			//Allow observation of games that have a second player.
+			Query query = em.createQuery(
+					"SELECT FROM " + Game.class.getName() + " g " + 
+					"WHERE g.secondPlayerUserId IS NOT NULL ");
 			List<Game> games = query.getResultList();
+			GameListing[] listings = getListings(games);
+			return listings;
 
-			ArrayList<GameListingInfo> list = new ArrayList<GameListingInfo>();
-			for (Game game : games) {
-				//TODO change query to do this for better performance	
-				if ( !game.isStartingMap() ) {
-					list.add(game.getListing());
-				}
-			}
-
-			GameListingInfo[] array = list.toArray(new GameListingInfo[] {});
-			return array;
+			//Don't bother committing, this was read only anyway.
 		} finally {
-			em.getTransaction().commit();
+			if ( null != tx && tx.isActive() ) {
+				tx.rollback();
+			}
 			em.close();
 		}
 	}
 
+	private GameListing[] getListings(List<Game> games) {
+		ArrayList<GameListing> list = new ArrayList<GameListing>();
+		for (Game game : games) {
+			list.add(game.getListing());
+		}
+		GameListing[] array = list.toArray(new GameListing[] {});
+		return array;		
+	}
+	
 	/**
 	 * Escape an html string. Escaping data received from the client helps to
 	 * prevent cross-site script vulnerabilities.

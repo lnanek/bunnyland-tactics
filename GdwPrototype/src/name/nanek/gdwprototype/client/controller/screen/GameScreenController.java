@@ -1,11 +1,15 @@
-package name.nanek.gdwprototype.client.controller;
+package name.nanek.gdwprototype.client.controller.screen;
 
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import name.nanek.gdwprototype.client.model.GameListingInfo;
+import name.nanek.gdwprototype.client.controller.DialogController;
+import name.nanek.gdwprototype.client.controller.PageController;
+import name.nanek.gdwprototype.client.controller.screen.support.GameScreenBoardController;
+import name.nanek.gdwprototype.client.controller.screen.support.GameScreenDropController;
+import name.nanek.gdwprototype.client.model.GameListing;
 import name.nanek.gdwprototype.client.model.GamePlayInfo;
 import name.nanek.gdwprototype.client.model.Player;
 import name.nanek.gdwprototype.client.model.TerrainGenerator;
@@ -34,6 +38,12 @@ import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.TextBox;
 import com.google.gwt.user.client.ui.HTMLTable.CellFormatter;
 
+/**
+ * Controls screen where the actual game is played as opposed to showing menus.
+ * 
+ * @author Lance Nanek
+ *
+ */
 public class GameScreenController extends ScreenController implements FogOfWarChangeListener {
 	//TODO hotseat mode: move -> black screen with next player button -> switches player
 	
@@ -63,7 +73,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 
 	private boolean updatesRequired = true;
 
-	GamePlayInfo lastInfo;
+	public GamePlayInfo lastInfo;
 	
 	//TODO don't refresh when window blurred
 	//detecting refocus seems dicey, chrome isn't calling properly when switch back to tab from another, 
@@ -578,7 +588,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		resetForNewGame();			
 		currentGameId = showGameId;
 
-		pageController.gameDataService.getGameListingById(currentGameId, new AsyncCallback<GameListingInfo>() {
+		pageController.gameDataService.getGameListingById(currentGameId, new AsyncCallback<GameListing>() {
 			public void onFailure(Throwable caught) {
 				new DialogController().showError(
 						"Error Finding Game",								
@@ -588,7 +598,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 				// TODO go back to main menu? offer retry/cancel?
 			}
 
-			public void onSuccess(final GameListingInfo gameListing) {
+			public void onSuccess(final GameListing gameListing) {
 				pageController.setScreenTitle("Game " + gameListing.getName());
 			}
 		});

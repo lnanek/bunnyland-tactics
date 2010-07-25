@@ -11,8 +11,9 @@
  * or implied. See the License for the specific language governing permissions and limitations under
  * the License.
  */
-package name.nanek.gdwprototype.client.controller;
+package name.nanek.gdwprototype.client.controller.screen.support;
 
+import name.nanek.gdwprototype.client.controller.screen.GameScreenController;
 import name.nanek.gdwprototype.client.view.widget.GameSquare;
 import name.nanek.gdwprototype.client.view.widget.PaletteImage;
 import name.nanek.gdwprototype.client.view.widget.TableCellPanel;
