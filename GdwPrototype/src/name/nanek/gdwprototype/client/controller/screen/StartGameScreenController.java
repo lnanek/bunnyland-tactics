@@ -106,7 +106,7 @@ public class StartGameScreenController extends ScreenController {
 		
 		// Then, we send the input to the server.
 		startGameScreen.createGameButton.setEnabled(false);
-		pageController.gameDataService.createGame(gameName, settings, mapId, new AsyncCallback<GameListing>() {
+		pageController.gameService.createGame(gameName, settings, mapId, new AsyncCallback<GameListing>() {
 			public void onFailure(Throwable throwable) {
 				new DialogController().showError("Error Creating Game", 
 						"An error occurred requesting the server create the game.", 
@@ -187,7 +187,7 @@ public class StartGameScreenController extends ScreenController {
 	};
 	
 	private void updateMapListing() {
-		pageController.gameDataService.getMapNames(new AsyncCallback<GameListing[]>() {
+		pageController.gameService.getMapNames(new AsyncCallback<GameListing[]>() {
 			public void onFailure(Throwable throwable) {
 				new DialogController().showError("Error Getting Maps", 
 						"An error occurred getting the maps from the server.", 
@@ -222,7 +222,7 @@ public class StartGameScreenController extends ScreenController {
 	}
 	
 	private void updateGamesListing() {
-		pageController.gameDataService.getJoinableGameNames(new AsyncCallback<GameListing[]>() {
+		pageController.gameService.getJoinableGameNames(new AsyncCallback<GameListing[]>() {
 			public void onFailure(Throwable throwable) {
 				new DialogController().showError("Error Getting Games", 
 						"An error occurred getting the current games from the server.", 
@@ -239,7 +239,7 @@ public class StartGameScreenController extends ScreenController {
 						link.addClickHandler(new ClickHandler() {
 							@Override
 							public void onClick(ClickEvent event) {
-								pageController.gameDataService.attemptToJoinGame(gameListing.getId(), attemptToJoinGame);
+								pageController.gameService.attemptToJoinGame(gameListing.getId(), attemptToJoinGame);
 							}
 						});					
 						startGameScreen.joinableGamesTable.setWidget(i++, 0, link);
@@ -265,7 +265,7 @@ public class StartGameScreenController extends ScreenController {
 		//TODO have user login in a popup frame instead, so they don't have to wait for the application to reload when they get back.
 		String returnUrl = Window.Location.getHref();
 		
-		pageController.gameDataService.getLoginUrlIfNeeded(returnUrl, new AsyncCallback<String>() {
+		pageController.gameService.getLoginUrlIfNeeded(returnUrl, new AsyncCallback<String>() {
 			public void onFailure(Throwable throwable) {
 				new DialogController().showError("Error Logging In", 
 						"An error occurred checking if you are logged in.", 

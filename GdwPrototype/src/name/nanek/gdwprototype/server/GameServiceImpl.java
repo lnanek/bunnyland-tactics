@@ -1,19 +1,17 @@
 package name.nanek.gdwprototype.server;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
-import javax.persistence.FlushModeType;
-import javax.persistence.Query;
 
 import name.nanek.gdwprototype.client.model.GameListing;
 import name.nanek.gdwprototype.client.model.GamePlayInfo;
 import name.nanek.gdwprototype.client.model.Player;
-import name.nanek.gdwprototype.client.service.GameDataService;
+import name.nanek.gdwprototype.client.service.GameService;
 import name.nanek.gdwprototype.shared.FieldVerifier;
 import name.nanek.gdwprototype.shared.exceptions.ServerException;
 import name.nanek.gdwprototype.shared.exceptions.UserFriendlyMessageException;
@@ -30,10 +28,14 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 /**
  * The server side implementation of the RPC service.
+ * 
+ * @author Lance Nanek
  */
 @SuppressWarnings("serial")
-public class GameDataServiceImpl extends RemoteServiceServlet implements GameDataService {
+public class GameServiceImpl extends RemoteServiceServlet implements GameService {
 	//TODO put transactions back in now that understand about default fetch groups
+	
+	private GameDataAccessor gameDataAccessor = new GameDataAccessor();
 
 	public GamePlayInfo moveMarker(Long gameId, Integer sourceRow, Integer sourceColumn, Integer destRow,
 			Integer destColumn, String newImageSource) throws ServerException {
@@ -377,27 +379,15 @@ public class GameDataServiceImpl extends RemoteServiceServlet implements GameDat
 	}
 	
 	public GameListing[] getMapNames() throws ServerException {
-
 		EntityManager em = DbUtil.createEntityManager();
 		EntityTransaction tx = null;
 		try {
 			tx = em.getTransaction();
 			tx.begin();
 			
-			Query query = em.createQuery("SELECT FROM " + Game.class.getName());
-			List<Game> games = query.getResultList();
+			GameListing[] listings = getListings(gameDataAccessor.getMaps(em));
+			return listings;
 
-			ArrayList<GameListing> list = new ArrayList<GameListing>();
-			for (Game game : games) {
-				//TODO change query to do this for better performance
-				if ( game.isStartingMap() && game.isEnded() ) {
-					list.add(game.getListing());
-				}			
-			}
-
-			GameListing[] array = list.toArray(new GameListing[] {});
-			return array;
-			
 			//Don't bother committing, this was read only anyway.
 		} finally {
 			if ( null != tx && tx.isActive() ) {
@@ -408,27 +398,24 @@ public class GameDataServiceImpl extends RemoteServiceServlet implements GameDat
 	}
 
 	public GameListing[] getJoinableGameNames() throws ServerException {
-
+        UserService userService = UserServiceFactory.getUserService();
+        User user = userService.getCurrentUser();
+        String username = null != user ? user.getUserId() : null;
+        
 		EntityManager em = DbUtil.createEntityManager();
-		em.getTransaction().begin();
-
+		EntityTransaction tx = null;
 		try {
-			Query query = em.createQuery("SELECT FROM " + Game.class.getName());
-			List<Game> games = query.getResultList();
+			tx = em.getTransaction();
+			tx.begin();
+			
+			GameListing[] listings = getListings(gameDataAccessor.getJoinableGames(em, username));
+			return listings;
 
-			ArrayList<GameListing> list = new ArrayList<GameListing>();
-			for (Game game : games) {
-				//TODO change query to do this for better performance	
-				//TODO include games where one of the players matches the user's userid,
-				//in case someone is coming back to a game
-				if ( !game.isEnded() && null == game.getSecondPlayerUserId() && !game.isStartingMap() ) {
-					list.add(game.getListing());
-				}					
-			}
-			GameListing[] array = list.toArray(new GameListing[] {});
-			return array;
+			//Don't bother committing, this was read only anyway.
 		} finally {
-			em.getTransaction().commit();
+			if ( null != tx && tx.isActive() ) {
+				tx.rollback();
+			}
 			em.close();
 		}
 	}
@@ -450,19 +437,13 @@ public class GameDataServiceImpl extends RemoteServiceServlet implements GameDat
 	}
 	
 	public GameListing[] getObservableGameNames() throws ServerException {
-
 		EntityManager em = DbUtil.createEntityManager();
 		EntityTransaction tx = null;
 		try {
 			tx = em.getTransaction();
 			tx.begin();
 			
-			//Allow observation of games that have a second player.
-			Query query = em.createQuery(
-					"SELECT FROM " + Game.class.getName() + " g " + 
-					"WHERE g.secondPlayerUserId IS NOT NULL ");
-			List<Game> games = query.getResultList();
-			GameListing[] listings = getListings(games);
+			GameListing[] listings = getListings(gameDataAccessor.getObservableGames(em));
 			return listings;
 
 			//Don't bother committing, this was read only anyway.
@@ -474,7 +455,7 @@ public class GameDataServiceImpl extends RemoteServiceServlet implements GameDat
 		}
 	}
 
-	private GameListing[] getListings(List<Game> games) {
+	private GameListing[] getListings(Collection<Game> games) {
 		ArrayList<GameListing> list = new ArrayList<GameListing>();
 		for (Game game : games) {
 			list.add(game.getListing());

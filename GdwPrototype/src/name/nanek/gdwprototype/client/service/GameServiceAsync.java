@@ -9,9 +9,9 @@ import name.nanek.gdwprototype.shared.model.GameSettings;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
- * The async counterpart of <code>GameDataService</code>.
+ * The async counterpart of <code>GameService</code>.
  */
-public interface GameDataServiceAsync {
+public interface GameServiceAsync {
 	
 	void surrender(Long gameId, Player surrenderer, AsyncCallback<Void> callback) throws ServerException;
 

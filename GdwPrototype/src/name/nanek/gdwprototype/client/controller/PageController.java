@@ -2,8 +2,8 @@ package name.nanek.gdwprototype.client.controller;
 
 import name.nanek.gdwprototype.client.controller.screen.ScreenController;
 import name.nanek.gdwprototype.client.controller.support.ScreenControllers;
-import name.nanek.gdwprototype.client.service.GameDataService;
-import name.nanek.gdwprototype.client.service.GameDataServiceAsync;
+import name.nanek.gdwprototype.client.service.GameService;
+import name.nanek.gdwprototype.client.service.GameServiceAsync;
 import name.nanek.gdwprototype.client.view.Page;
 import name.nanek.gdwprototype.client.view.widget.GameAnchor;
 
@@ -26,7 +26,7 @@ public class PageController {
 	//break everything up into separate pieces using runAsync? have splash screen?
 
 	// Services
-	public final GameDataServiceAsync gameDataService = GWT.create(GameDataService.class);
+	public final GameServiceAsync gameService = GWT.create(GameService.class);
 
 	// View
 	private final Page page = new Page();

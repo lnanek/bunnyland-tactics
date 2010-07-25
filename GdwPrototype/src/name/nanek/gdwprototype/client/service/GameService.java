@@ -12,8 +12,8 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 /**
  * The client side stub for the RPC service.
  */
-@RemoteServiceRelativePath("gameData")
-public interface GameDataService extends RemoteService {
+@RemoteServiceRelativePath("game")
+public interface GameService extends RemoteService {
 
 	void surrender(Long gameId, Player surrenderer) throws ServerException;
 

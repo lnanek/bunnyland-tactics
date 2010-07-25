@@ -208,7 +208,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			public void onClick(ClickEvent event) {
 				clearDraggables();
 				gameScreen.surrenderButton.setEnabled(false);
-				pageController.gameDataService.surrender(currentGameId, lastInfo.playingAs, new SurrenderCallback());
+				pageController.gameService.surrender(currentGameId, lastInfo.playingAs, new SurrenderCallback());
 			}
 		}
 		gameScreen.surrenderButton.addClickHandler(new SurrenderClickHandler());
@@ -232,7 +232,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			@Override
 			public void onClick(ClickEvent event) {
 				gameScreen.publishMapButton.setEnabled(false);
-				pageController.gameDataService.publishMap(currentGameId, new PublishMapCallback());
+				pageController.gameService.publishMap(currentGameId, new PublishMapCallback());
 			}
 		}
 		gameScreen.publishMapButton.addClickHandler(new PublishMapClickHandler());
@@ -311,7 +311,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		//TODO clearing and restoring draggables isn't needed for map building
 		clearDraggables();
 
-		pageController.gameDataService.moveMarker(currentGameId, sourceRow, sourceColumn, destRow, destColumn,
+		pageController.gameService.moveMarker(currentGameId, sourceRow, sourceColumn, destRow, destColumn,
 				newImageSource, new AsyncCallback<GamePlayInfo>() {
 					public void onFailure(Throwable caught) {
 						new DialogController().showError(
@@ -337,7 +337,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			return;
 		}
 
-		pageController.gameDataService.getPositionsByGameId(currentGameId, new AsyncCallback<GamePlayInfo>() {
+		pageController.gameService.getPositionsByGameId(currentGameId, new AsyncCallback<GamePlayInfo>() {
 			public void onFailure(Throwable caught) {
 				new DialogController().showError(
 						"Error Getting Positions",								
@@ -588,7 +588,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		resetForNewGame();			
 		currentGameId = showGameId;
 
-		pageController.gameDataService.getGameListingById(currentGameId, new AsyncCallback<GameListing>() {
+		pageController.gameService.getGameListingById(currentGameId, new AsyncCallback<GameListing>() {
 			public void onFailure(Throwable caught) {
 				new DialogController().showError(
 						"Error Finding Game",								

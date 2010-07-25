@@ -8,10 +8,10 @@ import name.nanek.gdwprototype.client.model.Player;
 public class Markers {
 
 	private static final Marker PLAYER_ONE_WARREN = 
-		new Marker("Player 1 Warren", "piece_player1_warren.jpg", Player.ONE, 1, 0);
+		new Marker("Player 1 Warren", "piece_player1_home.png", Player.ONE, 1, 0);
 	
 	private static final Marker PLAYER_TWO_WARREN = 
-		new Marker("Player 2 Warren", "piece_player2_warren.jpg", Player.TWO, 1, 0);
+		new Marker("Player 2 Warren", "piece_player2_home.png", Player.TWO, 1, 0);
 	
 	public static final Marker FOG_OF_WAR = new Marker("tile_fog_of_war.png");
 	
@@ -32,6 +32,7 @@ public class Markers {
 		new Marker("tile_carrot.png"),
 		new Marker("tile_tree.png"), 
 		new Marker("tile_grass.png"), 
+		new Marker("tile_hill.png"), 
 	};
 	
 	public static final Marker[] ALL_MARKERS;
