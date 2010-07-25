@@ -24,35 +24,21 @@ import com.google.gwt.user.client.ui.Hyperlink;
  *
  */
 public class MenuScreenController extends ScreenController {
-	MenuScreen menuScreen = new MenuScreen();
+	MenuScreen screen = new MenuScreen();
 	
-	SoundPlayer soundPlayer = new SoundPlayer();
-
 	private PageController pageController;
 
 	public MenuScreenController() {
 	}
 	
 	@Override
-	public void createScreen(PageController pageController) {
-
+	public void createScreen(final PageController pageController, Long modelId) {
 		this.pageController = pageController;
 
-		pageController.addScreen(menuScreen.content);
-
-	}
-
-	@Override
-	public String showScreen(final PageController pageController, Long modelId) {
-		super.showScreen(pageController, modelId);
-
-		soundPlayer.startMenuBackgroundMusic();	    
-		return null;
-	}
-
-	@Override
-	public void hideScreen() {
-		soundPlayer.stopMenuBackgroundMusic();
+		pageController.addScreen(screen.content);
+		pageController.getSoundPlayer().playMenuBackgroundMusic();	    
+		pageController.setScreenTitle("Credits");
+		pageController.setLinkHeadingToHome(false);
 	}
 
 }

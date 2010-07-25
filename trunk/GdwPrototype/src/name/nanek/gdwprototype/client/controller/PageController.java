@@ -11,6 +11,9 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.History;
+import com.google.gwt.user.client.ui.Anchor;
+import com.google.gwt.user.client.ui.Hyperlink;
+import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -22,8 +25,6 @@ import com.google.gwt.user.client.ui.Widget;
  *
  */
 public class PageController {
-	//TODO work on long load time when first come to game
-	//break everything up into separate pieces using runAsync? have splash screen?
 
 	// Services
 	public final GameServiceAsync gameService = GWT.create(GameService.class);
@@ -31,10 +32,14 @@ public class PageController {
 	// View
 	private final Page page = new Page();
 
-	// Controller
+	// Controllers
+	private final SoundPlayer soundPlayer = new SoundPlayer();
+	private final DialogController dialogController;
 	private ScreenController currentController;
 
-	public PageController() {
+	public PageController(DialogController dialogController) {
+		this.dialogController = dialogController;
+		
 		// Show requested page when history changes.
 		History.addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
@@ -47,21 +52,6 @@ public class PageController {
 		History.fireCurrentHistoryState();
 	}
 	
-
-
-	public String showScreenAndGetTitle(ScreenController controllerToShow, Long modelId) {
-		if ( null != currentController ) {
-			currentController.hideScreen();
-		}
-		page.allContent.clear();
-		currentController = controllerToShow;
-		return controllerToShow.showScreen(this, modelId);
-	}
-	
-	public void addScreen(Widget screen) {
-		page.allContent.add(screen);
-	}
-
 	private void showPage(String historyToken) {
 		GWT.log("AppPageController#showPage: historyToken = " + historyToken);
 
@@ -70,9 +60,20 @@ public class PageController {
 		Long currentGameId = GameAnchor.getIdFromAnchor(historyToken);
 		
 		ScreenController controller = ScreenControllers.getController(historyToken);
-		String screenTitle = showScreenAndGetTitle(controller, currentGameId);
+		if ( null != currentController ) {
+			currentController.hideScreen();
+		}
+
+		page.allContent.clear();
 		setErrorLabel("");
-		setScreenTitle(screenTitle);
+		setScreenTitle(null);
+		
+		currentController = controller;
+		controller.createScreen(this, currentGameId);
+	}
+
+	public void addScreen(Widget screen) {
+		page.allContent.add(screen);
 	}
 
 	public void setScreenTitle(String screenTitle) {
@@ -82,5 +83,36 @@ public class PageController {
 	public void setErrorLabel(String string) {
 		page.errorLabel.setText(string);
 	}
+	
+	public void setLinkHeadingToHome(boolean enabled) {
+		RootPanel heading = RootPanel.get("siteHeading");
+		if ( enabled ) {
+			heading.clear();
+			heading.getElement().setInnerHTML("");
+			//Would be nice to reset everything, but doesn't work in dev mode
+			//where a code server has to be specified.
+			//heading.add(new Anchor("Bunnyland Tactics", "/"));
+			
+			heading.add(new Hyperlink("Bunnyland Tactics", ""));
+		} else {
+			heading.clear();
+			heading.getElement().setInnerHTML("Bunnyland Tactics");
+		}
+	}
 
+	/**
+	 * Gets a shared dialog controller. Helps prevent having multiple stacked dialogs.
+	 * @return dialog controller
+	 */
+	public DialogController getDialogController() {
+		return dialogController;
+	}
+
+	/**
+	 * Gets a shared sound player. Helps keep music playing across screens when needed.
+	 * @return sound player
+	 */
+	public SoundPlayer getSoundPlayer() {
+		return soundPlayer;
+	}
 }

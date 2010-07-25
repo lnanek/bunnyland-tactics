@@ -97,147 +97,6 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		updateGameBoard();
 	}
 	
-	@Override
-	public void createScreen(final PageController pageController) {
-
-		draggables = new HashSet<GameSquare>();
-		boardDropControllers = new LinkedList<GameScreenDropController>();
-		this.pageController = pageController;
-
-		pageController.addScreen(gameScreen.content);
-		gameScreen.setFogOfWarChangeListener(this);
-
-		dragController = new PickupDragController(RootPanel.get(), false);
-		dragController.setBehaviorDragProxy(true);
-		dragController.setBehaviorMultipleSelection(false);
-		dragController.addDragHandler(new DragHandler() {
-
-			@Override
-			public void onDragEnd(DragEndEvent event) {
-				dragInProgress = false;
-				
-				//If was dragging something in a game, not a map editor.
-				if ( null != lastInfo && !lastInfo.isBuildingMap ) {
-					//Remove highlights for where it can go.	
-					
-					CellFormatter formatter = gameScreen.gameBoard.getCellFormatter();
-					
-					int rows = gameScreen.gameBoard.getRowCount();
-					for (int row = 0; row < rows; row++) {
-						int cols = gameScreen.gameBoard.getRowCount();
-						for (int col = 0; col < cols; col++) {	
-							//TableCellPanel destPanel = (TableCellPanel) gameScreen.gameBoard.getWidget(row, col);
-							//destPanel.removeStyleName("validDropTarget");
-							
-							formatter.removeStyleName(row, col, "validDropTarget");
-						}
-					}
-				}
-			}
-
-			@Override
-			public void onDragStart(DragStartEvent event) {
-				dragInProgress = true;
-
-				//If dragging something in a game, not a map editor.
-				if ( null != lastInfo && !lastInfo.isBuildingMap ) {
-					
-					//Highlight where it can go.
-					GameSquare gameSquare = (GameSquare) event.getContext().draggable;
-					if ( gameSquare instanceof PaletteImage ) {
-						return;
-					}
-					Marker marker = gameSquare.marker;
-					
-					TableCellPanel sourcePanel = (TableCellPanel) gameSquare.getParent();
-
-					int startRow = Math.max(0,	sourcePanel.getRow() - marker.movementRange);
-					int endRow = Math.min(gameScreen.gameBoard.getRowCount() - 1, sourcePanel.getRow() + marker.movementRange);
-						
-					CellFormatter formatter = gameScreen.gameBoard.getCellFormatter();
-					
-					for (int row = startRow; row <= endRow; row++) {
-						
-						int startCol = Math.max(0,	sourcePanel.getColumn() - marker.movementRange);
-						int endCol = Math.min(gameScreen.gameBoard.getCellCount(row) - 1, sourcePanel.getColumn() + marker.movementRange);
-						
-						for (int col = startCol; col <= endCol; col++) {	
-							int rowDistance = Math.abs(sourcePanel.getRow() - row);
-							int colDistance = Math.abs(sourcePanel.getColumn() - col);
-							int totalDistance = rowDistance + colDistance;
-							if (totalDistance <= marker.movementRange) {
-								//TableCellPanel destPanel = (TableCellPanel) gameScreen.gameBoard.getWidget(row, col);
-								//destPanel.addStyleName("validDropTarget");
-								
-								formatter.addStyleName(row, col, "validDropTarget");
-							}
-						}
-					}
-				}
-			}
-
-			@Override
-			public void onPreviewDragEnd(DragEndEvent event) throws VetoDragException {
-			}
-
-			@Override
-			public void onPreviewDragStart(DragStartEvent event) throws VetoDragException {
-				//TODO veto here if not players marker instead of adjusting draggables?
-			}
-		});
-		
-		//Setup surrender button.
-		class SurrenderCallback implements AsyncCallback<Void> {
-			public void onFailure(Throwable caught) {
-				new DialogController().showError(
-						"Error Surrendering",								
-						"An error occurred asking the game server to surrender.",
-						true,
-						caught);
-				restoreDraggables();
-				gameScreen.surrenderButton.setEnabled(true);
-			}
-
-			public void onSuccess(Void unused) {
-				updatesRequired = true;
-				updateGameBoard();
-			}
-		};
-		class SurrenderClickHandler implements ClickHandler {
-			@Override
-			public void onClick(ClickEvent event) {
-				clearDraggables();
-				gameScreen.surrenderButton.setEnabled(false);
-				pageController.gameService.surrender(currentGameId, lastInfo.playingAs, new SurrenderCallback());
-			}
-		}
-		gameScreen.surrenderButton.addClickHandler(new SurrenderClickHandler());
-
-		//Setup publish map button.
-		class PublishMapCallback implements AsyncCallback<Void> {
-			public void onFailure(Throwable caught) {
-				new DialogController().showError(
-						"Error Publishing Map",								
-						"An error occurred asking the game server to publish the map.",
-						true,
-						caught);
-				gameScreen.publishMapButton.setEnabled(true);
-			}
-
-			public void onSuccess(Void unused) {
-				updateGameBoard();
-			}
-		};
-		class PublishMapClickHandler implements ClickHandler {
-			@Override
-			public void onClick(ClickEvent event) {
-				gameScreen.publishMapButton.setEnabled(false);
-				pageController.gameService.publishMap(currentGameId, new PublishMapCallback());
-			}
-		}
-		gameScreen.publishMapButton.addClickHandler(new PublishMapClickHandler());
-	}
-	
 	private void initializeBoardIfNeeded(GamePlayInfo info) {
 		if (boardInitialized) {
 			return;
@@ -314,7 +173,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		pageController.gameService.moveMarker(currentGameId, sourceRow, sourceColumn, destRow, destColumn,
 				newImageSource, new AsyncCallback<GamePlayInfo>() {
 					public void onFailure(Throwable caught) {
-						new DialogController().showError(
+						pageController.getDialogController().showError(
 								"Error Moving Piece",								
 								"An error occurred asking the game server to move the requested piece.",
 								true,
@@ -339,7 +198,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 
 		pageController.gameService.getPositionsByGameId(currentGameId, new AsyncCallback<GamePlayInfo>() {
 			public void onFailure(Throwable caught) {
-				new DialogController().showError(
+				pageController.getDialogController().showError(
 						"Error Getting Positions",								
 						"An error occurred asking the server for the current game piece positions.",
 						true,
@@ -582,15 +441,151 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 	}
 
 	@Override
-	public String showScreen(final PageController pageController, Long showGameId) {
-		super.showScreen(pageController, showGameId);
+	public void createScreen(final PageController pageController, Long showGameId) {
+
+		draggables = new HashSet<GameSquare>();
+		boardDropControllers = new LinkedList<GameScreenDropController>();
+		this.pageController = pageController;
+
+		pageController.addScreen(gameScreen.content);
+		gameScreen.setFogOfWarChangeListener(this);
+
+		dragController = new PickupDragController(RootPanel.get(), false);
+		dragController.setBehaviorDragProxy(true);
+		dragController.setBehaviorMultipleSelection(false);
+		dragController.addDragHandler(new DragHandler() {
+
+			@Override
+			public void onDragEnd(DragEndEvent event) {
+				dragInProgress = false;
+				
+				//If was dragging something in a game, not a map editor.
+				if ( null != lastInfo && !lastInfo.isBuildingMap ) {
+					//Remove highlights for where it can go.	
+					
+					CellFormatter formatter = gameScreen.gameBoard.getCellFormatter();
+					
+					int rows = gameScreen.gameBoard.getRowCount();
+					for (int row = 0; row < rows; row++) {
+						int cols = gameScreen.gameBoard.getRowCount();
+						for (int col = 0; col < cols; col++) {	
+							//TableCellPanel destPanel = (TableCellPanel) gameScreen.gameBoard.getWidget(row, col);
+							//destPanel.removeStyleName("validDropTarget");
+							
+							formatter.removeStyleName(row, col, "validDropTarget");
+						}
+					}
+				}
+			}
+
+			@Override
+			public void onDragStart(DragStartEvent event) {
+				dragInProgress = true;
+
+				//If dragging something in a game, not a map editor.
+				if ( null != lastInfo && !lastInfo.isBuildingMap ) {
+					
+					//Highlight where it can go.
+					GameSquare gameSquare = (GameSquare) event.getContext().draggable;
+					if ( gameSquare instanceof PaletteImage ) {
+						return;
+					}
+					Marker marker = gameSquare.marker;
+					
+					TableCellPanel sourcePanel = (TableCellPanel) gameSquare.getParent();
+
+					int startRow = Math.max(0,	sourcePanel.getRow() - marker.movementRange);
+					int endRow = Math.min(gameScreen.gameBoard.getRowCount() - 1, sourcePanel.getRow() + marker.movementRange);
+						
+					CellFormatter formatter = gameScreen.gameBoard.getCellFormatter();
+					
+					for (int row = startRow; row <= endRow; row++) {
+						
+						int startCol = Math.max(0,	sourcePanel.getColumn() - marker.movementRange);
+						int endCol = Math.min(gameScreen.gameBoard.getCellCount(row) - 1, sourcePanel.getColumn() + marker.movementRange);
+						
+						for (int col = startCol; col <= endCol; col++) {	
+							int rowDistance = Math.abs(sourcePanel.getRow() - row);
+							int colDistance = Math.abs(sourcePanel.getColumn() - col);
+							int totalDistance = rowDistance + colDistance;
+							if (totalDistance <= marker.movementRange) {
+								//TableCellPanel destPanel = (TableCellPanel) gameScreen.gameBoard.getWidget(row, col);
+								//destPanel.addStyleName("validDropTarget");
+								
+								formatter.addStyleName(row, col, "validDropTarget");
+							}
+						}
+					}
+				}
+			}
+
+			@Override
+			public void onPreviewDragEnd(DragEndEvent event) throws VetoDragException {
+			}
+
+			@Override
+			public void onPreviewDragStart(DragStartEvent event) throws VetoDragException {
+				//TODO veto here if not players marker instead of adjusting draggables?
+			}
+		});
+		
+		//Setup surrender button.
+		class SurrenderCallback implements AsyncCallback<Void> {
+			public void onFailure(Throwable caught) {
+				pageController.getDialogController().showError(
+						"Error Surrendering",								
+						"An error occurred asking the game server to surrender.",
+						true,
+						caught);
+				restoreDraggables();
+				gameScreen.surrenderButton.setEnabled(true);
+			}
+
+			public void onSuccess(Void unused) {
+				updatesRequired = true;
+				updateGameBoard();
+			}
+		};
+		class SurrenderClickHandler implements ClickHandler {
+			@Override
+			public void onClick(ClickEvent event) {
+				clearDraggables();
+				gameScreen.surrenderButton.setEnabled(false);
+				pageController.gameService.surrender(currentGameId, lastInfo.playingAs, new SurrenderCallback());
+			}
+		}
+		gameScreen.surrenderButton.addClickHandler(new SurrenderClickHandler());
+
+		//Setup publish map button.
+		class PublishMapCallback implements AsyncCallback<Void> {
+			public void onFailure(Throwable caught) {
+				pageController.getDialogController().showError(
+						"Error Publishing Map",								
+						"An error occurred asking the game server to publish the map.",
+						true,
+						caught);
+				gameScreen.publishMapButton.setEnabled(true);
+			}
+
+			public void onSuccess(Void unused) {
+				updateGameBoard();
+			}
+		};
+		class PublishMapClickHandler implements ClickHandler {
+			@Override
+			public void onClick(ClickEvent event) {
+				gameScreen.publishMapButton.setEnabled(false);
+				pageController.gameService.publishMap(currentGameId, new PublishMapCallback());
+			}
+		}
+		gameScreen.publishMapButton.addClickHandler(new PublishMapClickHandler());
 
 		resetForNewGame();			
 		currentGameId = showGameId;
 
 		pageController.gameService.getGameListingById(currentGameId, new AsyncCallback<GameListing>() {
 			public void onFailure(Throwable caught) {
-				new DialogController().showError(
+				pageController.getDialogController().showError(
 						"Error Finding Game",								
 						"An error occurred finding the requested game.",
 						true,
@@ -608,7 +603,9 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		//TODO only schedule a new screen update when the previous finishes? repeating might build up a queue if updates are slower than refresh interval
 		refreshGameBoardTimer.scheduleRepeating(GAME_BOARD_REFRESH_INTERVAL);
 
-		return "Game";
+		pageController.setScreenTitle("Game");
+		pageController.getSoundPlayer().stopMenuBackgroundMusic();
+		pageController.setLinkHeadingToHome(true);
 	}
 
 }

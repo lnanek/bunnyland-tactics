@@ -25,35 +25,21 @@ import com.google.gwt.user.client.ui.Hyperlink;
  *
  */
 public class CreditsScreenController extends ScreenController {
-	CreditsScreen menuScreen = new CreditsScreen();
-	
-	SoundPlayer soundPlayer = new SoundPlayer();
 
+	private CreditsScreen screen = new CreditsScreen();
+	
 	private PageController pageController;
 
 	public CreditsScreenController() {
 	}
 	
 	@Override
-	public void createScreen(PageController pageController) {
-
+	public void createScreen(final PageController pageController, Long modelId) {
 		this.pageController = pageController;
 
-		pageController.addScreen(menuScreen.content);
-
+		pageController.addScreen(screen.content);
+		pageController.getSoundPlayer().playMenuBackgroundMusic();	    
+		pageController.setScreenTitle("Credits");
+		pageController.setLinkHeadingToHome(true);
 	}
-
-	@Override
-	public String showScreen(final PageController pageController, Long modelId) {
-		super.showScreen(pageController, modelId);
-
-		soundPlayer.startMenuBackgroundMusic();	    
-		return "Credits";
-	}
-
-	@Override
-	public void hideScreen() {
-		soundPlayer.stopMenuBackgroundMusic();
-	}
-
 }

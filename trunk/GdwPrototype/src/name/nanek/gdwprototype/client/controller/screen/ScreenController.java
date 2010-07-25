@@ -11,18 +11,10 @@ import name.nanek.gdwprototype.client.controller.PageController;
  */
 public abstract class ScreenController {
 	
-	boolean isCreated;
-	
-	public abstract void hideScreen();
-	
-	public String showScreen(PageController pageController, Long modelId) {
-		if ( !isCreated ) {
-			createScreen(pageController);
-			isCreated = true;
-		}
-		return null;
+	public void hideScreen() {
+		//Do nothing by default.
 	}
 	
-	public abstract void createScreen(PageController pageController);
+	public abstract void createScreen(PageController pageController, Long modelId);
 
 }

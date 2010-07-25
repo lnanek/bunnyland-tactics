@@ -108,7 +108,7 @@ public class StartGameScreenController extends ScreenController {
 		startGameScreen.createGameButton.setEnabled(false);
 		pageController.gameService.createGame(gameName, settings, mapId, new AsyncCallback<GameListing>() {
 			public void onFailure(Throwable throwable) {
-				new DialogController().showError("Error Creating Game", 
+				pageController.getDialogController().showError("Error Creating Game", 
 						"An error occurred requesting the server create the game.", 
 						true, 
 						throwable,
@@ -124,48 +124,10 @@ public class StartGameScreenController extends ScreenController {
 		});
 	}
 	
-	@Override
-	public void createScreen(final PageController pageController) {
-		this.pageController = pageController;
-		
-		pageController.addScreen(startGameScreen.content);
-
-		//Button to create a game.
-		class CreateGameHandler implements ClickHandler, KeyDownHandler {
-			/**
-			 * Fired when the user clicks on the sendButton.
-			 */
-			public void onClick(ClickEvent event) {
-				createGame(false);
-			}
-
-			/**
-			 * Fired when the user types in the nameField.
-			 */
-			//TODO this can fire when hidden sometimes, maybe disable it when screen hidden or make sure focus is moved?
-			public void onKeyDown(KeyDownEvent event) {
-				if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-					createGame(false);
-				}
-			}
-		}
-		CreateGameHandler handler = new CreateGameHandler();
-		startGameScreen.createGameButton.addClickHandler(handler);
-		startGameScreen.createGameNameField.addKeyDownHandler(handler);
-		
-		//Button to create a map.
-		class CreateMapHandler implements ClickHandler {
-			public void onClick(ClickEvent event) {
-				createGame(true);
-			}
-		}
-		startGameScreen.createMapButton.addClickHandler(new CreateMapHandler());
-	}
-	
 	AsyncCallback<GameListing> attemptToJoinGame = new AsyncCallback<GameListing>() {
 		@Override
 		public void onFailure(Throwable throwable) {
-			new DialogController().showError("Error Joining Game", 
+			pageController.getDialogController().showError("Error Joining Game", 
 					"An error occurred joining the game on the server.", 
 					true, 
 					throwable);
@@ -174,7 +136,7 @@ public class StartGameScreenController extends ScreenController {
 		@Override
 		public void onSuccess(GameListing result) {
 			if (null == result) {
-				new DialogController().showError("Error Joining Game", 
+				pageController.getDialogController().showError("Error Joining Game", 
 						"Sorry, someone else joined the game just before you!", 
 						false, 
 						null);
@@ -189,7 +151,7 @@ public class StartGameScreenController extends ScreenController {
 	private void updateMapListing() {
 		pageController.gameService.getMapNames(new AsyncCallback<GameListing[]>() {
 			public void onFailure(Throwable throwable) {
-				new DialogController().showError("Error Getting Maps", 
+				pageController.getDialogController().showError("Error Getting Maps", 
 						"An error occurred getting the maps from the server.", 
 						true, 
 						throwable);
@@ -224,7 +186,7 @@ public class StartGameScreenController extends ScreenController {
 	private void updateGamesListing() {
 		pageController.gameService.getJoinableGameNames(new AsyncCallback<GameListing[]>() {
 			public void onFailure(Throwable throwable) {
-				new DialogController().showError("Error Getting Games", 
+				pageController.getDialogController().showError("Error Getting Games", 
 						"An error occurred getting the current games from the server.", 
 						true, 
 						throwable);
@@ -259,15 +221,49 @@ public class StartGameScreenController extends ScreenController {
 	}
 
 	@Override
-	public String showScreen(final PageController pageController, Long modelId) {
-		super.showScreen(pageController, modelId);
+	public void createScreen(final PageController pageController, Long modelId) {
+		this.pageController = pageController;
+		
+		pageController.addScreen(startGameScreen.content);
+
+		//Button to create a game.
+		class CreateGameHandler implements ClickHandler, KeyDownHandler {
+			/**
+			 * Fired when the user clicks on the sendButton.
+			 */
+			public void onClick(ClickEvent event) {
+				createGame(false);
+			}
+
+			/**
+			 * Fired when the user types in the nameField.
+			 */
+			//TODO this can fire when hidden sometimes, maybe disable it when screen hidden or make sure focus is moved?
+			public void onKeyDown(KeyDownEvent event) {
+				if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+					createGame(false);
+				}
+			}
+		}
+		CreateGameHandler handler = new CreateGameHandler();
+		startGameScreen.createGameButton.addClickHandler(handler);
+		startGameScreen.createGameNameField.addKeyDownHandler(handler);
+		
+		//Button to create a map.
+		class CreateMapHandler implements ClickHandler {
+			public void onClick(ClickEvent event) {
+				createGame(true);
+			}
+		}
+		startGameScreen.createMapButton.addClickHandler(new CreateMapHandler());
+		
 		
 		//TODO have user login in a popup frame instead, so they don't have to wait for the application to reload when they get back.
 		String returnUrl = Window.Location.getHref();
 		
 		pageController.gameService.getLoginUrlIfNeeded(returnUrl, new AsyncCallback<String>() {
 			public void onFailure(Throwable throwable) {
-				new DialogController().showError("Error Logging In", 
+				pageController.getDialogController().showError("Error Logging In", 
 						"An error occurred checking if you are logged in.", 
 						true, 
 						throwable);
@@ -295,7 +291,9 @@ public class StartGameScreenController extends ScreenController {
 			}
 		});
 
-		return "Start Game";
+		pageController.setScreenTitle("Start Game");
+		pageController.getSoundPlayer().playMenuBackgroundMusic();
+		pageController.setLinkHeadingToHome(true);
 	}
 
 
