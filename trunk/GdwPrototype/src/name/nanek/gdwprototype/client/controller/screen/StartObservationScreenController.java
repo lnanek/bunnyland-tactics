@@ -55,7 +55,7 @@ public class StartObservationScreenController extends ScreenController {
 
 	private void updateGamesListing() {
 		//TODO don't show games that need a second player here
-		pageController.gameDataService.getObservableGameNames(new AsyncCallback<GameListing[]>() {
+		pageController.gameService.getObservableGameNames(new AsyncCallback<GameListing[]>() {
 			public void onFailure(Throwable throwable) {
 				new DialogController().showError("Error Getting Games", 
 					"An error occurred getting the current games from the server.", 

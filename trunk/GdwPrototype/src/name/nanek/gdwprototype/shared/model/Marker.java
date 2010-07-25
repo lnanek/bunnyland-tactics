@@ -47,9 +47,4 @@ public class Marker implements Serializable {
 		this.name = name;
 		this.movementRange = movementRange;
 	}
-
-	/*
-	 * public static Marker[] getPalletteForPlayer(Player player) { return
-	 * player == Player.ONE ? NON_P2_MARKERS : NON_P1_MARKERS; }
-	 */
 }
