@@ -14,6 +14,8 @@ import com.allen_sauer.gwt.voices.client.handler.SoundLoadStateChangeEvent;
  */
 public class SoundPlayer {
     //TODO for sound effects, set the balance according to where on the board they happen?
+	
+	//TODO offer way for user to mute music, currently have to mute at OS level
 
 	//private static final String MIME_TYPE_AUDIO_OGG_VORBIS = "audio/ogg; codecs=vorbis";
 

@@ -84,7 +84,6 @@ public class StartObservationScreenController extends ScreenController {
 
 		pageController.getSoundPlayer().playMenuBackgroundMusic();
 	    pageController.setScreenTitle("Select a Game to Observe");
-		pageController.setLinkHeadingToHome(true);
 	}
 
 	@Override

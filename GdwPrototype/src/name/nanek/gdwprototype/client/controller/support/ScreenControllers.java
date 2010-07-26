@@ -1,5 +1,7 @@
 package name.nanek.gdwprototype.client.controller.support;
 
+import name.nanek.gdwprototype.client.controller.screen.CreateGameScreenController;
+import name.nanek.gdwprototype.client.controller.screen.CreateMapScreenController;
 import name.nanek.gdwprototype.client.controller.screen.CreditsScreenController;
 import name.nanek.gdwprototype.client.controller.screen.GameScreenController;
 import name.nanek.gdwprototype.client.controller.screen.MenuScreenController;
@@ -22,10 +24,15 @@ public class ScreenControllers {
 		GAME,
 		START_GAME,
 		START_OBSERVATION,
+		CREATE_GAME,
+		CREATE_MAP,
 		MENU,
 	}
 	
 	public static String getHistoryToken(Screen screen) {
+		if ( Screen.MENU == screen ) {
+			return "";
+		}
 		return screen.toString().toLowerCase();
 	}
 	
@@ -43,6 +50,10 @@ public class ScreenControllers {
 				return new StartGameScreenController();
 			case START_OBSERVATION:
 				return new StartObservationScreenController();
+			case CREATE_GAME:
+				return new CreateGameScreenController();
+			case CREATE_MAP:
+				return new CreateMapScreenController();
 			default:
 				return new MenuScreenController();
 		}

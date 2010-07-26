@@ -73,7 +73,7 @@ public class GameScreenDropController extends SimpleDropController {
 		
 		//Game isn't loaded yet.
 		//TODO previous game flashes on screen when starting a new game, fix that so we don't get these spurious drags from stale game displays
-		if ( null == gameScreenController.lastInfo ) {
+		if ( null == gameScreenController.info ) {
 			throw new VetoDragException();
 		}
 		
@@ -84,7 +84,7 @@ public class GameScreenDropController extends SimpleDropController {
 		
 		//Check unit can move this far.
 		//TODO check on server as well
-		if ( !gameScreenController.lastInfo.isBuildingMap ) {
+		if ( !gameScreenController.info.isBuildingMap ) {
 			TableCellPanel source = (TableCellPanel) context.draggable.getParent();
 			int sourceCol = source.getColumn();
 			int sourceRow = source.getRow();

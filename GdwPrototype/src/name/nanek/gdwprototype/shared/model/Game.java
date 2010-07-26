@@ -121,7 +121,7 @@ public class Game implements Serializable {
 	}
 
 	public GameListing getListing() {
-		return new GameListing(name, keyId);
+		return new GameListing(name, keyId, startingMap);
 	}
 
 	public Set<Position> getPositions() {

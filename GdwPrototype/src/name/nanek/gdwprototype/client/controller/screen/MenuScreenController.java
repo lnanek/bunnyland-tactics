@@ -38,7 +38,6 @@ public class MenuScreenController extends ScreenController {
 		pageController.addScreen(screen.content);
 		pageController.getSoundPlayer().playMenuBackgroundMusic();	    
 		pageController.setScreenTitle("Credits");
-		pageController.setLinkHeadingToHome(false);
 	}
 
 }
