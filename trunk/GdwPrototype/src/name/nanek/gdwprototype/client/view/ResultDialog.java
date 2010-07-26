@@ -1,4 +1,4 @@
-package name.nanek.gdwprototype.client.view.widget;
+package name.nanek.gdwprototype.client.view;
 
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;

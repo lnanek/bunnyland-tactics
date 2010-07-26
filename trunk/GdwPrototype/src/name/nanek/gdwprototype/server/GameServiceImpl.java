@@ -13,7 +13,7 @@ import name.nanek.gdwprototype.client.model.GamePlayInfo;
 import name.nanek.gdwprototype.client.model.Player;
 import name.nanek.gdwprototype.client.service.GameService;
 import name.nanek.gdwprototype.shared.FieldVerifier;
-import name.nanek.gdwprototype.shared.exceptions.ServerException;
+import name.nanek.gdwprototype.shared.exceptions.GameException;
 import name.nanek.gdwprototype.shared.exceptions.UserFriendlyMessageException;
 import name.nanek.gdwprototype.shared.model.Game;
 import name.nanek.gdwprototype.shared.model.GameSettings;
@@ -38,7 +38,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 	private GameDataAccessor gameDataAccessor = new GameDataAccessor();
 
 	public GamePlayInfo moveMarker(Long gameId, Integer sourceRow, Integer sourceColumn, Integer destRow,
-			Integer destColumn, String newImageSource) throws ServerException {
+			Integer destColumn, String newImageSource) throws GameException {
 
 		UserService userService = UserServiceFactory.getUserService();
 		User user = userService.getCurrentUser();
@@ -65,7 +65,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 			
 			boolean changedPositions = false;
 
-
+			//TODO we now track terrain, so need to not remove it when a piece lands on it
 			if (null != destColumn && null != destRow && null != newImageSource) {
 				// Destination so remove any old position and create new  position.
 				
@@ -74,9 +74,23 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 				if ( !game.isStartingMap() ) {
 					String removeCandidate = findPosition(destRow, destColumn, em, game);
 					if ( null != removeCandidate ) {
+
+						boolean isCarrotDestination = removeCandidate.endsWith("carrot.png");
+						if ( isCarrotDestination ) {
+							//TODO get a scout or warrior from the same player
+							
+							//TODO find their home
+							
+							//TODO find empty space near their home
+							
+							//TODO place the unit
+							
+						}
+						
 						//TODO actually look up marker
-						if ( null == newImageSource || !newImageSource.endsWith("warrior.png") ) {
-							throw new UserFriendlyMessageException("Only stompers may land on enemey units to remove them.");
+						boolean isStomperSource = newImageSource.endsWith("warrior.png");
+						if ( !isStomperSource || !isCarrotDestination ) {
+							throw new UserFriendlyMessageException("Only stompers may land on units to remove them.");
 						}
 						
 						if ( null != game.getCurrentUsersTurn() ) {
@@ -88,6 +102,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 							}
 
 							//Can't go on your own warren for now.
+							//TODO prevent landing on any of your own pieces?
 							Marker playerWarren = Markers.getPlayerWarren(game.getCurrentUsersTurn());
 							if (removeCandidate.endsWith(playerWarren.source)) {
 								throw new UserFriendlyMessageException("You can't stomp your own warren! Think of the children!");
@@ -200,7 +215,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 		return info;
 	}
 
-	public GamePlayInfo getPositionsByGameId(Long gameId) throws ServerException {
+	public GamePlayInfo getPositionsByGameId(Long gameId) throws GameException {
 				
 			EntityManager em = DbUtil.createEntityManager();
 
@@ -217,7 +232,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 			//return createGameInfo(game);
 		}
 
-	public void surrender(Long gameId, Player surrenderer) throws ServerException {
+	public void surrender(Long gameId, Player surrenderer) throws GameException {
 		EntityManager em = DbUtil.createEntityManager();
 		em.getTransaction().begin();
 		try {
@@ -230,7 +245,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 		}
 	}
 
-	public void publishMap(Long mapId) throws ServerException {
+	public void publishMap(Long mapId) throws GameException {
 		EntityManager em = DbUtil.createEntityManager();
 		em.getTransaction().begin();
 		try {
@@ -242,7 +257,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 		}
 	}
 	
-	public GameListing getGameListingById(Long id) throws ServerException {
+	public GameListing getGameListingById(Long id) throws GameException {
 		EntityManager em = DbUtil.createEntityManager();
 		em.getTransaction().begin();
 
@@ -265,7 +280,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 		}
 	}
 
-	public GameListing createGame(String name, GameSettings settings, Long mapId) throws ServerException {
+	public GameListing createGameOrMap(String name, GameSettings settings, Long mapId) throws GameException {
 		FieldVerifier.validateGameName(name);
 
 		UserService userService = UserServiceFactory.getUserService();
@@ -278,7 +293,6 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 		}
 	        
 		Game game = new Game();
-		game.setSettings(settings);
 		
 		//System.out.println("GameDataServiceImpl#createGame: settings are: " + settings);
 		//System.out.println("GameDataServiceImpl#createGame: markers are: " + settings.getMarkers());
@@ -292,10 +306,11 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 	
 				//System.out.println("GameDataServiceImpl#createGame: starting game from map: " + mapId);
 				Game map = em.find(Game.class, mapId);
+				game.setSettings(map.getSettings());
 				mapPositions = map.getPositions();
 			} else {
 				//System.out.println("GameDataServiceImpl#createGame: starting new map");
-	
+				game.setSettings(settings);
 				game.setStartingMap(true);
 			}
 			game.setName(name);
@@ -329,7 +344,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 		return game.getListing();
 	}
 	
-	public GameListing attemptToJoinGame(Long id) throws ServerException {
+	public GameListing attemptToJoinGame(Long id) throws GameException {
 
 		UserService userService = UserServiceFactory.getUserService();
 		User user = userService.getCurrentUser();
@@ -378,7 +393,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
         }
 	}
 	
-	public GameListing[] getMapNames() throws ServerException {
+	public GameListing[] getMapNames() throws GameException {
 		EntityManager em = DbUtil.createEntityManager();
 		EntityTransaction tx = null;
 		try {
@@ -397,7 +412,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 		}
 	}
 
-	public GameListing[] getJoinableGameNames() throws ServerException {
+	public GameListing[] getJoinableGameNames() throws GameException {
         UserService userService = UserServiceFactory.getUserService();
         User user = userService.getCurrentUser();
         String username = null != user ? user.getUserId() : null;
@@ -436,7 +451,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 		throw new IllegalStateException("Can't determine the current user.");
 	}
 	
-	public GameListing[] getObservableGameNames() throws ServerException {
+	public GameListing[] getObservableGameNames() throws GameException {
 		EntityManager em = DbUtil.createEntityManager();
 		EntityTransaction tx = null;
 		try {

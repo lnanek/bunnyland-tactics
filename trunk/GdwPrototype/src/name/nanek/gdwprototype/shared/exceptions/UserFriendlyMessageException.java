@@ -1,25 +1,30 @@
 package name.nanek.gdwprototype.shared.exceptions;
 
-public class UserFriendlyMessageException extends ServerException {
+/**
+ * Exception with a message understandable by the typical user.
+ * For example, telling a user it isn't their turn.
+ * 
+ * @author Lance Nanek
+ *
+ */
+public class UserFriendlyMessageException extends GameException {
+
+	private static final long serialVersionUID = 1L;
 
 	public UserFriendlyMessageException() {
 		super();
-		// TODO Auto-generated constructor stub
 	}
 
-	public UserFriendlyMessageException(String arg0, Throwable arg1) {
-		super(arg0, arg1);
-		// TODO Auto-generated constructor stub
+	public UserFriendlyMessageException(String message, Throwable cause) {
+		super(message, cause);
 	}
 
-	public UserFriendlyMessageException(String arg0) {
-		super(arg0);
-		// TODO Auto-generated constructor stub
+	public UserFriendlyMessageException(String message) {
+		super(message);
 	}
 
-	public UserFriendlyMessageException(Throwable arg0) {
-		super(arg0);
-		// TODO Auto-generated constructor stub
+	public UserFriendlyMessageException(Throwable cause) {
+		super(cause);
 	}
 
 }

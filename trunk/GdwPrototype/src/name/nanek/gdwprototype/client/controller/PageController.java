@@ -64,6 +64,16 @@ public class PageController {
 			currentController.hideScreen();
 		}
 
+		//When there's no history token, we're at the first page/main menu, so don't link the title.
+		RootPanel heading = RootPanel.get("siteHeading");
+		heading.clear();
+		if ( "".equals(historyToken) ) {
+			heading.getElement().setInnerHTML("Bunnyland Tactics");
+		} else {
+			heading.getElement().setInnerHTML("");	
+			heading.add(new Hyperlink("Bunnyland Tactics", ""));
+		}
+		
 		page.allContent.clear();
 		setErrorLabel("");
 		setScreenTitle(null);
@@ -84,22 +94,6 @@ public class PageController {
 		page.errorLabel.setText(string);
 	}
 	
-	public void setLinkHeadingToHome(boolean enabled) {
-		RootPanel heading = RootPanel.get("siteHeading");
-		if ( enabled ) {
-			heading.clear();
-			heading.getElement().setInnerHTML("");
-			//Would be nice to reset everything, but doesn't work in dev mode
-			//where a code server has to be specified.
-			//heading.add(new Anchor("Bunnyland Tactics", "/"));
-			
-			heading.add(new Hyperlink("Bunnyland Tactics", ""));
-		} else {
-			heading.clear();
-			heading.getElement().setInnerHTML("Bunnyland Tactics");
-		}
-	}
-
 	/**
 	 * Gets a shared dialog controller. Helps prevent having multiple stacked dialogs.
 	 * @return dialog controller

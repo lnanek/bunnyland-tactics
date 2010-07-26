@@ -1,8 +1,8 @@
 package name.nanek.gdwprototype.client.controller;
 
 import name.nanek.gdwprototype.client.util.ExceptionUtil;
-import name.nanek.gdwprototype.client.view.widget.ResultDialog;
-import name.nanek.gdwprototype.shared.exceptions.ServerException;
+import name.nanek.gdwprototype.client.view.ResultDialog;
+import name.nanek.gdwprototype.shared.exceptions.GameException;
 import name.nanek.gdwprototype.shared.exceptions.UserFriendlyMessageException;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -57,7 +57,7 @@ public class DialogController {
 			} else {	
 				//Otherwise, if the message wasn't known to be from the server, 
 				//we show the fallback message and mention it could be a network error.
-				if ( !(throwable instanceof ServerException) && checkIfNetwork ) {
+				if ( !(throwable instanceof GameException) && checkIfNetwork ) {
 					message += POSSIBLE_NETWORK_ERROR;
 				}
 

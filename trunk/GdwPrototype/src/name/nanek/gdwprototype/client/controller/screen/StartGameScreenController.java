@@ -8,7 +8,7 @@ import java.util.Set;
 import name.nanek.gdwprototype.client.controller.DialogController;
 import name.nanek.gdwprototype.client.controller.PageController;
 import name.nanek.gdwprototype.client.model.GameListing;
-import name.nanek.gdwprototype.client.view.screen.StartScreen;
+import name.nanek.gdwprototype.client.view.screen.StartGameScreen;
 import name.nanek.gdwprototype.client.view.widget.GameAnchor;
 import name.nanek.gdwprototype.shared.FieldVerifier;
 import name.nanek.gdwprototype.shared.ValidationException;
@@ -30,98 +30,27 @@ import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.TextBox;
 
 /**
- * Controls the screen for starting or joining a game.
+ * Controls the screen for playing a game.
  * 
  * @author Lance Nanek
  *
  */
 public class StartGameScreenController extends ScreenController {
 	
-	//TODO split creategameormapscreen out of startgamescreen
-
 	private static final int GAME_LIST_REFRESH_INTERVAL = 5000; // ms
 	
 	private PageController pageController;
 	
-	StartScreen startGameScreen = new StartScreen();
+	StartGameScreen startGameScreen = new StartGameScreen();
 
 	Timer refreshListsTimer = new Timer() {
 		@Override
 		public void run() {
 			updateGamesListing();
-			updateMapListing();
 		}
 	};
 	
-	Command enableCreateGame = new Command() {
-		public void execute() {
-			startGameScreen.createGameButton.setEnabled(true);
-			//startGameScreen.createGameButton.setFocus(true);
-		}
-	};
-
 	public StartGameScreenController() {
-	}
-
-	private void createGame(boolean createMap) {
-
-		//TODO catch validationexception and change error label instead of showing dialog
-		//TODO validate as the user types
-		pageController.setErrorLabel("");				
-		
-		//Validate input.
-		final String gameName = FieldVerifier.validateGameName(startGameScreen.createGameNameField.getText());
-		
-		GameSettings settings = new GameSettings();				
-		int height = FieldVerifier.validateAndParseInt("Height", startGameScreen.boardHeightField, 2, 100);
-		settings.setBoardHeight(height);
-		int width = FieldVerifier.validateAndParseInt("Width", startGameScreen.boardWidthField, 2, 100);
-		settings.setBoardWidth(width);
-
-		//Set<Marker> markers = new HashSet<Marker>();
-		for( Map.Entry<Marker, TextBox> markerVisionRangeEntry : startGameScreen.playingPieceToVisibilityField.entrySet() ) {
-			Marker marker = markerVisionRangeEntry.getKey();
-			int visionRange = FieldVerifier.validateAndParseInt("Vision range", markerVisionRangeEntry.getValue(), 0, 100);
-			marker.visionRange = visionRange;
-		}
-		for( Map.Entry<Marker, TextBox> markerMovementRangeEntry : startGameScreen.playingPieceToMovementField.entrySet() ) {
-			Marker marker = markerMovementRangeEntry.getKey();
-			int movementRange = FieldVerifier.validateAndParseInt("Movement range", markerMovementRangeEntry.getValue(), 0, 100);
-			marker.movementRange = movementRange;
-		}
-		//TODO would an arraylist be cheaper to serialize?
-		//an array doesn't work out well, not persisted on server side
-		Set<Marker> markers = new HashSet<Marker>(Arrays.asList(Markers.PLAYING_PIECES));
-		settings.setMarkers(markers);
-
-		Long mapId = null;
-		if ( !createMap ) {
-			int selectedMap = startGameScreen.createGameMaps.getSelectedIndex();
-			if ( -1 == selectedMap ) {
-				throw new ValidationException("Please select a map.");
-			} else {
-				mapId = new Long(startGameScreen.createGameMaps.getValue(selectedMap));
-			}
-		}
-		
-		// Then, we send the input to the server.
-		startGameScreen.createGameButton.setEnabled(false);
-		pageController.gameService.createGame(gameName, settings, mapId, new AsyncCallback<GameListing>() {
-			public void onFailure(Throwable throwable) {
-				pageController.getDialogController().showError("Error Creating Game", 
-						"An error occurred requesting the server create the game.", 
-						true, 
-						throwable,
-						enableCreateGame);
-			}
-
-			public void onSuccess(GameListing gameListing) {
-				enableCreateGame.execute();
-				//updateGamesListing();
-				final String anchor = GameAnchor.generateAnchor(gameListing);
-				History.newItem(anchor);
-			}
-		});
 	}
 	
 	AsyncCallback<GameListing> attemptToJoinGame = new AsyncCallback<GameListing>() {
@@ -147,41 +76,6 @@ public class StartGameScreenController extends ScreenController {
 		}
 		
 	};
-	
-	private void updateMapListing() {
-		pageController.gameService.getMapNames(new AsyncCallback<GameListing[]>() {
-			public void onFailure(Throwable throwable) {
-				pageController.getDialogController().showError("Error Getting Maps", 
-						"An error occurred getting the maps from the server.", 
-						true, 
-						throwable);
-			}
-
-			public void onSuccess(final GameListing[] gamesListing) {
-				int previouslySelected = startGameScreen.createGameMaps.getSelectedIndex();
-				
-				startGameScreen.createGameMaps.clear();
-				boolean foundMap = false;
-				for (final GameListing gameListing : gamesListing) {
-					if ( null != gameListing ) {
-						startGameScreen.createGameMaps.addItem(gameListing.getName(),Long.toString(gameListing.getId()));
-						foundMap = true;
-					}
-				}
-				if ( foundMap ) {
-					if ( -1 == previouslySelected || previouslySelected >= gamesListing.length) {
-						startGameScreen.createGameMaps.setItemSelected(0, true);
-					}else {
-						startGameScreen.createGameMaps.setItemSelected(previouslySelected, true);
-					}
-					startGameScreen.createGameMaps.setEnabled(true);
-				} else {
-					startGameScreen.createGameMaps.addItem("No maps found.");
-					startGameScreen.createGameMaps.setEnabled(false);
-				}
-			}
-		});
-	}
 	
 	private void updateGamesListing() {
 		pageController.gameService.getJoinableGameNames(new AsyncCallback<GameListing[]>() {
@@ -216,47 +110,15 @@ public class StartGameScreenController extends ScreenController {
 	
 	@Override
 	public void hideScreen() {
-		startGameScreen.content.setVisible(false);
 		refreshListsTimer.cancel();
 	}
 
 	@Override
 	public void createScreen(final PageController pageController, Long modelId) {
 		this.pageController = pageController;
-		
+
+		startGameScreen.content.setVisible(false);
 		pageController.addScreen(startGameScreen.content);
-
-		//Button to create a game.
-		class CreateGameHandler implements ClickHandler, KeyDownHandler {
-			/**
-			 * Fired when the user clicks on the sendButton.
-			 */
-			public void onClick(ClickEvent event) {
-				createGame(false);
-			}
-
-			/**
-			 * Fired when the user types in the nameField.
-			 */
-			//TODO this can fire when hidden sometimes, maybe disable it when screen hidden or make sure focus is moved?
-			public void onKeyDown(KeyDownEvent event) {
-				if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-					createGame(false);
-				}
-			}
-		}
-		CreateGameHandler handler = new CreateGameHandler();
-		startGameScreen.createGameButton.addClickHandler(handler);
-		startGameScreen.createGameNameField.addKeyDownHandler(handler);
-		
-		//Button to create a map.
-		class CreateMapHandler implements ClickHandler {
-			public void onClick(ClickEvent event) {
-				createGame(true);
-			}
-		}
-		startGameScreen.createMapButton.addClickHandler(new CreateMapHandler());
-		
 		
 		//TODO have user login in a popup frame instead, so they don't have to wait for the application to reload when they get back.
 		String returnUrl = Window.Location.getHref();
@@ -275,12 +137,8 @@ public class StartGameScreenController extends ScreenController {
 					Window.open(loginUrl, "_self", ""); 
 				} else {
 					startGameScreen.content.setVisible(true);
-					startGameScreen.createGameMaps.setEnabled(false);
-					startGameScreen.createGameNameField.setFocus(true);
-					startGameScreen.createGameNameField.selectAll();
 
 					updateGamesListing();
-					updateMapListing();
 										
 					refreshListsTimer.cancel();
 					// TODO would scheduling each time we update work better?
@@ -293,8 +151,6 @@ public class StartGameScreenController extends ScreenController {
 
 		pageController.setScreenTitle("Start Game");
 		pageController.getSoundPlayer().playMenuBackgroundMusic();
-		pageController.setLinkHeadingToHome(true);
 	}
-
-
+	
 }

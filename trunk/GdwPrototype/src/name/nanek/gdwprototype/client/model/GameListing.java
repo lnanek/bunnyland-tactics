@@ -9,11 +9,13 @@ public class GameListing implements Serializable {
 	private String name;
 
 	private long id;
+	
+	private boolean startingMap;
 
 	private GameListing() {
 	}
 
-	public GameListing(String name, long id) {
+	public GameListing(String name, long id, boolean startingMap) {
 		this.name = name;
 		this.id = id;
 	}
@@ -34,5 +36,9 @@ public class GameListing implements Serializable {
 
 	public long getId() {
 		return id;
+	}
+
+	public boolean isStartingMap() {
+		return startingMap;
 	}
 }
