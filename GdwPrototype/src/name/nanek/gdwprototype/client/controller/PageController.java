@@ -74,7 +74,7 @@ public class PageController {
 			heading.add(new Hyperlink("Bunnyland Tactics", ""));
 		}
 		
-		page.allContent.clear();
+		page.screenContent.clear();
 		setErrorLabel("");
 		setScreenTitle(null);
 		
@@ -83,7 +83,7 @@ public class PageController {
 	}
 
 	public void addScreen(Widget screen) {
-		page.allContent.add(screen);
+		page.screenContent.add(screen);
 	}
 
 	public void setScreenTitle(String screenTitle) {

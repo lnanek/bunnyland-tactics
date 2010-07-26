@@ -302,12 +302,16 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 		try {	
 			
 			Set<Position> mapPositions = null;
+			GameSettings mapSettings = null;
 			if ( null != mapId ) {
 	
 				//System.out.println("GameDataServiceImpl#createGame: starting game from map: " + mapId);
 				Game map = em.find(Game.class, mapId);
-				game.setSettings(map.getSettings());
+				mapSettings = map.getSettings();
 				mapPositions = map.getPositions();
+				
+				GameSettings gameSettings = mapSettings.copy();
+				game.setSettings(gameSettings);
 			} else {
 				//System.out.println("GameDataServiceImpl#createGame: starting new map");
 				game.setSettings(settings);
