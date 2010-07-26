@@ -67,6 +67,9 @@ public class GameDataAccessor {
 		//TODO what to do about players who open a second browser, where they aren't logged in, and observe to cheat?
 		//is IP detection enough? or should observation only be allowed of replays after the game is over?
 		
+		//TODO this currently doesn't filter out games the user is a player of,
+		//but when they go to the game they are properly treated as player,
+		//so not sure if it should. they might be trying to get back to it
 		Query query = em.createQuery(
 				"SELECT FROM " + Game.class.getName() + " g " + 
 				"WHERE g.secondPlayerUserId IS NOT NULL ");

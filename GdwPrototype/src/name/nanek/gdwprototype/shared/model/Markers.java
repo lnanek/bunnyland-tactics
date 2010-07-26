@@ -9,17 +9,17 @@ import name.nanek.gdwprototype.client.model.Player;
 public class Markers {
 
 	public static final Marker PLAYER_ONE_STOMPER = 
-		new Marker("Player 1 Stomper", "piece_player1_warrior.png", Player.ONE, 1, 3);
+		new Marker("Player 1 Stomper", "piece_player1_warrior.png", Player.ONE, 1, 2);
 
 	public static final Marker PLAYER_ONE_SCOUT = 
-		new Marker("Player 1 Scout", "piece_player1_scout.png", Player.ONE, 2, 3);
+		new Marker("Player 1 Scout", "piece_player1_scout.png", Player.ONE, 2, 2);
 
 	public static final Marker PLAYER_ONE_WARREN = 
 		new Marker("Player 1 Warren", "piece_player1_home.png", Player.ONE, 1, 0);
 
-	public static final Marker PLAYER_TWO_STOMPER = new Marker("Player 2 Stomper", "piece_player2_warrior.png", Player.TWO, 1, 3);
+	public static final Marker PLAYER_TWO_STOMPER = new Marker("Player 2 Stomper", "piece_player2_warrior.png", Player.TWO, 1, 2);
 
-	public static final Marker PLAYER_TWO_SCOUT = new Marker("Player 2 Scout", "piece_player2_scout.png", Player.TWO, 2, 3);
+	public static final Marker PLAYER_TWO_SCOUT = new Marker("Player 2 Scout", "piece_player2_scout.png", Player.TWO, 2, 2);
 
 	public static final Marker PLAYER_TWO_WARREN = 
 		new Marker("Player 2 Warren", "piece_player2_home.png", Player.TWO, 1, 0);

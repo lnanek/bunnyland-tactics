@@ -24,14 +24,14 @@ public class HowToPlayDialog {
 		VerticalPanel dialogVPanel = new VerticalPanel();
 		dialogVPanel.addStyleName("dialogVPanel");
 		FlexTable table = new FlexTable();
-		table.setWidget(0, 0, new Image(Markers.PLAYER_TWO_WARREN.source));
-		table.setWidget(0, 1, new Image(Markers.PLAYER_ONE_WARREN.source));
+		table.setWidget(0, 0, new Image("images/" + Markers.PLAYER_TWO_WARREN.source));
+		table.setWidget(0, 1, new Image("images/" + Markers.PLAYER_ONE_WARREN.source));
 		table.setWidget(0, 2, new Label("Stomp the enemy's home to win! Protect your own to survive."));
-		table.setWidget(1, 0, new Image(Markers.PLAYER_TWO_STOMPER.source));
-		table.setWidget(1, 1, new Image(Markers.PLAYER_ONE_STOMPER.source));
+		table.setWidget(1, 0, new Image("images/" + Markers.PLAYER_TWO_STOMPER.source));
+		table.setWidget(1, 1, new Image("images/" + Markers.PLAYER_ONE_STOMPER.source));
 		table.setWidget(1, 2, new Label("Stompers remove enemy pieces when placed on them."));
-		table.setWidget(2, 0, new Image(Markers.PLAYER_TWO_SCOUT.source));
-		table.setWidget(2, 1, new Image(Markers.PLAYER_ONE_SCOUT.source));
+		table.setWidget(2, 0, new Image("images/" + Markers.PLAYER_TWO_SCOUT.source));
+		table.setWidget(2, 1, new Image("images/" + Markers.PLAYER_ONE_SCOUT.source));
 		table.setWidget(2, 2, new Label("Scouts can see far, but can't take enemy pieces."));
 
 		dialogVPanel.add(table);

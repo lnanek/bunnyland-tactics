@@ -36,6 +36,7 @@ public class CreateGameScreen {
 		content.add(mapPanel);
 		
 		createGameButton.addStyleName("sendButton");
+		createGameButton.setEnabled(false);
 		content.add(createGameButton);
 	}
 }
