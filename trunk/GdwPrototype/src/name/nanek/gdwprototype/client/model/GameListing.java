@@ -18,6 +18,7 @@ public class GameListing implements Serializable {
 	public GameListing(String name, long id, boolean startingMap) {
 		this.name = name;
 		this.id = id;
+		this.startingMap = startingMap;
 	}
 
 	public String getLinkName() {

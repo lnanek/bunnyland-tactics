@@ -1,5 +1,7 @@
 package name.nanek.gdwprototype.client.controller.screen;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -179,15 +181,19 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			gameScreen.surrenderButton.setVisible(false);
 		//Else the game is still running or the map unpublished.
 		//Show publish map button if we're building a map and the user is the map creator.
-		} else if ( info.isBuildingMap && info.isUsersTurn ) {
-			gameScreen.publishMapButton.setVisible(true);
-		//Show surrender button if we're playing a game and the user is a player.
+		} else if ( info.isBuildingMap ) {
+			gameScreen.publishMapButton.setVisible(info.isUsersTurn);
+			gameScreen.surrenderButton.setVisible(false);
+		//Show surrender button if we're playing a game and its the user's turn.
 		} else if ( null != info.playingAs ) {
-			if ( info.isUsersTurn ) {
-				gameScreen.surrenderButton.setVisible(true);
-			} else {
-				gameScreen.surrenderButton.setVisible(false);				
-			}
+			gameScreen.publishMapButton.setVisible(false);
+			//TODO allow surrender when not their turn would be nice, 
+			//but currently the other client isn't polling for changes at that time
+			gameScreen.surrenderButton.setVisible(info.isUsersTurn);
+		//Observers don't see publish or surrender buttons.
+		} else {
+			gameScreen.publishMapButton.setVisible(false);
+			gameScreen.surrenderButton.setVisible(false);
 		}
 		
 		//Update fog of war controls.
@@ -241,9 +247,9 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		}
 		gameScreen.statusLabel.setText(status +" ");
 
-		
-		Position[] positions = info.positions;	
-		GWT.log("positions: " + positions.length);
+		//GWT.log("positions: " + info.positions.length);		
+		HashSet<Position> positions = removeTerrainUnderUnits(info.positions);	
+		//GWT.log("filtered positions: " + positions.length);
 		int boardHeight = info.boardHeight;
 		int boardWidth = info.boardWidth;
 		
@@ -257,10 +263,11 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		for (final Position position : positions) {
 			//Translate the server sent positions into markers.
 			//TODO just send markers over directly
+			//TODO stop storing full URLs in DB
 			Marker marker = Markers.markerBySource.get(position.getMarkerSourceFilename());
 			int row = position.getRow();
 			int col = position.getColumn();
-			GWT.log("Position " + row + ", " + col + " using marker: " + marker);
+			//GWT.log("Position " + row + ", " + col + " using marker: " + marker);
 			if ( row < boardHeight && col < boardWidth ) {
 				markerPositions[row][col] = marker;
 			}
@@ -304,6 +311,32 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		gameScreen.content.setVisible(true);
 	}
 	
+	private HashSet<Position> removeTerrainUnderUnits(Position[] positions) {
+		//XXX The engine can't currently show a tile on top of another,
+		//so there's an ugly hack here to filter out terrain that units are on top of.
+		//TODO show tiles on top of one another, units on top of terrain
+		//maybe have separate position collections for terrain and units
+		HashSet<Position> filteredPositions = new HashSet<Position>();
+		filteredPositions.addAll(Arrays.asList(positions));
+		
+		for( Position first : positions ) {
+			if ( !first.getMarkerSource().contains("tile_") ) {
+				continue;
+			}
+			
+			for ( Position second : positions ) {
+				if ( first != second && first.getColumn() == second.getColumn() &&
+						first.getRow() == second.getRow() ) {
+
+					filteredPositions.remove(first);
+				}
+			}
+		}
+		//ArrayList<Position> filteredPositionsList = new ArrayList<Position>(filteredPositions);
+		//return filteredPositionsList.toArray(new Position[] {});
+		return filteredPositions;
+	}
+
 	private void restoreDraggables() {
 		if ( null == info ) {
 			return;
@@ -547,8 +580,8 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		}
 		
 		//Fill build palette if needed.
-		GWT.log("GameScreenController#initializeBoardIfNeeded: isBuildingMap = " + info.isBuildingMap);
-		GWT.log("GameScreenController#initializeBoardIfNeeded: isUsersTurn = " + info.isUsersTurn);
+		//GWT.log("GameScreenController#initializeBoardIfNeeded: isBuildingMap = " + info.isBuildingMap);
+		//GWT.log("GameScreenController#initializeBoardIfNeeded: isUsersTurn = " + info.isUsersTurn);
 		if ( info.isBuildingMap && info.isUsersTurn ) {
 			gameScreen.mapBuilderPalettePanel.setVisible(true);
 			for (int i = 0; i < Markers.MAP_MAKING_PIECES.length; i++) {

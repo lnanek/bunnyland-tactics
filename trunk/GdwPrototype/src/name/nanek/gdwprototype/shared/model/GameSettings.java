@@ -32,9 +32,9 @@ public class GameSettings implements Serializable {
     
     //private Game game;
 
-	private int boardWidth = 12;
+	private int boardWidth = 8;
 
-	private int boardHeight = 12;
+	private int boardHeight = 8;
 
 	public int getBoardWidth() {
 		return boardWidth;

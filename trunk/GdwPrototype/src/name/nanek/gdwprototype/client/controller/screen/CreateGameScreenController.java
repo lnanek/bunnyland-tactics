@@ -42,7 +42,7 @@ public class CreateGameScreenController extends ScreenController {
 	
 	private PageController pageController;
 	
-	CreateGameScreen startGameScreen = new CreateGameScreen();
+	CreateGameScreen screen = new CreateGameScreen();
 
 	Timer refreshListsTimer = new Timer() {
 		@Override
@@ -53,7 +53,7 @@ public class CreateGameScreenController extends ScreenController {
 	
 	Command enableCreateGame = new Command() {
 		public void execute() {
-			startGameScreen.createGameButton.setEnabled(true);
+			screen.createGameButton.setEnabled(true);
 		}
 	};
 
@@ -67,18 +67,18 @@ public class CreateGameScreenController extends ScreenController {
 		pageController.setErrorLabel("");				
 		
 		//Validate input.
-		final String gameName = FieldVerifier.validateGameName(startGameScreen.createGameNameField.getText());
+		final String gameName = FieldVerifier.validateGameName(screen.createGameNameField.getText());
 		
 		Long mapId = null;
-		int selectedMap = startGameScreen.createGameMaps.getSelectedIndex();
+		int selectedMap = screen.createGameMaps.getSelectedIndex();
 		if ( -1 == selectedMap ) {
 			throw new ValidationException("Please select a map.");
 		} else {
-			mapId = new Long(startGameScreen.createGameMaps.getValue(selectedMap));
+			mapId = new Long(screen.createGameMaps.getValue(selectedMap));
 		}
 		
 		// Then, we send the input to the server.
-		startGameScreen.createGameButton.setEnabled(false);
+		screen.createGameButton.setEnabled(false);
 		pageController.gameService.createGameOrMap(gameName, null, mapId, new AsyncCallback<GameListing>() {
 			public void onFailure(Throwable throwable) {
 				pageController.getDialogController().showError("Error Creating Game", 
@@ -107,26 +107,28 @@ public class CreateGameScreenController extends ScreenController {
 			}
 
 			public void onSuccess(final GameListing[] gamesListing) {
-				int previouslySelected = startGameScreen.createGameMaps.getSelectedIndex();
+				int previouslySelected = screen.createGameMaps.getSelectedIndex();
 				
-				startGameScreen.createGameMaps.clear();
+				screen.createGameMaps.clear();
 				boolean foundMap = false;
 				for (final GameListing gameListing : gamesListing) {
 					if ( null != gameListing ) {
-						startGameScreen.createGameMaps.addItem(gameListing.getName(),Long.toString(gameListing.getId()));
+						screen.createGameMaps.addItem(gameListing.getName(),Long.toString(gameListing.getId()));
 						foundMap = true;
 					}
 				}
 				if ( foundMap ) {
 					if ( -1 == previouslySelected || previouslySelected >= gamesListing.length) {
-						startGameScreen.createGameMaps.setItemSelected(0, true);
+						screen.createGameMaps.setItemSelected(0, true);
 					}else {
-						startGameScreen.createGameMaps.setItemSelected(previouslySelected, true);
+						screen.createGameMaps.setItemSelected(previouslySelected, true);
 					}
-					startGameScreen.createGameMaps.setEnabled(true);
+					screen.createGameMaps.setEnabled(true);
+					screen.createGameButton.setEnabled(true);
 				} else {
-					startGameScreen.createGameMaps.addItem("No maps found.");
-					startGameScreen.createGameMaps.setEnabled(false);
+					screen.createGameMaps.addItem("No maps found.");
+					screen.createGameMaps.setEnabled(false);
+					screen.createGameButton.setEnabled(false);
 				}
 			}
 		});
@@ -141,8 +143,8 @@ public class CreateGameScreenController extends ScreenController {
 	public void createScreen(final PageController pageController, Long modelId) {
 		this.pageController = pageController;
 
-		startGameScreen.content.setVisible(false);
-		pageController.addScreen(startGameScreen.content);
+		screen.content.setVisible(false);
+		pageController.addScreen(screen.content);
 
 		//Button to create a game.
 		class CreateGameHandler implements ClickHandler, KeyDownHandler {
@@ -164,8 +166,8 @@ public class CreateGameScreenController extends ScreenController {
 			}
 		}
 		CreateGameHandler handler = new CreateGameHandler();
-		startGameScreen.createGameButton.addClickHandler(handler);
-		startGameScreen.createGameNameField.addKeyDownHandler(handler);
+		screen.createGameButton.addClickHandler(handler);
+		screen.createGameNameField.addKeyDownHandler(handler);
 		
 		
 		//TODO have user login in a popup frame instead, so they don't have to wait for the application to reload when they get back.
@@ -184,10 +186,10 @@ public class CreateGameScreenController extends ScreenController {
 				if ( null != loginUrl ) {
 					Window.open(loginUrl, "_self", ""); 
 				} else {
-					startGameScreen.content.setVisible(true);
-					startGameScreen.createGameMaps.setEnabled(false);
-					startGameScreen.createGameNameField.setFocus(true);
-					startGameScreen.createGameNameField.selectAll();
+					screen.content.setVisible(true);
+					screen.createGameMaps.setEnabled(false);
+					screen.createGameNameField.setFocus(true);
+					screen.createGameNameField.selectAll();
 
 					updateMapListing();
 										
