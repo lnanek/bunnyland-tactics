@@ -42,19 +42,6 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 	
 	private GameDataAccessor gameDataAccessor = new GameDataAccessor();
 	
-	class Point {
-		int row, column;
-		public Point() {};
-		public Point(Point copy) {
-			row = copy.row;
-			column = copy.column;
-		}
-		public Point(int row, int column) {
-			this.row = row;
-			this.column = column;
-		}
-	}
-
 	public GamePlayInfo moveMarker(Long gameId, Integer sourceRow, Integer sourceColumn, Integer destRow,
 			Integer destColumn, String newImageSource) throws GameException {
 		//TODO this method needs massive cleanup. replace string checking with marker types, for example
@@ -75,9 +62,8 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 		}
 			
 		EntityManager em = DbUtil.createEntityManager();
-
-		// EntityTransaction tx = em.getTransaction();
-		// tx.begin();
+		//EntityTransaction tx = em.getTransaction();
+		//tx.begin();
 
 		Game game = null;
 		try {
@@ -191,13 +177,11 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 			 * 
 			 * return game.getMoveCount();
 			 */
-			
-
-
+			//tx.commit();
 		} finally {
-			// if ( null != tx ) {
-			// tx.rollback();
-			// }
+			//if ( null != tx && tx.isActive() ) {
+			//	tx.rollback();
+			//}
 			em.close();
 		}
 

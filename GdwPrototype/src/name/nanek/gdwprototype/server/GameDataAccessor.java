@@ -25,7 +25,7 @@ public class GameDataAccessor {
 		
 		Query query = em.createQuery(
 				"SELECT FROM " + Game.class.getName() + " g " + 
-				"WHERE g.startingMap AND g.ended ");
+				"WHERE g.startingMap  = true AND g.ended = true ");
 		Collection<Game> games = query.getResultList();
 		return games;
 	}	
