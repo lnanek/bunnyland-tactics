@@ -34,13 +34,13 @@ public class StartGameScreen {
 		indented.add(joinableGamesTable);
 		content.add(new HTML("<br />"));
 
-		Hyperlink createGameLink = new Hyperlink("Create a New Game", 
+		Hyperlink createGameLink = new Hyperlink("Create a Game", 
 				ScreenControllers.getHistoryToken(Screen.CREATE_GAME));
 		createGameLink.addStyleName("heavy");
 		content.add(createGameLink);
 		content.add(new HTML("<br />"));
 
-		Hyperlink createMapLink = new Hyperlink("Create a New Map", 
+		Hyperlink createMapLink = new Hyperlink("Create a Map", 
 				ScreenControllers.getHistoryToken(Screen.CREATE_MAP));
 		createMapLink.addStyleName("heavy");
 		content.add(createMapLink);

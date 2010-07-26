@@ -50,4 +50,10 @@ public class Marker implements Serializable {
 		this.name = name;
 		this.movementRange = movementRange;
 	}
+
+	public Marker copy() {
+		Marker copy = new Marker(name, source, player, visionRange, movementRange);
+		copy.terrain = terrain;
+		return copy;
+	}
 }

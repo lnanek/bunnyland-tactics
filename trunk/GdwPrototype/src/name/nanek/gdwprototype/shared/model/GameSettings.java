@@ -1,6 +1,7 @@
 package name.nanek.gdwprototype.shared.model;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
 
 import javax.persistence.CascadeType;
@@ -10,7 +11,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
-
 
 import org.datanucleus.jpa.annotations.Extension;
 
@@ -58,5 +58,17 @@ public class GameSettings implements Serializable {
 
 	public void setMarkers(Set<Marker> markers) {
 		this.markers = markers;
+	}
+
+	public GameSettings copy() {
+		GameSettings copy = new GameSettings();
+		copy.setBoardHeight(boardHeight);
+		copy.setBoardWidth(boardWidth);
+		Set<Marker> copyMarkers = new HashSet<Marker>();
+		for( Marker marker : markers ) {
+			copyMarkers.add(marker.copy());
+		}
+		copy.setMarkers(copyMarkers);
+		return copy;
 	}	
 }

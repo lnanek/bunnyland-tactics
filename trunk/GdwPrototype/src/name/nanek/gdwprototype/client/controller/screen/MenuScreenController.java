@@ -37,7 +37,7 @@ public class MenuScreenController extends ScreenController {
 
 		pageController.addScreen(screen.content);
 		pageController.getSoundPlayer().playMenuBackgroundMusic();	    
-		pageController.setScreenTitle("Credits");
+		pageController.setScreenTitle("Menu");
 	}
 
 }
