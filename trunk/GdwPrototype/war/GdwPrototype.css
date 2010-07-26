@@ -31,9 +31,15 @@ table {
 	width: 50px;
 	height: 50px;
 	/*border: 3px solid Gray;*/
+	border-spacing: 0px;
+	padding: 0px;
+	margin: 0px;
 }
 
 table.grid {
+	border-spacing: 0px;
+	padding: 0px;
+	margin: 0px;
 	border: 3px solid Gray;	
 }
 
@@ -46,7 +52,11 @@ img {
 }
 
 .grid td.validDropTarget, .grid th.validDropTarget {
+	border: 3px solid LawnGreen;	
 	border: 3px solid LawnGreen !important;	
+	/*Would be nice, but doesn't show over fog of war tiles.
+	background-color: LawnGreen;
+	*/
 }
 
 .grid {

@@ -23,9 +23,11 @@ public class CreditsScreen {
 		content.add(joinGameLabel);
 		VerticalPanel indented = new VerticalPanel();
 		indented.addStyleName("indented");
-		indented.add(new Label("Adlee"));
+		indented.add(new Label("Adlee Fayyaz"));
 		indented.add(new Label("Evan Rothstein"));
-		indented.add(new Label("Foster Birch"));
+		indented.add(new Anchor(
+				"Foster Birch", 
+				"http://smileonacloudyday.com/"));		
 		indented.add(new Anchor(
 				"Lance Nanek", 
 				"http://nanek.name/"));
