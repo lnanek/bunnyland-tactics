@@ -12,8 +12,8 @@
         <class>name.nanek.gdwprototype.shared.model.Position</class>
 		<exclude-unlisted-classes>true</exclude-unlisted-classes>
         <properties>
-            <property name="datanucleus.NontransactionalRead" value="true"/>
-            <property name="datanucleus.NontransactionalWrite" value="true"/>
+            <property name="datanucleus.NontransactionalRead" value="false"/>
+            <property name="datanucleus.NontransactionalWrite" value="false"/>
             <property name="datanucleus.ConnectionURL" value="appengine"/>
         </properties>        
     </persistence-unit>

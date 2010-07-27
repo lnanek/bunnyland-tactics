@@ -34,6 +34,10 @@ public class GameScreen {
 	public final Button howToPlayButton = new Button("How to Play");
 
 	public HorizontalPanel fogOfWarPanel = new HorizontalPanel();	
+
+	public RadioButton fogOfWarPlayerOneRadio = new RadioButton("playerRadio", "Player One");
+
+	public RadioButton fogOfWarPlayerTwoRadio = new RadioButton("playerRadio", "Player Two");
 	
 	public VerticalPanel mapBuilderPalettePanel = new VerticalPanel();
 	
@@ -62,6 +66,8 @@ public class GameScreen {
 	
 	private FogOfWarChangeListener fogOfWarChangeListener;
 	
+	public HowToPlayDialog howToPlayDialog = new HowToPlayDialog();
+	
 	public GameScreen() {
 		//Show game status and controls at top of screen.
 		HorizontalPanel statusAndControls = new HorizontalPanel();;
@@ -72,7 +78,7 @@ public class GameScreen {
 		howToPlayButton.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				new HowToPlayDialog().show();
+				howToPlayDialog.show();
 			}
 		});
 		content.add(statusAndControls);
@@ -80,14 +86,10 @@ public class GameScreen {
 		//Setup fog of war controls for observer and map builder.
 		fogOfWarPanel.add(new Label("Fog of War:"));
 
-		RadioButton fogOfWarPlayerOneRadio = new RadioButton("playerRadio", "Player One");
 		fogOfWarPanel.add(fogOfWarPlayerOneRadio);
 		fogOfWarPlayerOneRadio.addValueChangeHandler(new FogOfWarCheckboxValueChangeListener(Player.ONE));
-
-		RadioButton fogOfWarPlayerTwoRadio = new RadioButton("playerRadio", "Player Two");
 		fogOfWarPanel.add(fogOfWarPlayerTwoRadio);
 		fogOfWarPlayerTwoRadio.addValueChangeHandler(new FogOfWarCheckboxValueChangeListener(Player.TWO));
-
 		RadioButton fogOfWarNoneRadio = new RadioButton("playerRadio", "None");
 		fogOfWarNoneRadio.setValue(true, false);
 		fogOfWarPanel.add(fogOfWarNoneRadio);
