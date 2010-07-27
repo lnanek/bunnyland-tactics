@@ -10,6 +10,7 @@ import javax.persistence.FetchType;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 
 import name.nanek.gdwprototype.client.model.GameListing;
@@ -33,6 +34,7 @@ public class Game implements Serializable {
 
 	// @OneToMany(mappedBy="game", fetch=FetchType.EAGER)
 	// @OneToMany(mappedBy="game")
+	@OneToMany(cascade = CascadeType.ALL)   
 	private Set<Position> positions;
 	
 	private boolean startingMap;
@@ -52,6 +54,7 @@ public class Game implements Serializable {
 
 	//@OneToOne (mappedBy = "game", fetch = FetchType.EAGER, cascade = 
     //{CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
+	@OneToOne(cascade = CascadeType.ALL)
 	private GameSettings settings;
 	
 	public boolean isEnded() {

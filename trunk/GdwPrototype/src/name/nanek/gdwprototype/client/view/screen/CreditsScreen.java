@@ -26,7 +26,7 @@ public class CreditsScreen {
 		indented.add(new Label("Adlee Fayyaz"));
 		indented.add(new Label("Evan Rothstein"));
 		indented.add(new Anchor(
-				"Foster Birch", 
+				"Foster Birch (original idea conceived by)", 
 				"http://smileonacloudyday.com/"));		
 		indented.add(new Anchor(
 				"Lance Nanek", 

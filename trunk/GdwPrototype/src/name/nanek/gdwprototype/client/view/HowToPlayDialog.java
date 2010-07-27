@@ -24,15 +24,21 @@ public class HowToPlayDialog {
 		VerticalPanel dialogVPanel = new VerticalPanel();
 		dialogVPanel.addStyleName("dialogVPanel");
 		FlexTable table = new FlexTable();
-		table.setWidget(0, 0, new Image("images/" + Markers.PLAYER_TWO_WARREN.source));
-		table.setWidget(0, 1, new Image("images/" + Markers.PLAYER_ONE_WARREN.source));
-		table.setWidget(0, 2, new Label("Stomp the enemy's home to win! Protect your own to survive."));
-		table.setWidget(1, 0, new Image("images/" + Markers.PLAYER_TWO_STOMPER.source));
-		table.setWidget(1, 1, new Image("images/" + Markers.PLAYER_ONE_STOMPER.source));
-		table.setWidget(1, 2, new Label("Stompers remove enemy pieces when placed on them."));
-		table.setWidget(2, 0, new Image("images/" + Markers.PLAYER_TWO_SCOUT.source));
-		table.setWidget(2, 1, new Image("images/" + Markers.PLAYER_ONE_SCOUT.source));
-		table.setWidget(2, 2, new Label("Scouts can see far, but can't take enemy pieces."));
+		int row = 0;
+		table.setWidget(row, 0, new Image("images/" + Markers.CARROT.source));
+		table.setWidget(row++, 2, new Label("Find the carrots! Landing on a carrot with one of your bunnies will earn you a new random bunny back at your home."));
+
+		table.setWidget(row, 0, new Image("images/" + Markers.PLAYER_TWO_WARREN.source));
+		table.setWidget(row, 1, new Image("images/" + Markers.PLAYER_ONE_WARREN.source));
+		table.setWidget(row++, 2, new Label("Stomp the enemy's home with a stomper bunny to win! Protect your own home to survive."));
+		
+		table.setWidget(row, 0, new Image("images/" + Markers.PLAYER_TWO_STOMPER.source));
+		table.setWidget(row, 1, new Image("images/" + Markers.PLAYER_ONE_STOMPER.source));
+		table.setWidget(row++, 2, new Label("Stomper bunnies remove enemy pieces when placed on them."));
+
+		table.setWidget(row, 0, new Image("images/" + Markers.PLAYER_TWO_SCOUT.source));
+		table.setWidget(row, 1, new Image("images/" + Markers.PLAYER_ONE_SCOUT.source));
+		table.setWidget(row++, 2, new Label("Scout bunnies can see far, but can't take enemy pieces."));
 
 		dialogVPanel.add(table);
 		

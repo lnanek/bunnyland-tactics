@@ -197,13 +197,17 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		}
 		
 		//Update fog of war controls.
-		if ( null == info.playingAs || info.isBuildingMap ) {
+		//TODO turn off fog of war/allow players to control fog of war after game ends?
+		if ( null == info.playingAs || info.isBuildingMap || info.ended ) {
 			gameScreen.fogOfWarPanel.setVisible(true);
-			//gameScreen.mapBuilderPalettePanel.setVisible(false);
 		} else {
 			gameScreen.fogOfWarPanel.setVisible(false);
-			//gameScreen.mapBuilderPalettePanel.setVisible(true);
-			fogOfWarAs = info.playingAs;
+			fogOfWarAs = info.playingAs;			
+			if ( Player.ONE == info.playingAs ) {
+				gameScreen.fogOfWarPlayerOneRadio.setValue(true, false);
+			} else if ( Player.TWO == info.playingAs ) {
+				gameScreen.fogOfWarPlayerTwoRadio.setValue(true, false);
+			}
 		}
 
 		//Update status.
@@ -366,7 +370,8 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		}
 
 		Marker marker = square.marker;
-		if ( info.isBuildingMap || (marker.player == info.playingAs && null != marker.movementRange && marker.movementRange > 0 )) {
+		//TODO do we have to check if the current user is the map builder?
+		if ( info.isBuildingMap || (!info.ended && marker.player == info.playingAs && null != marker.movementRange && marker.movementRange > 0 )) {
 			dragController.makeDraggable(square);
 			//TODO Slay has a nice way of showing a piece can be interacted with.
 			//Units hop up and down and buildings ready to build have a waving flag.
@@ -392,6 +397,9 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			History.newItem(ScreenControllers.getHistoryToken(Screen.MENU));
 			return;
 		}
+		
+		//TODO remember players who have seen this before and don't show?
+		gameScreen.howToPlayDialog.show();
 
 		draggables = new HashSet<GameSquare>();
 		boardDropControllers = new LinkedList<GameScreenDropController>();
@@ -418,7 +426,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 					
 					int rows = gameScreen.gameBoard.getRowCount();
 					for (int row = 0; row < rows; row++) {
-						int cols = gameScreen.gameBoard.getRowCount();
+						int cols = gameScreen.gameBoard.getCellCount(row);
 						for (int col = 0; col < cols; col++) {	
 							//TableCellPanel destPanel = (TableCellPanel) gameScreen.gameBoard.getWidget(row, col);
 							//destPanel.removeStyleName("validDropTarget");

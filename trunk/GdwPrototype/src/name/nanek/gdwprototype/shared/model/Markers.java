@@ -8,6 +8,8 @@ import name.nanek.gdwprototype.client.model.Player;
 
 public class Markers {
 
+	public static final Marker CARROT = new Marker("tile_carrot.png", true);
+
 	public static final Marker PLAYER_ONE_STOMPER = 
 		new Marker("Player 1 Stomper", "piece_player1_warrior.png", Player.ONE, 1, 2);
 
@@ -35,7 +37,7 @@ public class Markers {
 		PLAYER_TWO_SCOUT,
 		PLAYER_TWO_STOMPER, 
 
-		new Marker("tile_carrot.png", true),
+		CARROT,
 		new Marker("tile_tree.png", true), 
 		new Marker("tile_grass.png", true), 
 		new Marker("tile_hill.png", true), 
