@@ -33,14 +33,11 @@ public class Marker implements Serializable {
 
 	public String name;
 	
-	public boolean terrain;
-	
 	Marker() {
 	}
 	
-	Marker(String source, boolean terrain) {
+	Marker(String source) {
 		this(null, source, null, null, null);
-		this.terrain = terrain;
 	}
 	
 	Marker(String name, String source, Player player, Integer visionRange, Integer movementRange) {
@@ -51,9 +48,8 @@ public class Marker implements Serializable {
 		this.movementRange = movementRange;
 	}
 
-	public Marker copy() {
-		Marker copy = new Marker(name, source, player, visionRange, movementRange);
-		copy.terrain = terrain;
-		return copy;
-	}
+	/*
+	 * public static Marker[] getPalletteForPlayer(Player player) { return
+	 * player == Player.ONE ? NON_P2_MARKERS : NON_P1_MARKERS; }
+	 */
 }

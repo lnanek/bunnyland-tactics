@@ -1,9 +1,7 @@
 package name.nanek.gdwprototype.client.controller;
 
-import name.nanek.gdwprototype.client.controller.screen.ScreenController;
-import name.nanek.gdwprototype.client.controller.support.ScreenControllers;
-import name.nanek.gdwprototype.client.service.GameService;
-import name.nanek.gdwprototype.client.service.GameServiceAsync;
+import name.nanek.gdwprototype.client.service.GameDataService;
+import name.nanek.gdwprototype.client.service.GameDataServiceAsync;
 import name.nanek.gdwprototype.client.view.Page;
 import name.nanek.gdwprototype.client.view.widget.GameAnchor;
 
@@ -11,35 +9,30 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.ui.Anchor;
-import com.google.gwt.user.client.ui.Hyperlink;
-import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;
 
-/**
- * Controls permanent parts of web page shown in the browser like the title and heading.
- * Defers to other controllers for the current content of the page, like a menu screen, 
- * or the play screen.
- * 
- * @author Lance Nanek
- *
- */
 public class PageController {
 
+	public static final String START_GAME_SCREEN_HISTORY_TOKEN = "start_game";
+	
 	// Services
-	public final GameServiceAsync gameService = GWT.create(GameService.class);
+	public final GameDataServiceAsync gameDataService = GWT.create(GameDataService.class);
 
 	// View
 	private final Page page = new Page();
 
 	// Controllers
-	private final SoundPlayer soundPlayer = new SoundPlayer();
-	private final DialogController dialogController;
-	private ScreenController currentController;
+	private final GameScreenController gameScreenController = new GameScreenController();
+	private final MenuScreenController menuScreenController = new MenuScreenController();
+	private final StartScreenController startScreenController = new StartScreenController();
+	public final DialogController dialogController;
+
+	private ScreenController activeScreenController;
 
 	public PageController(DialogController dialogController) {
+
 		this.dialogController = dialogController;
-		
+
 		// Show requested page when history changes.
 		History.addValueChangeHandler(new ValueChangeHandler<String>() {
 			@Override
@@ -51,39 +44,44 @@ public class PageController {
 		// Show requested page when first started.
 		History.fireCurrentHistoryState();
 	}
+
+	public String showScreenAndGetTitle(ScreenController controllerToShow, Long modelId) {
+		if ( null != activeScreenController ) {
+			activeScreenController.hideScreen();
+		}
+		activeScreenController = controllerToShow;
+		return controllerToShow.showScreen(this, modelId);
+	}
 	
-	private void showPage(String historyToken) {
-		GWT.log("AppPageController#showPage: historyToken = " + historyToken);
-
-		
-		
-		Long currentGameId = GameAnchor.getIdFromAnchor(historyToken);
-		
-		ScreenController controller = ScreenControllers.getController(historyToken);
-		if ( null != currentController ) {
-			currentController.hideScreen();
-		}
-
-		//When there's no history token, we're at the first page/main menu, so don't link the title.
-		RootPanel heading = RootPanel.get("siteHeading");
-		heading.clear();
-		if ( "".equals(historyToken) ) {
-			heading.getElement().setInnerHTML("Bunnyland Tactics");
-		} else {
-			heading.getElement().setInnerHTML("");	
-			heading.add(new Hyperlink("Bunnyland Tactics", ""));
-		}
-		
-		page.screenContent.clear();
-		setErrorLabel("");
-		setScreenTitle(null);
-		
-		currentController = controller;
-		controller.createScreen(this, currentGameId);
+	public void addScreen(Widget screen) {
+		page.allContent.add(screen);
 	}
 
-	public void addScreen(Widget screen) {
-		page.screenContent.add(screen);
+	private void showPage(String historyToken) {
+		GWT.log("AppPageController#showPage: historyToken = " + historyToken);
+		
+		Long currentGameId = GameAnchor.getIdFromAnchor(historyToken);
+		String screenTitle;
+		
+		//Show start game screen.
+		if ( START_GAME_SCREEN_HISTORY_TOKEN.equals(historyToken) ) {
+			GWT.log("AppPageController#showPage: showing start game screen.");
+			screenTitle = showScreenAndGetTitle(startScreenController, null);
+			
+		//Show main menu.	
+		} else if (null == currentGameId) {
+			GWT.log("AppPageController#showPage: showing menu screen.");
+			screenTitle = showScreenAndGetTitle(menuScreenController, null);
+
+		//Show game screen.
+		} else {
+			GWT.log("AppPageController#showPage: showing game screen.");
+			screenTitle = showScreenAndGetTitle(gameScreenController, currentGameId);
+
+		}
+
+		setErrorLabel("");
+		setScreenTitle(screenTitle);
 	}
 
 	public void setScreenTitle(String screenTitle) {
@@ -93,20 +91,5 @@ public class PageController {
 	public void setErrorLabel(String string) {
 		page.errorLabel.setText(string);
 	}
-	
-	/**
-	 * Gets a shared dialog controller. Helps prevent having multiple stacked dialogs.
-	 * @return dialog controller
-	 */
-	public DialogController getDialogController() {
-		return dialogController;
-	}
 
-	/**
-	 * Gets a shared sound player. Helps keep music playing across screens when needed.
-	 * @return sound player
-	 */
-	public SoundPlayer getSoundPlayer() {
-		return soundPlayer;
-	}
 }

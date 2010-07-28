@@ -13,8 +13,10 @@
   <!-- Other module inherits                                      -->
   <!-- Inherit gwt-dnd, drag and drop support -->
   <inherits name='com.allen_sauer.gwt.dnd.gwt-dnd' />
-  <!-- Inherit gwt-voices, sound playing support -->
-  <inherits name='com.allen_sauer.gwt.voices.gwt-voices'/>
+  <!-- Inherit gwt-sound, sound playing support -->
+  <!--  
+  <inherits name="org.miller.gwt.Sound" />
+  -->
   
   <!-- Specify the app entry point class.                         -->
   <entry-point class='name.nanek.gdwprototype.client.GdwPrototype'/>

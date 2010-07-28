@@ -1,29 +1,25 @@
 package name.nanek.gdwprototype.shared.exceptions;
 
-/**
- * Indicates the user needs to login.
- * 
- * @author Lance Nanek
- *
- */
 public class MustLoginException extends UserFriendlyMessageException {
-	//TODO include the login URL
-	
-	private static final long serialVersionUID = 1L;
 
 	public MustLoginException() {
+		super();
+		// TODO Auto-generated constructor stub
 	}
 
-	public MustLoginException(String message, Throwable cause) {
-		super(message, cause);
+	public MustLoginException(String arg0, Throwable arg1) {
+		super(arg0, arg1);
+		// TODO Auto-generated constructor stub
 	}
 
-	public MustLoginException(String message) {
-		super(message);
+	public MustLoginException(String arg0) {
+		super(arg0);
+		// TODO Auto-generated constructor stub
 	}
 
-	public MustLoginException(Throwable cause) {
-		super(cause);
+	public MustLoginException(Throwable arg0) {
+		super(arg0);
+		// TODO Auto-generated constructor stub
 	}
 
 }

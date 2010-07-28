@@ -1,20 +1,14 @@
 package name.nanek.gdwprototype.client.controller;
 
 import name.nanek.gdwprototype.client.util.ExceptionUtil;
-import name.nanek.gdwprototype.client.view.ResultDialog;
-import name.nanek.gdwprototype.shared.exceptions.GameException;
+import name.nanek.gdwprototype.client.view.widget.ResultDialog;
+import name.nanek.gdwprototype.shared.exceptions.ServerException;
 import name.nanek.gdwprototype.shared.exceptions.UserFriendlyMessageException;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Command;
 
-/**
- * Controls a dialog that can be shown to the user in front of the normal page content.
- * 
- * @author Lance Nanek
- *
- */
 public class DialogController {
 
 	private static final String POSSIBLE_NETWORK_ERROR = " Please check you have an internet connection and try again. ";
@@ -57,7 +51,7 @@ public class DialogController {
 			} else {	
 				//Otherwise, if the message wasn't known to be from the server, 
 				//we show the fallback message and mention it could be a network error.
-				if ( !(throwable instanceof GameException) && checkIfNetwork ) {
+				if ( !(throwable instanceof ServerException) && checkIfNetwork ) {
 					message += POSSIBLE_NETWORK_ERROR;
 				}
 
