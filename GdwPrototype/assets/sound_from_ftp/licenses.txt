@@ -1,0 +1,30 @@
+Menu Screen Music
+	Name: Bombs, Blades & Bunnyninjas 2
+	Author: Rajunen
+	URL: http://www.newgrounds.com/audio/listen/257918
+	Filename: 257918_Bunnykill_4_Soundtrack___2.mp3
+	License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
+
+In-Game Music
+	Name: Japanese Lead (preview)
+	Author: Matieus (DjMateius)
+	URL: http://www.newgrounds.com/audio/listen/124568
+	Filename: 124568_Japanese_Lead.mp3
+	License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
+
+Win Game Music
+	Name: Anthem 2007 Samples - Backing Piano
+	Author: dataset
+	Band: WaveSounds
+	URL: http://www.freesound.org/samplesViewSingle.php?id=44538
+	Filename: 44538__dataset__Backing_Piano.wav
+	License: http://creativecommons.org/licenses/sampling+/1.0/
+
+Lose Game Music
+	Name: Pain and Desire remix RD 
+	Author: Matieus (DjMateius)
+	URL: http://www.newgrounds.com/audio/listen/132178
+	Filename: 132178_Desire_remix.mp3
+	License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
+	Notes: Cut to first 17 seconds to match win game music.
+
