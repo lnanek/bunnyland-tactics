@@ -1,13 +1,11 @@
 package name.nanek.gdwprototype.client.controller.screen;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 
 import name.nanek.gdwprototype.client.controller.PageController;
-import name.nanek.gdwprototype.client.controller.screen.support.GameScreenBoardController;
 import name.nanek.gdwprototype.client.controller.screen.support.GameScreenDropController;
 import name.nanek.gdwprototype.client.controller.support.ScreenControllers;
 import name.nanek.gdwprototype.client.controller.support.ScreenControllers.Screen;
@@ -28,7 +26,6 @@ import com.allen_sauer.gwt.dnd.client.DragHandler;
 import com.allen_sauer.gwt.dnd.client.DragStartEvent;
 import com.allen_sauer.gwt.dnd.client.PickupDragController;
 import com.allen_sauer.gwt.dnd.client.VetoDragException;
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.History;
@@ -67,6 +64,8 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 	
 	private boolean updatesRequired = true;
 
+	private boolean playedGameOverMusic;
+	
 	public GamePlayInfo info;
 	
 	//TODO don't refresh when window blurred
@@ -207,6 +206,18 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 				gameScreen.fogOfWarPlayerOneRadio.setValue(true, false);
 			} else if ( Player.TWO == info.playingAs ) {
 				gameScreen.fogOfWarPlayerTwoRadio.setValue(true, false);
+			}
+		}
+		
+		//Play game over music if needed.
+		if ( !info.isBuildingMap && !playedGameOverMusic ) {
+			if ( info.ended ) {
+				if ( info.playingAs == info.winner ) {
+					pageController.getSoundPlayer().playWinGameMusic();
+				} else if ( null != info.playingAs ) {
+					pageController.getSoundPlayer().playLoseGameMusic();
+				}
+				playedGameOverMusic = true;
 			}
 		}
 
@@ -404,7 +415,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		draggables = new HashSet<GameSquare>();
 		boardDropControllers = new LinkedList<GameScreenDropController>();
 		this.pageController = pageController;
-		pageController.getSoundPlayer().stopMenuBackgroundMusic();
+		pageController.getSoundPlayer().playInGameMusic();
 		pageController.addScreen(gameScreen.content);
 
 		gameScreen.setFogOfWarChangeListener(this);

@@ -1,13 +1,8 @@
 package name.nanek.gdwprototype.client.view.screen;
 
-import name.nanek.gdwprototype.client.controller.PageController;
-import name.nanek.gdwprototype.client.controller.screen.CreditsScreenController;
-import name.nanek.gdwprototype.client.controller.screen.StartGameScreenController;
-import name.nanek.gdwprototype.client.controller.screen.StartObservationScreenController;
 import name.nanek.gdwprototype.client.controller.support.ScreenControllers;
 import name.nanek.gdwprototype.client.controller.support.ScreenControllers.Screen;
 
-import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.Hyperlink;
 import com.google.gwt.user.client.ui.VerticalPanel;

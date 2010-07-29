@@ -2,7 +2,6 @@ package name.nanek.gdwprototype.client.model;
 
 import java.io.Serializable;
 
-import name.nanek.gdwprototype.shared.model.GameSettings;
 import name.nanek.gdwprototype.shared.model.Marker;
 import name.nanek.gdwprototype.shared.model.Position;
 
