@@ -1,10 +1,7 @@
 package name.nanek.gdwprototype.client.view.screen;
 
-import name.nanek.gdwprototype.client.controller.PageController;
-
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.Hyperlink;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
 /**

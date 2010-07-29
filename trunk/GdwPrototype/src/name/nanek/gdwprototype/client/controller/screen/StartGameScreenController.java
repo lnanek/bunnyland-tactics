@@ -1,33 +1,17 @@
 package name.nanek.gdwprototype.client.controller.screen;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-
-import name.nanek.gdwprototype.client.controller.DialogController;
 import name.nanek.gdwprototype.client.controller.PageController;
 import name.nanek.gdwprototype.client.model.GameListing;
 import name.nanek.gdwprototype.client.view.screen.StartGameScreen;
 import name.nanek.gdwprototype.client.view.widget.GameAnchor;
-import name.nanek.gdwprototype.shared.FieldVerifier;
-import name.nanek.gdwprototype.shared.ValidationException;
-import name.nanek.gdwprototype.shared.model.GameSettings;
-import name.nanek.gdwprototype.shared.model.Marker;
-import name.nanek.gdwprototype.shared.model.Markers;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
-import com.google.gwt.event.dom.client.KeyCodes;
-import com.google.gwt.event.dom.client.KeyDownEvent;
-import com.google.gwt.event.dom.client.KeyDownHandler;
-import com.google.gwt.user.client.Command;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Anchor;
-import com.google.gwt.user.client.ui.TextBox;
 
 /**
  * Controls the screen for playing a game.
@@ -150,7 +134,7 @@ public class StartGameScreenController extends ScreenController {
 		});
 
 		pageController.setScreenTitle("Start Game");
-		pageController.getSoundPlayer().playMenuBackgroundMusic();
+		pageController.getSoundPlayer().playMenuScreenMusic();
 	}
 	
 }

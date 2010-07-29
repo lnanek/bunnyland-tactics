@@ -2,6 +2,7 @@ package name.nanek.gdwprototype.client.controller;
 
 import name.nanek.gdwprototype.client.controller.screen.ScreenController;
 import name.nanek.gdwprototype.client.controller.support.ScreenControllers;
+import name.nanek.gdwprototype.client.controller.support.SoundPlayer;
 import name.nanek.gdwprototype.client.service.GameService;
 import name.nanek.gdwprototype.client.service.GameServiceAsync;
 import name.nanek.gdwprototype.client.view.Page;
@@ -11,7 +12,6 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.user.client.History;
-import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Hyperlink;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.Widget;

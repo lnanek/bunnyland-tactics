@@ -19,6 +19,7 @@ import name.nanek.gdwprototype.shared.model.Game;
  *
  */
 public class GameDataAccessor {
+	//TODO some of the displayed collections in the UI are shuffling order on update. use ordered collections here and make sure sorted by something, like id/age at least
 
 	public Collection<Game> getMaps(EntityManager em) {
 		//Games created as a map and published (ended).
