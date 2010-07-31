@@ -306,11 +306,15 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 		}
 	}
 
-	@Override
-	public GameListing[] getJoinableGameNames() throws GameException {
+	private String getUserId() {
         UserService userService = UserServiceFactory.getUserService();
         User user = userService.getCurrentUser();
-        String username = null != user ? user.getUserId() : null;
+        return null != user ? user.getUserId() : null;
+	}
+	
+	@Override
+	public GameListing[] getJoinableGameNames() throws GameException {
+        String username = getUserId();
         
 		EntityManager em = DbUtil.createEntityManager();
 		EntityTransaction tx = null;
@@ -332,13 +336,15 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 
 	@Override
 	public GameListing[] getObservableGameNames() throws GameException {
+        String username = getUserId();
+        
 		EntityManager em = DbUtil.createEntityManager();
 		EntityTransaction tx = null;
 		try {
 			tx = em.getTransaction();
 			tx.begin();
 			
-			GameListing[] listings = gameEngine.getListings(gameDataAccessor.getObservableGames(em));
+			GameListing[] listings = gameEngine.getListings(gameDataAccessor.getObservableGames(em, username));
 			return listings;
 
 			//Don't bother committing, this was read only anyway.

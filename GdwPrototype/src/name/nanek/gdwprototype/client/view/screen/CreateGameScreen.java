@@ -39,6 +39,6 @@ public class CreateGameScreen {
 		createGameButton.addStyleName("sendButton");
 		createGameButton.setEnabled(false);
 		content.add(createGameButton);
-		soundPlayer.addMenuClick(createGameButton);
+		soundPlayer.addMenuClick(createGameButton, createGameMaps);
 	}
 }

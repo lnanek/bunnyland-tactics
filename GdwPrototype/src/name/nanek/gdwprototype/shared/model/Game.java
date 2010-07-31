@@ -50,6 +50,10 @@ public class Game implements Serializable {
 	private boolean ended;
 	
 	private Player winner;
+	
+	private boolean unitDiedLastTurn;
+	
+	private boolean carrotEatenLastTurn;
 
 	//@OneToOne (mappedBy = "game", fetch = FetchType.EAGER, cascade = 
     //{CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
@@ -79,8 +83,6 @@ public class Game implements Serializable {
 	public void setEnded(boolean ended) {
 		this.ended = ended;
 	}
-
-
 
 	public Player getCurrentUsersTurn() {
 		return currentUsersTurn;
@@ -145,4 +147,24 @@ public class Game implements Serializable {
 	public void setNextUsersTurn() {
 		currentUsersTurn = Player.other(currentUsersTurn);
 	}
+
+	public boolean isUnitDiedLastTurn() {
+		return unitDiedLastTurn;
+	}
+
+	public void setUnitDiedLastTurn(boolean unitDiedLastTurn) {
+		this.unitDiedLastTurn = unitDiedLastTurn;
+	}
+
+	public boolean isCarrotEatenLastTurn() {
+		return carrotEatenLastTurn;
+	}
+
+	public void setCarrotEatenLastTurn(boolean carrotEatenLastTurn) {
+		this.carrotEatenLastTurn = carrotEatenLastTurn;
+	}
+	
+	
+	
+	
 }

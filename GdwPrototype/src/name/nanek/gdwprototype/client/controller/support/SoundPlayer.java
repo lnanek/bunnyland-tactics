@@ -6,7 +6,6 @@ import com.allen_sauer.gwt.voices.client.SoundController;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.dom.client.HasClickHandlers;
-import com.google.gwt.user.client.ui.Hyperlink;
 
 /**
  * Plays sounds.
@@ -120,9 +119,10 @@ public class SoundPlayer {
 	public void playDyingSound() {
 		dyingSound.play();
 	}
-	
-	public ClickHandler getMenuButtonClickHandler() {
-		return menuButtonClickHandler;
+
+	public void playPickupPiceSound() {
+		//No sound picked for this yet.
+		menuScreenButtonSound.play();
 	}
 	
 	public void addMenuClick(HasClickHandlers... clickables) {

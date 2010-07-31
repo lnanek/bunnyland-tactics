@@ -5,6 +5,8 @@ package name.nanek.gdwprototype.server;
 
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.Set;
 
 import javax.persistence.EntityManager;
@@ -34,7 +36,7 @@ public class GameDataAccessor {
 	public Collection<Game> getJoinableGames(EntityManager em, String userId) {
 		//Joinable if created as a game and user is a player or there is no second player yet.
 		
-		Set<Game> result = new HashSet<Game>();
+		Set<Game> result = new LinkedHashSet<Game>();
 		{
 			Query secondPlayerQuery = em.createQuery(
 					"SELECT FROM " + Game.class.getName() + " g " + 
@@ -62,19 +64,31 @@ public class GameDataAccessor {
 		return result;
 	}	
 
-	public Collection<Game> getObservableGames(EntityManager em) {
+	public Collection<Game> getObservableGames(EntityManager em, String userId) {
 		//Allow observation of games that have a second player.
 		
 		//TODO what to do about players who open a second browser, where they aren't logged in, and observe to cheat?
 		//is IP detection enough? or should observation only be allowed of replays after the game is over?
+		//what about players who logout, take a look, then log back in? maybe require login to view games?
 		
-		//TODO this currently doesn't filter out games the user is a player of,
-		//but when they go to the game they are properly treated as player,
-		//so not sure if it should. they might be trying to get back to it
 		Query query = em.createQuery(
 				"SELECT FROM " + Game.class.getName() + " g " + 
-				"WHERE g.secondPlayerUserId IS NOT NULL ");
+				"WHERE g.secondPlayerUserId IS NOT NULL AND " +
+				"g.secondPlayerUserId <> :username ");
+		if ( null == userId ) {
+			userId = "";
+		}
+		query.setParameter("username", userId);
 		Collection<Game> games = query.getResultList();
-		return games;
+
+		//Filter out games where the user is the first player. 
+		//This can't be added to the above query, which is already querying the second player.
+		LinkedList<Game> results = new LinkedList<Game>();
+		for ( Game game : games ) {
+			if ( !game.getFirstPlayerUserId().equals(userId) ) {
+				results.add(game);
+			}
+		}		
+		return results;
 	}	
 }
