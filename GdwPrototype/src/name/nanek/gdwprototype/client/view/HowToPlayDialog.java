@@ -1,5 +1,6 @@
 package name.nanek.gdwprototype.client.view;
 
+import name.nanek.gdwprototype.client.controller.support.SoundPlayer;
 import name.nanek.gdwprototype.shared.model.Markers;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -17,7 +18,7 @@ public class HowToPlayDialog {
 
 	public final Button closeButton = new Button("Close");
 
-	public HowToPlayDialog() {
+	public HowToPlayDialog(SoundPlayer player) {
 		dialogBox.setText("How to Play");
 		dialogBox.setAnimationEnabled(true);
 
@@ -49,6 +50,8 @@ public class HowToPlayDialog {
 		});
 		dialogVPanel.add(closeButton);
 		dialogBox.setWidget(dialogVPanel);
+		
+		player.addMenuClick(closeButton);
 	}
 
 	public void show() {

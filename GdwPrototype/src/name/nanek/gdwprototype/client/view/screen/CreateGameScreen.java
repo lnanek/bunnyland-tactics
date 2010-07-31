@@ -1,5 +1,6 @@
 package name.nanek.gdwprototype.client.view.screen;
 
+import name.nanek.gdwprototype.client.controller.support.SoundPlayer;
 import name.nanek.gdwprototype.client.view.screen.support.ScreenUtil;
 
 import com.google.gwt.user.client.ui.Button;
@@ -23,7 +24,7 @@ public class CreateGameScreen {
 	public final ListBox createGameMaps = new ListBox();
 	public final Button createGameButton = new Button("Create Game");
 	
-	public CreateGameScreen() {
+	public CreateGameScreen(SoundPlayer soundPlayer) {
 
 		//TODO make all fields line up using a table or CSS?
 		content.add(ScreenUtil.labelAndWrap("Game name: ", createGameNameField));
@@ -38,5 +39,6 @@ public class CreateGameScreen {
 		createGameButton.addStyleName("sendButton");
 		createGameButton.setEnabled(false);
 		content.add(createGameButton);
+		soundPlayer.addMenuClick(createGameButton);
 	}
 }

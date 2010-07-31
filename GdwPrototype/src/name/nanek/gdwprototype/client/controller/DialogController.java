@@ -1,5 +1,6 @@
 package name.nanek.gdwprototype.client.controller;
 
+import name.nanek.gdwprototype.client.controller.support.SoundPlayer;
 import name.nanek.gdwprototype.client.util.ExceptionUtil;
 import name.nanek.gdwprototype.client.view.ResultDialog;
 import name.nanek.gdwprototype.shared.exceptions.GameException;
@@ -68,6 +69,10 @@ public class DialogController {
 		}
 
 		showErrorDialog(titleText, message, customCloseHandler);
+	}
+
+	public void setSoundPlayer(SoundPlayer soundPlayer) {
+		dialog.setSoundPlayer(soundPlayer);
 	}
 
 }

@@ -3,6 +3,7 @@ package name.nanek.gdwprototype.client.view.screen;
 import java.util.HashMap;
 import java.util.Map;
 
+import name.nanek.gdwprototype.client.controller.support.SoundPlayer;
 import name.nanek.gdwprototype.client.view.screen.support.ScreenUtil;
 import name.nanek.gdwprototype.shared.model.Marker;
 import name.nanek.gdwprototype.shared.model.Markers;
@@ -29,7 +30,7 @@ public class CreateMapScreen {
 	
 	public final Button createMapButton = new Button("Create Map");
 
-	public CreateMapScreen() {
+	public CreateMapScreen(SoundPlayer soundPlayer) {
 	
 		//TODO make all fields line up using a table or CSS?
 		content.add(ScreenUtil.labelAndWrap("Map name: ", createMapNameField));
@@ -62,5 +63,6 @@ public class CreateMapScreen {
 
 		createMapButton.addStyleName("sendButton");
 		content.add(createMapButton);
+		soundPlayer.addMenuClick(createMapButton);
 	}
 }

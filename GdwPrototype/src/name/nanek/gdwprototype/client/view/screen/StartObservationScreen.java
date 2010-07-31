@@ -1,5 +1,7 @@
 package name.nanek.gdwprototype.client.view.screen;
 
+import name.nanek.gdwprototype.client.controller.support.SoundPlayer;
+
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.VerticalPanel;

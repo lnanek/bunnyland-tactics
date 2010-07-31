@@ -17,6 +17,7 @@ import name.nanek.gdwprototype.client.controller.screen.GameScreenController;
 import name.nanek.gdwprototype.client.view.widget.GameSquare;
 import name.nanek.gdwprototype.client.view.widget.PaletteImage;
 import name.nanek.gdwprototype.client.view.widget.TableCellPanel;
+import name.nanek.gdwprototype.shared.model.Marker;
 
 import com.allen_sauer.gwt.dnd.client.DragContext;
 import com.allen_sauer.gwt.dnd.client.VetoDragException;
@@ -46,7 +47,7 @@ public class GameScreenDropController extends SimpleDropController {
 
 		// Ignore drop on to palette, assume user is putting something back.
 		if (dropTarget.getWidget() instanceof PaletteImage) {
-			gameScreenController.moveMarker(source.getRow(), source.getColumn(), null, null, null);
+			gameScreenController.moveMarker(source.getRow(), source.getColumn(), null, null, null, null);
 
 			context.draggable.removeFromParent();
 			super.onDrop(context);
@@ -61,8 +62,15 @@ public class GameScreenDropController extends SimpleDropController {
 			destImageUrl = destSquare.getUrl();
 		}
 		*/
+		
+		Marker replacedMarker= null;
+		GameSquare destSquare = (GameSquare) dropTarget.getWidget();
+		if ( null != destSquare ) {
+			replacedMarker = destSquare.marker;
+		}
+		
 		gameScreenController.moveMarker(source.getRow(), source.getColumn(), dropTarget.getRow(), dropTarget.getColumn(),
-				draggedImage.getUrl());
+				draggedImage.getUrl(), replacedMarker);
 		dropTarget.setWidget(context.draggable);
 		super.onDrop(context);
 	}
@@ -98,7 +106,7 @@ public class GameScreenDropController extends SimpleDropController {
 			int colDistance = Math.abs(sourceCol - destCol);
 			int totalDistance = rowDistance + colDistance;
 			if (totalDistance > movementRange) {
-				throw new VetoDragException();
+				vetoDropAndNotifyUser();
 			}
 		}
 
@@ -108,7 +116,7 @@ public class GameScreenDropController extends SimpleDropController {
 		if (destinationIsPalette) {
 			// Rearranging the palette is not supported.
 			if (sourceIsPalette) {
-				throw new VetoDragException();
+				vetoDropAndNotifyUser();
 			}
 			// Allow drops on the palette from elsewhere. Treated as a remove
 			// piece in onDrop.
@@ -126,13 +134,18 @@ public class GameScreenDropController extends SimpleDropController {
 
 			// TODO throw/catch an exception and veto? stale game state or
 			// something?
-			gameScreenController.moveMarker(null, null, dropTarget.getRow(), dropTarget.getColumn(), draggedImage.getUrl());
+			gameScreenController.moveMarker(null, null, dropTarget.getRow(), dropTarget.getColumn(), draggedImage.getUrl(), null);
 
 			throw new VetoDragException();
 		}
 
 		// Allow normal drops that move the draggable.
 		super.onPreviewDrop(context);
+	}
+	
+	private void vetoDropAndNotifyUser() throws VetoDragException {
+		gameScreenController.pageController.getSoundPlayer().playInGameErrorSound();
+		throw new VetoDragException();
 	}
 
 	/*
