@@ -39,7 +39,7 @@ public class CreateMapScreenController extends ScreenController {
 	
 	private PageController pageController;
 	
-	CreateMapScreen startGameScreen = new CreateMapScreen();
+	CreateMapScreen startGameScreen;
 	
 	Command enableCreateMap = new Command() {
 		public void execute() {
@@ -103,6 +103,7 @@ public class CreateMapScreenController extends ScreenController {
 	@Override
 	public void createScreen(final PageController pageController, Long modelId) {
 		this.pageController = pageController;
+		startGameScreen = new CreateMapScreen(pageController.getSoundPlayer());
 		
 		startGameScreen.content.setVisible(false);
 		pageController.addScreen(startGameScreen.content);

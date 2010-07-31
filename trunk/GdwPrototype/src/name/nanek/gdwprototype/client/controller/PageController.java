@@ -39,6 +39,7 @@ public class PageController {
 
 	public PageController(DialogController dialogController) {
 		this.dialogController = dialogController;
+		dialogController.setSoundPlayer(soundPlayer);
 		
 		// Show requested page when history changes.
 		History.addValueChangeHandler(new ValueChangeHandler<String>() {
@@ -71,7 +72,9 @@ public class PageController {
 			heading.getElement().setInnerHTML("Bunnyland Tactics");
 		} else {
 			heading.getElement().setInnerHTML("");	
-			heading.add(new Hyperlink("Bunnyland Tactics", ""));
+			Hyperlink home = new Hyperlink("Bunnyland Tactics", "");
+			soundPlayer.addMenuClick(home);
+			heading.add(home);
 		}
 		
 		page.screenContent.clear();

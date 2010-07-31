@@ -28,3 +28,38 @@ Lose Game Music
 	License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
 	Notes: Cut to first 17 seconds to match win game music.
 
+In-Game Error Sound
+	Author: SoundJay.com
+	URL: http://www.soundjay.com/button/sounds/button-10.mp3
+	Filename: button-10.mp3
+	License: http://www.soundjay.com/tos.html
+
+Piece Placement Sound
+	Author: SoundJay.com
+	URL: http://www.soundjay.com/button/sounds/button-20.mp3
+	Filename: button-20.mp3
+	License: http://www.soundjay.com/tos.html
+
+Menu Screen Button Sound
+	Author: SoundJay.com
+	URL: http://www.soundjay.com/button/sounds/button-21.mp3
+	Filename: button-21.mp3
+	License: http://www.soundjay.com/tos.html
+
+Your Turn Sound
+	Author: SoundJay.com
+	URL: http://www.soundjay.com/button/sounds/button-37.mp3
+	Filename: button-37.mp3
+	License: http://www.soundjay.com/tos.html
+
+Carrot Sound 
+	Author: SoundJay.com
+	URL: http://www.soundjay.com/human/sounds/crunching-1.mp3
+	Filename: crunching-1.mp3
+	License: http://www.soundjay.com/tos.html
+
+Dying Sound
+	Author: HardPCM
+	URL: http://www.freesound.org/samplesViewSingle.php?id=27383
+	Filename: 27383__HardPCM__HardKick001.wav
+	License: http://creativecommons.org/licenses/sampling+/1.0/

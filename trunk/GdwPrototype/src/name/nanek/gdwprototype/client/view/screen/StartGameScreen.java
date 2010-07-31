@@ -1,6 +1,7 @@
 package name.nanek.gdwprototype.client.view.screen;
 
 import name.nanek.gdwprototype.client.controller.support.ScreenControllers;
+import name.nanek.gdwprototype.client.controller.support.SoundPlayer;
 import name.nanek.gdwprototype.client.controller.support.ScreenControllers.Screen;
 
 import com.google.gwt.user.client.ui.FlexTable;
@@ -20,7 +21,7 @@ public class StartGameScreen {
 
 	public final FlexTable joinableGamesTable = new FlexTable();
 	
-	public StartGameScreen() {
+	public StartGameScreen(SoundPlayer soundPlayer) {
 
 		
 		HTML joinGameLabel = new HTML("<h3>Games you can play in:</h3>");
@@ -36,12 +37,14 @@ public class StartGameScreen {
 
 		Hyperlink createGameLink = new Hyperlink("Create a Game", 
 				ScreenControllers.getHistoryToken(Screen.CREATE_GAME));
+		soundPlayer.addMenuClick(createGameLink);
 		createGameLink.addStyleName("heavy");
 		content.add(createGameLink);
 		content.add(new HTML("<br />"));
 
 		Hyperlink createMapLink = new Hyperlink("Create a Map", 
 				ScreenControllers.getHistoryToken(Screen.CREATE_MAP));
+		soundPlayer.addMenuClick(createMapLink);
 		createMapLink.addStyleName("heavy");
 		content.add(createMapLink);
 	}

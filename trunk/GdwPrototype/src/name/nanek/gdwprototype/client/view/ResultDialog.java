@@ -1,5 +1,7 @@
 package name.nanek.gdwprototype.client.view;
 
+import name.nanek.gdwprototype.client.controller.support.SoundPlayer;
+
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.HTML;
@@ -41,4 +43,7 @@ public class ResultDialog {
 		closeButton.setFocus(true);
 	}
 
+	public void setSoundPlayer(SoundPlayer soundPlayer) {
+		soundPlayer.addMenuClick(closeButton);
+	}
 }

@@ -10,7 +10,7 @@ import name.nanek.gdwprototype.client.view.screen.MenuScreen;
  *
  */
 public class MenuScreenController extends ScreenController {
-	MenuScreen screen = new MenuScreen();
+	MenuScreen screen;
 	
 	private PageController pageController;
 
@@ -20,7 +20,8 @@ public class MenuScreenController extends ScreenController {
 	@Override
 	public void createScreen(final PageController pageController, Long modelId) {
 		this.pageController = pageController;
-
+		screen = new MenuScreen(pageController.getSoundPlayer());
+		
 		pageController.addScreen(screen.content);
 		pageController.getSoundPlayer().playMenuScreenMusic();	    
 		pageController.setScreenTitle("Menu");

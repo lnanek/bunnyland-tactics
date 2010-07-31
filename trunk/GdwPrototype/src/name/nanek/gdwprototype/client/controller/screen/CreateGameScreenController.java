@@ -30,7 +30,7 @@ public class CreateGameScreenController extends ScreenController {
 	
 	private PageController pageController;
 	
-	CreateGameScreen screen = new CreateGameScreen();
+	CreateGameScreen screen;
 
 	Timer refreshListsTimer = new Timer() {
 		@Override
@@ -130,7 +130,8 @@ public class CreateGameScreenController extends ScreenController {
 	@Override
 	public void createScreen(final PageController pageController, Long modelId) {
 		this.pageController = pageController;
-
+		screen = new CreateGameScreen(pageController.getSoundPlayer());
+		
 		screen.content.setVisible(false);
 		pageController.addScreen(screen.content);
 

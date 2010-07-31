@@ -1,5 +1,6 @@
 package name.nanek.gdwprototype.client.view.screen;
 
+import name.nanek.gdwprototype.client.controller.support.SoundPlayer;
 import name.nanek.gdwprototype.client.model.Player;
 import name.nanek.gdwprototype.client.view.HowToPlayDialog;
 
@@ -66,9 +67,11 @@ public class GameScreen {
 	
 	private FogOfWarChangeListener fogOfWarChangeListener;
 	
-	public HowToPlayDialog howToPlayDialog = new HowToPlayDialog();
+	public HowToPlayDialog howToPlayDialog;
 	
-	public GameScreen() {
+	public GameScreen(SoundPlayer soundPlayer) {
+		howToPlayDialog = new HowToPlayDialog(soundPlayer);
+		
 		//Show game status and controls at top of screen.
 		HorizontalPanel statusAndControls = new HorizontalPanel();;
 		statusAndControls.add(statusLabel);
@@ -116,6 +119,9 @@ public class GameScreen {
 		
 		//Start invisible until data is loaded.
 		content.setVisible(false);
+		
+		soundPlayer.addMenuClick(surrenderButton, publishMapButton, howToPlayButton, 
+				fogOfWarPlayerOneRadio, fogOfWarPlayerTwoRadio, fogOfWarNoneRadio);
 	}
 	
 	private void callFogOfWarChangeListener(Player player) {

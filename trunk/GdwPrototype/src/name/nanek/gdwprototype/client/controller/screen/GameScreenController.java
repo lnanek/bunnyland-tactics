@@ -46,7 +46,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 	
 	private static final int GAME_BOARD_REFRESH_INTERVAL = 1000; // ms
 
-	GameScreen gameScreen = new GameScreen();
+	GameScreen gameScreen;
 
 	private Long gameId;
 
@@ -56,7 +56,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 
 	public PickupDragController dragController;
 
-	private PageController pageController;
+	public PageController pageController;
 	
 	private HashSet<GameSquare> draggables;
 	
@@ -89,7 +89,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 	}
 	
 	public void moveMarker(Integer sourceRow, Integer sourceColumn, Integer destRow, Integer destColumn,
-			String newImageSource) {
+			String newImageSource, final Marker replacedMarker) {
 		
 		//TODO clearing and restoring draggables isn't needed for map building
 		clearDraggables();
@@ -102,11 +102,21 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 								"An error occurred asking the game server to move the requested piece.",
 								true,
 								caught);
+						pageController.getSoundPlayer().playInGameErrorSound();
 						updatesRequired = true;
 						updateGameBoard();
 					}
 
 					public void onSuccess(GamePlayInfo info) {
+						if ( null == replacedMarker ) {
+							pageController.getSoundPlayer().playPiecePlacementSound();
+						} else if ( null != replacedMarker.player ) {
+							pageController.getSoundPlayer().playDyingSound();
+						} else if (replacedMarker.source.contains("carrot")) {
+							pageController.getSoundPlayer().playCarrotSound();
+						} else {
+							pageController.getSoundPlayer().playPiecePlacementSound();
+						}
 						//TODO players take turns, so nothing changed but what we dragged, so just update fog of war and turn status?
 						//technically we don't even need a positions update and it could be removed to make moving things respond quicker
 						updateGameBoardWithInfo(info);
@@ -402,6 +412,8 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 	
 	@Override
 	public void createScreen(final PageController pageController, final Long gameId) {
+		
+		gameScreen = new GameScreen(pageController.getSoundPlayer());
 
 		this.gameId = gameId;
 		if ( null == gameId ) {
