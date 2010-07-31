@@ -20,14 +20,14 @@ public class HowToPlayDialog {
 
 	public HowToPlayDialog(SoundPlayer player) {
 		dialogBox.setText("How to Play");
-		dialogBox.setAnimationEnabled(true);
+		//dialogBox.setAnimationEnabled(true);
 
 		VerticalPanel dialogVPanel = new VerticalPanel();
 		dialogVPanel.addStyleName("dialogVPanel");
 		FlexTable table = new FlexTable();
 		int row = 0;
 		table.setWidget(row, 0, new Image("images/" + Markers.CARROT.source));
-		table.setWidget(row++, 2, new Label("Find the carrots! Landing on a carrot with one of your bunnies will earn you a new random bunny back at your home."));
+		table.setWidget(row++, 2, new Label("Find the carrots! Landing on a carrot with one of your bunnies will earn you a new random bunny back at your home. Make sure there's room! If there isn't an open spot adjacent to your home, no bunny is born."));
 
 		table.setWidget(row, 0, new Image("images/" + Markers.PLAYER_TWO_WARREN.source));
 		table.setWidget(row, 1, new Image("images/" + Markers.PLAYER_ONE_WARREN.source));

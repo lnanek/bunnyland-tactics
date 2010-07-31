@@ -64,8 +64,11 @@ public class GameEngine {
 		//System.out.println("GameDataServiceImpl#createGameInfo: markers are: " + game.getSettings().getMarkers());
 		//System.out.println("GameDataServiceImpl#createGameInfo: positionInfos are: " + positions.length );	
 		
+		//TODO make GamePlayInfo a child of game, store these things in it directly, and return it directly instead of making a DTO?
 		GamePlayInfo info = new GamePlayInfo(positions, isUsersTurn, userPlayingAs, needsSecondPlayer, 
-				game.getSettings().getBoardHeight(), game.getSettings().getBoardWidth(), markers, game.getWinner(), game.isStartingMap(), game.isEnded());
+				game.getSettings().getBoardHeight(), game.getSettings().getBoardWidth(), markers, game.getWinner(), 
+				game.isStartingMap(), game.isEnded(), game.getMoveCount(), game.isUnitDiedLastTurn(),
+				game.isCarrotEatenLastTurn(), game.getCurrentUsersTurn());
 		return info;
 	}
 	
@@ -86,19 +89,25 @@ public class GameEngine {
 		//TODO make sure the piece moved belongs to the player as well
 		
 		boolean changedPositions = false;
-
+		boolean unitDiedThisTurn = false;
+		boolean carrotEatenThisTurn = false;
 		if (null != destColumn && null != destRow && null != newImageSource) {
 			// Destination so remove any old position and create new  position.
 			
 			//TODO do checks on client side too for better ux?
 			
-			boolean removeDestination = false;
 			//Always remove the destination when map building.
 			if ( game.isStartingMap() ) {
-				removeDestination = true;
+				removeAnyPosition(destRow, destColumn, em, game);
+
 			//Otherwise it depends on what we are removing.
 			} else {
-				String removeCandidate = findPosition(destRow, destColumn, em, game);
+				boolean removeDestination = false;
+				String removeCandidate = null;
+				Position removeCandidatePosition = findCarrotOrPiecePosition(destRow, destColumn, game.getPositions());
+				if ( null != removeCandidatePosition ) {
+					removeCandidate = removeCandidatePosition.getMarkerSource();
+				}
 				if ( null != removeCandidate ) {
 
 					boolean isCarrotDestination = removeCandidate.endsWith("carrot.png");
@@ -107,20 +116,7 @@ public class GameEngine {
 					//Anything can remove a carrot.
 					if ( isCarrotDestination ) {
 						removeDestination = true;
-						
-						Point homeWarrenLocation = findHomeWarren(game.getCurrentUsersTurn(), game.getPositions());
-						if ( null != homeWarrenLocation ) {
-							Point newUnitLocation = findNearbyOpenSpot(homeWarrenLocation, game.getPositions(), game.getSettings().getBoardHeight(), game.getSettings().getBoardWidth());
-							
-							if ( null != newUnitLocation ) {
-								String markerSource = getNewPlayerPiece(game.getCurrentUsersTurn());
-								
-								Position position = new Position(newUnitLocation.row, newUnitLocation.column, 
-										markerSource);
-								//em.persist(position);
-								game.getPositions().add(position);
-							}
-						}							
+						carrotEatenThisTurn = true;						
 					//Other terrain is ignored, units just sit on top of it for now.
 					//So continue checking if not terrain.
 					} else if (!isTerrainDestination ) {
@@ -147,15 +143,15 @@ public class GameEngine {
 								}
 							}
 						}
-						
+						unitDiedThisTurn = true;
 						removeDestination = true;
 					}
 				}
+				if ( removeDestination ) {
+					removeCarrotOrPiecePosition(destRow, destColumn, em, game);
+				}
 			}
 
-			if ( removeDestination ) {
-				removePosition(destRow, destColumn, em, game);
-			}
 
 			
 			Position position = new Position(destRow, destColumn, newImageSource);
@@ -167,12 +163,36 @@ public class GameEngine {
 
 		if (null != sourceColumn && null != sourceRow) {
 			// Source so delete it.
-			removePosition(sourceRow, sourceColumn, em, game);
+			removeCarrotOrPiecePosition(sourceRow, sourceColumn, em, game);
 			changedPositions = true;
 		}
 
-		if ( changedPositions && !game.isStartingMap() ) {
-			game.setNextUsersTurn();
+		//Now that move is complete, if a carrot was eaten, generate a new unit if a spot is available.
+		if ( carrotEatenThisTurn ) {
+			Point homeWarrenLocation = findHomeWarren(game.getCurrentUsersTurn(), game.getPositions());
+			if ( null != homeWarrenLocation ) {
+				Point newUnitLocation = findNearbyOpenSpot(homeWarrenLocation, 
+						game.getPositions(), game.getSettings().getBoardHeight(), 
+						game.getSettings().getBoardWidth());
+				
+				if ( null != newUnitLocation ) {
+					String markerSource = getNewPlayerPiece(game.getCurrentUsersTurn());
+					
+					Position position = new Position(newUnitLocation.row, newUnitLocation.column, 
+							markerSource);
+					//em.persist(position);
+					game.getPositions().add(position);
+				}
+			}	
+		}
+		
+		if ( changedPositions ) {
+			game.incrementMoveCount();
+			if ( !game.isStartingMap() ) {
+				game.setUnitDiedLastTurn(unitDiedThisTurn);
+				game.setCarrotEatenLastTurn(carrotEatenThisTurn);
+				game.setNextUsersTurn();
+			}
 		}
 		
 		/*
@@ -227,10 +247,9 @@ public class GameEngine {
 			return false;
 		}
 		
-		for( Position position : positions ) {
-			if ( position.getColumn() == location.column && position.getRow() == location.row ) {
-				return false;
-			}
+		Position existingPosition = findCarrotOrPiecePosition(location.row, location.column, positions);
+		if ( null != existingPosition ) {
+			return false;
 		}
 		
 		return true;
@@ -276,22 +295,46 @@ public class GameEngine {
 		return null;
 	}
 
-	private String findPosition(Integer sourceRow, Integer sourceColumn, EntityManager em, Game game) {
-		for (Position position : game.getPositions()) {
-			if (sourceRow.equals(position.getRow()) && sourceColumn.equals(position.getColumn())) {
-				return position.getMarkerSource();
+	private Position findCarrotOrPiecePosition(Integer sourceRow, Integer sourceColumn, Set<Position> positions) {
+		for (Position position : positions) {
+			if (sourceRow.equals(position.getRow()) 
+					&& sourceColumn.equals(position.getColumn())
+					&& (position.getMarkerSource().contains("piece_")
+					|| position.getMarkerSource().contains("_carrot")) ) {
+				return position;
 			}
 		}
 		return null;
 	}
 
-	private String removePosition(Integer sourceRow, Integer sourceColumn, EntityManager em, Game game) {
-		for (Position position : game.getPositions()) {
-			if (sourceRow.equals(position.getRow()) && sourceColumn.equals(position.getColumn())) {
-				game.getPositions().remove(position);
-				em.remove(position);
-				return position.getMarkerSource();
+	private Position findAnyPosition(Integer sourceRow, Integer sourceColumn, Set<Position> positions) {
+		for (Position position : positions) {
+			if (sourceRow.equals(position.getRow()) 
+					&& sourceColumn.equals(position.getColumn()) ) {
+				return position;
 			}
+		}
+		return null;
+	}
+	
+
+
+	private String removeAnyPosition(Integer sourceRow, Integer sourceColumn, EntityManager em, Game game) {
+		Position position = findAnyPosition(sourceRow, sourceColumn, game.getPositions());
+		if ( null != position ) {
+			game.getPositions().remove(position);
+			em.remove(position);
+			return position.getMarkerSource();
+		}
+		return null;
+	}	
+
+	private String removeCarrotOrPiecePosition(Integer sourceRow, Integer sourceColumn, EntityManager em, Game game) {
+		Position position = findCarrotOrPiecePosition(sourceRow, sourceColumn, game.getPositions());
+		if ( null != position ) {
+			game.getPositions().remove(position);
+			em.remove(position);
+			return position.getMarkerSource();
 		}
 		return null;
 	}	

@@ -47,10 +47,10 @@ Menu Screen Button Sound
 	License: http://www.soundjay.com/tos.html
 
 Your Turn Sound
-	Author: SoundJay.com
-	URL: http://www.soundjay.com/button/sounds/button-37.mp3
-	Filename: button-37.mp3
-	License: http://www.soundjay.com/tos.html
+	Author: Mike Koenig
+	URL: http://soundbible.com/1496-Japanese-Temple-Bell-Small.html
+	Filename: Japanese Temple Bell Small-SoundBible.com-113624364.mp3
+	License: http://creativecommons.org/licenses/by/3.0/legalcode
 
 Carrot Sound 
 	Author: SoundJay.com

@@ -25,15 +25,24 @@ public class GamePlayInfo implements Serializable {
 	
 	public int boardHeight;
 	
+	public int moveCount;
+	
 	public Marker[] markers;
 
 	public boolean isBuildingMap;
+	
+	public boolean unitDiedLastTurn;
+	
+	public boolean carrotEatenLastTurn;
+	
+	public Player currentPlayersTurn;
 	
 	private GamePlayInfo() {
 	}
 
 	public GamePlayInfo(Position[] positions, boolean isUsersTurn, Player playingAs, boolean needsSecondPlayer, 
-			int boardHeight, int boardWidth, Marker[] markers, Player winner, boolean isBuildingMap, boolean ended) {
+			int boardHeight, int boardWidth, Marker[] markers, Player winner, boolean isBuildingMap, boolean ended,
+			int moveCount, boolean unitDiedLastTurn, boolean carrotEatenLastTurn, Player currentPlayersTurn) {
 		this.positions = positions;
 		this.isUsersTurn = isUsersTurn;
 		this.playingAs = playingAs;
@@ -44,6 +53,10 @@ public class GamePlayInfo implements Serializable {
 		this.winner = winner;
 		this.isBuildingMap = isBuildingMap;
 		this.ended = ended;
+		this.moveCount = moveCount;
+		this.unitDiedLastTurn = unitDiedLastTurn;
+		this.carrotEatenLastTurn = carrotEatenLastTurn;
+		this.currentPlayersTurn = currentPlayersTurn;
 	}
 
 }

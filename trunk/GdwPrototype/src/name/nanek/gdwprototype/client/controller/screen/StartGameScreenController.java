@@ -76,6 +76,7 @@ public class StartGameScreenController extends ScreenController {
 				for (final GameListing gameListing : gamesListing) {
 					if ( null != gameListing ) {
 						Anchor link = new Anchor(gameListing.getName());
+						pageController.getSoundPlayer().addMenuClick(link);
 						link.addClickHandler(new ClickHandler() {
 							@Override
 							public void onClick(ClickEvent event) {

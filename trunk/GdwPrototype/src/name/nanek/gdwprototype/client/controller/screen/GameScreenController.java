@@ -68,6 +68,8 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 	
 	public GamePlayInfo info;
 	
+	Integer lastPlayedSoundForMoveCount;
+	
 	//TODO don't refresh when window blurred
 	//detecting refocus seems dicey, chrome isn't calling properly when switch back to tab from another, 
 	//but can show pause dialog and have user click to unpause
@@ -108,6 +110,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 					}
 
 					public void onSuccess(GamePlayInfo info) {
+						/*
 						if ( null == replacedMarker ) {
 							pageController.getSoundPlayer().playPiecePlacementSound();
 						} else if ( null != replacedMarker.player ) {
@@ -117,6 +120,8 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 						} else {
 							pageController.getSoundPlayer().playPiecePlacementSound();
 						}
+						*/
+						
 						//TODO players take turns, so nothing changed but what we dragged, so just update fog of war and turn status?
 						//technically we don't even need a positions update and it could be removed to make moving things respond quicker
 						updateGameBoardWithInfo(info);
@@ -182,7 +187,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		}
 		
 		this.info = info;
-
+		
 		//Update publish/surrender controls.
 		//Hide if game is over or map is published.
 		if ( info.ended ) {
@@ -216,6 +221,38 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 				gameScreen.fogOfWarPlayerOneRadio.setValue(true, false);
 			} else if ( Player.TWO == info.playingAs ) {
 				gameScreen.fogOfWarPlayerTwoRadio.setValue(true, false);
+			}
+		}
+
+		//Play a sound for an active game/map if this is the first time we got this move data.
+		//TODO we currently make these sounds after the server has been asked if the move is legal
+		//if would be nice to play them immediately. Maybe have a move validator that both the client
+		//and server share
+		if ( !info.ended && info.moveCount > 0 && (null == lastPlayedSoundForMoveCount || lastPlayedSoundForMoveCount < info.moveCount) ) {
+			lastPlayedSoundForMoveCount = info.moveCount;
+			
+			//Always piece placement sound when placing units on a map.
+			if ( info.isBuildingMap ) {
+				pageController.getSoundPlayer().playPiecePlacementSound();
+
+			//Both players always hear a unit dying, since they must have both had a unit involved.
+			} else if ( info.unitDiedLastTurn ) {
+				pageController.getSoundPlayer().playDyingSound();
+
+			//We're viewing the screen of someone who just finished a move so can hear eating carrots or placing pieces.
+			//TODO technically we should be able to hear the enemy doing it as well if the unit that did it is in sight
+			} else if ( null == fogOfWarAs || fogOfWarAs != info.currentPlayersTurn ) {
+				if ( info.carrotEatenLastTurn ) {
+					pageController.getSoundPlayer().playCarrotSound();
+				} else {
+					pageController.getSoundPlayer().playPiecePlacementSound();
+				}
+			}
+			
+			//XXX sometimes we'll hear both a gong and a scream. 
+			//see how that sounds. maybe we should play one after the other?
+			if (!info.isBuildingMap && info.isUsersTurn ) {
+				pageController.getSoundPlayer().playYourTurnSound();
 			}
 		}
 		
@@ -463,6 +500,8 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			@Override
 			public void onDragStart(DragStartEvent event) {
 				dragInProgress = true;
+				
+				pageController.getSoundPlayer().playPickupPiceSound();
 
 				//If dragging something in a game, not a map editor.
 				if ( null != info && !info.isBuildingMap ) {
