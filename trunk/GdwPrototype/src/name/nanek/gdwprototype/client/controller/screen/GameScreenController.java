@@ -12,6 +12,7 @@ import name.nanek.gdwprototype.client.controller.support.ScreenControllers.Scree
 import name.nanek.gdwprototype.client.model.GameListing;
 import name.nanek.gdwprototype.client.model.GamePlayInfo;
 import name.nanek.gdwprototype.client.model.Player;
+import name.nanek.gdwprototype.client.view.Page.Background;
 import name.nanek.gdwprototype.client.view.screen.GameScreen;
 import name.nanek.gdwprototype.client.view.screen.GameScreen.FogOfWarChangeListener;
 import name.nanek.gdwprototype.client.view.widget.GameSquare;
@@ -222,6 +223,15 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			} else if ( Player.TWO == info.playingAs ) {
 				gameScreen.fogOfWarPlayerTwoRadio.setValue(true, false);
 			}
+		}
+		
+		//Update background.
+		if ( null == info.currentPlayersTurn ) {
+			pageController.setBackground(Background.MENU);
+		} else if ( Player.ONE == info.currentPlayersTurn ) {
+			pageController.setBackground(Background.BLACKS_TURN);
+		} else {
+			pageController.setBackground(Background.REDS_TURN);
 		}
 
 		//Play a sound for an active game/map if this is the first time we got this move data.

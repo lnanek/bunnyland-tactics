@@ -2,6 +2,7 @@ package name.nanek.gdwprototype.client.controller.screen;
 
 import name.nanek.gdwprototype.client.controller.PageController;
 import name.nanek.gdwprototype.client.model.GameListing;
+import name.nanek.gdwprototype.client.view.Page.Background;
 import name.nanek.gdwprototype.client.view.screen.CreateGameScreen;
 import name.nanek.gdwprototype.client.view.widget.GameAnchor;
 import name.nanek.gdwprototype.shared.FieldVerifier;
@@ -52,7 +53,7 @@ public class CreateGameScreenController extends ScreenController {
 
 		//TODO catch validationexception and change error label instead of showing dialog
 		//TODO validate as the user types
-		pageController.setErrorLabel("");				
+		pageController.setErrorLabel("");	
 		
 		//Validate input.
 		final String gameName = FieldVerifier.validateGameName(screen.createGameNameField.getText());
@@ -130,6 +131,8 @@ public class CreateGameScreenController extends ScreenController {
 	@Override
 	public void createScreen(final PageController pageController, Long modelId) {
 		this.pageController = pageController;
+		pageController.setBackground(Background.MENU);
+		
 		screen = new CreateGameScreen(pageController.getSoundPlayer());
 		
 		screen.content.setVisible(false);
