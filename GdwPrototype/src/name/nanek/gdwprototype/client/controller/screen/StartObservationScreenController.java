@@ -2,6 +2,7 @@ package name.nanek.gdwprototype.client.controller.screen;
 
 import name.nanek.gdwprototype.client.controller.PageController;
 import name.nanek.gdwprototype.client.model.GameListing;
+import name.nanek.gdwprototype.client.view.Page.Background;
 import name.nanek.gdwprototype.client.view.screen.StartObservationScreen;
 import name.nanek.gdwprototype.client.view.widget.GameAnchor;
 
@@ -64,6 +65,7 @@ public class StartObservationScreenController extends ScreenController {
 	@Override
 	public void createScreen(final PageController pageController, Long modelId) {
 		this.pageController = pageController;
+		pageController.setBackground(Background.MENU);
 
 		pageController.addScreen(screen.content);
 		

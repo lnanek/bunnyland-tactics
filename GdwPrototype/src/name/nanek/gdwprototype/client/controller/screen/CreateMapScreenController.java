@@ -7,6 +7,7 @@ import java.util.Set;
 
 import name.nanek.gdwprototype.client.controller.PageController;
 import name.nanek.gdwprototype.client.model.GameListing;
+import name.nanek.gdwprototype.client.view.Page.Background;
 import name.nanek.gdwprototype.client.view.screen.CreateMapScreen;
 import name.nanek.gdwprototype.client.view.widget.GameAnchor;
 import name.nanek.gdwprototype.shared.FieldVerifier;
@@ -103,6 +104,7 @@ public class CreateMapScreenController extends ScreenController {
 	@Override
 	public void createScreen(final PageController pageController, Long modelId) {
 		this.pageController = pageController;
+		pageController.setBackground(Background.MENU);
 		startGameScreen = new CreateMapScreen(pageController.getSoundPlayer());
 		
 		startGameScreen.content.setVisible(false);

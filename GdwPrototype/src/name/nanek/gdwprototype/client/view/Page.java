@@ -1,7 +1,10 @@
 package name.nanek.gdwprototype.client.view;
 
+import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Element;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootPanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -20,6 +23,10 @@ public class Page {
 	public HTML pageTitle = new HTML();
 
 	public Label errorLabel = new Label();
+	
+	private RootPanel backgroundRoot;
+	
+	private Background currentBackground = Background.MENU;
 
 	public Page() {
 		VerticalPanel allContent = new VerticalPanel();
@@ -33,6 +40,9 @@ public class Page {
 		//Clear loading message in static HTML.
 		root.getElement().setInnerText("");
 		root.add(allContent);
+		
+		backgroundRoot = RootPanel.get("background");
+		//backgroundImageElement = backgroundRoot.getElement();
 	}
 
 	public void setScreenTitle(String screenTitle) {
@@ -45,6 +55,34 @@ public class Page {
 		Window.setTitle(GAME_TITLE + " : " + screenTitle);
 		pageTitle.setHTML("<h2>" + screenTitle + "</h2>");
 		pageTitle.setVisible(true);
+	}
+	
+	public enum Background {
+		
+		MENU("/images/background_menu.jpg"), 
+		BLACKS_TURN("/images/background_blacks_turn.jpg"), 
+		REDS_TURN("/images/background_reds_turn.jpg");
+		
+		private String imageSource;
+
+		private Background(String imageSource) {
+			this.imageSource = imageSource;
+		}
+
+		public String getImageSource() {
+			return imageSource;
+		}
+	}
+	
+	public void setBackground(Background bg) {
+		GWT.log("Page#setBackground called with " + bg);
+		if ( bg == currentBackground ) {
+			return;
+		}
+		backgroundRoot.clear();
+		backgroundRoot.getElement().setInnerHTML("");
+		backgroundRoot.add(new Image(bg.getImageSource()));
+		currentBackground = bg;
 	}
 
 }

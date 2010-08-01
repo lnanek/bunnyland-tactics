@@ -6,6 +6,7 @@ import name.nanek.gdwprototype.client.controller.support.SoundPlayer;
 import name.nanek.gdwprototype.client.service.GameService;
 import name.nanek.gdwprototype.client.service.GameServiceAsync;
 import name.nanek.gdwprototype.client.view.Page;
+import name.nanek.gdwprototype.client.view.Page.Background;
 import name.nanek.gdwprototype.client.view.widget.GameAnchor;
 
 import com.google.gwt.core.client.GWT;
@@ -92,6 +93,8 @@ public class PageController {
 	public void setScreenTitle(String screenTitle) {
 		page.setScreenTitle(screenTitle);
 	}
+	
+
 
 	public void setErrorLabel(String string) {
 		page.errorLabel.setText(string);
@@ -111,5 +114,10 @@ public class PageController {
 	 */
 	public SoundPlayer getSoundPlayer() {
 		return soundPlayer;
+	}
+	
+	public void setBackground(Background bg) {
+		GWT.log("PageController#setBackground called with " + bg);
+		page.setBackground(bg);
 	}
 }

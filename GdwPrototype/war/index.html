@@ -1,56 +1,46 @@
 <!doctype html>
-<!-- The DOCTYPE declaration above will set the    -->
-<!-- browser's rendering engine into               -->
-<!-- "Standards Mode". Replacing this declaration  -->
-<!-- with a "Quirks Mode" doctype may lead to some -->
-<!-- differences in layout.                        -->
-
+<!-- Above DOCTYPE to set the browser's rendering to "Standards Mode". -->
 <html>
   <head>
     <meta http-equiv="content-type" content="text/html; charset=UTF-8">
-
-    <!--                                                               -->
-    <!-- Consider inlining CSS to reduce the number of requested files -->
-    <!--                                                               -->
+    <meta http-equiv="imagetoolbar" content="no" />
+	
     <link type="text/css" rel="stylesheet" href="GdwPrototype.css">
-
-    <!--                                           -->
-    <!-- Any title is fine                         -->
-    <!--                                           -->
+    <link rel="shortcut icon" href="/favicon.ico" type="image/x-icon" />
+	<link rel="icon" href="/favicon.ico" type="image/ico" />
+	
     <title>Bunnyland Tactics</title>
-    
-    <!--                                           -->
-    <!-- This script loads your compiled module.   -->
-    <!-- If you add any GWT meta tags, they must   -->
-    <!-- be added before this line.                -->
-    <!--                                           -->
+
+	<!-- Load client code compiled into JavaScript by Google Web Toolkit . -->
     <script type="text/javascript" language="javascript" src="gdwprototype/gdwprototype.nocache.js"></script>
+
+	<!-- Decorative fonts via TypeKit. -->
+    <script type="text/javascript" src="http://use.typekit.com/dgh0poo.js"></script>
+	<script type="text/javascript">try{Typekit.load();}catch(e){}</script>
   </head>
-
-  <!--                                           -->
-  <!-- The body can have arbitrary html, or      -->
-  <!-- you can leave the body empty if you want  -->
-  <!-- to create a completely dynamic UI.        -->
-  <!--                                           -->
   <body>
-
-    <!-- OPTIONAL: include this if you want history support -->
+    <!-- GWT history support -->
     <iframe src="javascript:''" id="__gwt_historyFrame" tabIndex='-1' style="position:absolute;width:0;height:0;border:0"></iframe>
-    
-    <!-- RECOMMENDED if your web app will not function without JavaScript enabled -->
-    <noscript>
-      <div style="width: 22em; position: absolute; left: 50%; margin-left: -11em; color: red; background-color: white; border: 1px solid red; padding: 4px; font-family: sans-serif">
-        Your web browser must have JavaScript enabled
-        in order for this application to display correctly.
-      </div>
-    </noscript>
 
-    <h1 id="siteHeading">Bunnyland Tactics</h1>
+	<!-- Background image. -->
+	<div id="background">
+		<img src="/images/background_menu.jpg" alt="" title="" />
+	</div>
 
-    <table align="center">
-      <tr>
-        <td id="contentContainer">Loading game, please wait...</td>
-      </tr>
-    </table>
+	<div id="foreground">	
+	    <noscript>
+	      <div style="width: 22em; position: absolute; left: 50%; margin-left: -11em; color: red; background-color: white; border: 1px solid red; padding: 4px; font-family: sans-serif">
+	        Your web browser must have JavaScript enabled to play this game.
+	      </div>
+	    </noscript>
+	
+	    <h1 id="siteHeading">Bunnyland Tactics</h1>
+	
+	    <table align="center">
+	      <tr>
+	        <td id="contentContainer">Loading game, please wait...</td>
+	      </tr>
+	    </table>
+	  </div>
   </body>
 </html>
