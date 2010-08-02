@@ -40,12 +40,5 @@ public class StartGameScreen {
 		soundPlayer.addMenuClick(createGameLink);
 		createGameLink.addStyleName("heavy");
 		content.add(createGameLink);
-		content.add(new HTML("<br />"));
-
-		Hyperlink createMapLink = new Hyperlink("Create a Map", 
-				ScreenControllers.getHistoryToken(Screen.CREATE_MAP));
-		soundPlayer.addMenuClick(createMapLink);
-		createMapLink.addStyleName("heavy");
-		content.add(createMapLink);
 	}
 }

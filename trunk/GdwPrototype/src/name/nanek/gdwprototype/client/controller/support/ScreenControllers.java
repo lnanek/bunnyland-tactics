@@ -5,6 +5,7 @@ import name.nanek.gdwprototype.client.controller.screen.CreateMapScreenControlle
 import name.nanek.gdwprototype.client.controller.screen.CreditsScreenController;
 import name.nanek.gdwprototype.client.controller.screen.GameScreenController;
 import name.nanek.gdwprototype.client.controller.screen.MenuScreenController;
+import name.nanek.gdwprototype.client.controller.screen.OptionsScreenController;
 import name.nanek.gdwprototype.client.controller.screen.ScreenController;
 import name.nanek.gdwprototype.client.controller.screen.StartGameScreenController;
 import name.nanek.gdwprototype.client.controller.screen.StartObservationScreenController;
@@ -26,6 +27,7 @@ public class ScreenControllers {
 		START_OBSERVATION,
 		CREATE_GAME,
 		CREATE_MAP,
+		OPTIONS,
 		MENU,
 	}
 	
@@ -54,6 +56,8 @@ public class ScreenControllers {
 				return new CreateGameScreenController();
 			case CREATE_MAP:
 				return new CreateMapScreenController();
+			case OPTIONS:
+				return new OptionsScreenController();
 			default:
 				return new MenuScreenController();
 		}

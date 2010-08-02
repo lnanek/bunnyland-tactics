@@ -55,7 +55,7 @@ public class PageController {
 	}
 	
 	private void showPage(String historyToken) {
-		GWT.log("AppPageController#showPage: historyToken = " + historyToken);
+		GWT.log("PageController#showPage: historyToken = " + historyToken);
 
 		
 		
@@ -65,6 +65,7 @@ public class PageController {
 		if ( null != currentController ) {
 			currentController.hideScreen();
 		}
+		GWT.log("PageController#showPage: controller = " + controller);
 
 		//When there's no history token, we're at the first page/main menu, so don't link the title.
 		RootPanel heading = RootPanel.get("siteHeading");

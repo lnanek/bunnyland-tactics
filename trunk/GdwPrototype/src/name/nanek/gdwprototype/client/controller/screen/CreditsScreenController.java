@@ -13,15 +13,12 @@ import name.nanek.gdwprototype.client.view.screen.CreditsScreen;
 public class CreditsScreenController extends ScreenController {
 
 	private CreditsScreen screen = new CreditsScreen();
-	
-	private PageController pageController;
 
 	public CreditsScreenController() {
 	}
 	
 	@Override
 	public void createScreen(final PageController pageController, Long modelId) {
-		this.pageController = pageController;
 		pageController.setBackground(Background.MENU);
 
 		pageController.addScreen(screen.content);

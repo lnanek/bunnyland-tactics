@@ -25,10 +25,10 @@ public class MenuScreen {
 		content.add(playLink);
 		content.add(new HTML("<br />"));
 
-		Hyperlink observeLink = new Hyperlink("Observe", 
-				ScreenControllers.getHistoryToken(Screen.START_OBSERVATION));
-		soundPlayer.addMenuClick(observeLink);
-		content.add(observeLink);
+		Hyperlink optionsLink = new Hyperlink("Options", 
+				ScreenControllers.getHistoryToken(Screen.OPTIONS));
+		soundPlayer.addMenuClick(optionsLink);
+		content.add(optionsLink);
 		content.add(new HTML("<br />"));
 
 		Hyperlink creditsLink = new Hyperlink("Credits", 
