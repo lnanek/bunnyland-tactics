@@ -124,7 +124,7 @@ public class GameEngine {
 						//Must be a stomper to remove non-terrain during game.
 						boolean isStomperSource = newImageSource.endsWith("warrior.png");
 						if ( !isStomperSource ) {
-							throw new UserFriendlyMessageException("Only stompers may land on units to remove them.");
+							throw new UserFriendlyMessageException("Only stompers may land on enemies to remove them.");
 						}
 						
 						if ( null != game.getCurrentUsersTurn() ) {
