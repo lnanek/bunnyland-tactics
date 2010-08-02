@@ -117,7 +117,6 @@ public class PageController {
 	}
 	
 	public void setBackground(Background bg) {
-		GWT.log("PageController#setBackground called with " + bg);
 		page.setBackground(bg);
 	}
 }

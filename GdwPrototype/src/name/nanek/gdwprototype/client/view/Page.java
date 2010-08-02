@@ -53,7 +53,7 @@ public class Page {
 		}
 
 		Window.setTitle(GAME_TITLE + " : " + screenTitle);
-		pageTitle.setHTML("<h2>" + screenTitle + "</h2>");
+		pageTitle.setHTML("<h2 class=\"tk-nagomi\">" + screenTitle + "</h2>");
 		pageTitle.setVisible(true);
 	}
 	
@@ -75,7 +75,6 @@ public class Page {
 	}
 	
 	public void setBackground(Background bg) {
-		GWT.log("Page#setBackground called with " + bg);
 		if ( bg == currentBackground ) {
 			return;
 		}
