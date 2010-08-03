@@ -43,6 +43,8 @@ public class Game implements Serializable {
 
 	private String firstPlayerUserId;
 	
+	private String creatorNickname;
+	
 	private String secondPlayerUserId;
 	
 	private Player currentUsersTurn = Player.ONE;
@@ -125,7 +127,7 @@ public class Game implements Serializable {
 	}
 
 	public GameListing getListing() {
-		return new GameListing(name, keyId, startingMap);
+		return new GameListing(name, keyId, startingMap, creatorNickname);
 	}
 
 	public Set<Position> getPositions() {
@@ -163,8 +165,13 @@ public class Game implements Serializable {
 	public void setCarrotEatenLastTurn(boolean carrotEatenLastTurn) {
 		this.carrotEatenLastTurn = carrotEatenLastTurn;
 	}
-	
-	
-	
+
+	public String getCreatorNickname() {
+		return creatorNickname;
+	}
+
+	public void setCreatorNickname(String creatorNickname) {
+		this.creatorNickname = creatorNickname;
+	}
 	
 }

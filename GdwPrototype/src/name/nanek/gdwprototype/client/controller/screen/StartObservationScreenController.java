@@ -51,7 +51,7 @@ public class StartObservationScreenController extends ScreenController {
 				int i = 0;
 				for (final GameListing gameListing : gamesListing) {
 					String anchor = GameAnchor.generateAnchor(gameListing);
-					Hyperlink link = new Hyperlink(gameListing.getName(), anchor);
+					Hyperlink link = new Hyperlink(gameListing.getDisplayName(true), anchor);
 					pageController.getSoundPlayer().addMenuClick(link);
 					screen.observableGamesTable.setWidget(i++, 0, link);
 				}
