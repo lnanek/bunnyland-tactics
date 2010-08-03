@@ -9,6 +9,8 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.DialogBox;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.HasHorizontalAlignment;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -26,9 +28,16 @@ public class HowToPlayDialog {
 		VerticalPanel dialogVPanel = new VerticalPanel();
 		dialogVPanel.addStyleName("dialogVPanel");
 		FlexTable table = new FlexTable();
+		
+		//XXX CSS seems to be overriding this. Make CSS more specific.
+		table.setCellPadding(10);
+		
 		int row = 0;
 		table.setWidget(row, 0, new Image("images/" + Markers.CARROT.source, 0, 0, 50, 50));
-		table.setWidget(row++, 2, new HTML(
+		table.getFlexCellFormatter().setColSpan(row, 0, 2);
+		table.getFlexCellFormatter().setAlignment(row, 0, 
+				HasHorizontalAlignment.ALIGN_CENTER, HasVerticalAlignment.ALIGN_MIDDLE);
+		table.setWidget(row++, 1, new HTML(
 				"Find the carrots! Landing on a carrot earns you a new random bunny back home, <br />" + 
 				"as long as there's an open space adjacent to your home."));
 

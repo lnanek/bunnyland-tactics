@@ -6,7 +6,6 @@ import name.nanek.gdwprototype.client.view.Page.Background;
 import name.nanek.gdwprototype.client.view.screen.StartObservationScreen;
 import name.nanek.gdwprototype.client.view.widget.GameAnchor;
 
-import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Hyperlink;
@@ -19,71 +18,78 @@ import com.google.gwt.user.client.ui.Hyperlink;
  */
 public class StartObservationScreenController extends ScreenController {
 
-	private static final int GAME_LIST_REFRESH_INTERVAL = 5000; // ms
+	private static final int GAME_LIST_REFRESH_INTERVAL_MS = 2000;
 
-	StartObservationScreen screen = new StartObservationScreen();
+	private class RefreshObservableGameListCallback implements AsyncCallback<GameListing[]> {
+		public void onFailure(Throwable throwable) {
+			//Protect against spurious call after screen hidden.
+			if ( null == pageController ) return;
+			
+			//Show error.
+			pageController.getDialogController().showError("Error Getting Games", 
+				"An error occurred getting the current games from the server.", 
+				true, 
+				throwable);
+		}
+
+		public void onSuccess(final GameListing[] gamesListing) {
+			//Protect against spurious call after screen hidden.
+			if ( null == pageController ) return;
+
+			screen.observableGamesTable.clear();
+			int i = 0;
+			for (final GameListing gameListing : gamesListing) {
+				String anchor = GameAnchor.generateAnchor(gameListing);
+				Hyperlink link = new Hyperlink(gameListing.getDisplayName(true), anchor);
+				pageController.getSoundPlayer().addMenuClick(link);
+				screen.observableGamesTable.setWidget(i++, 0, link);
+			}
+			if ( 0 == i ) {
+				screen.observableGamesTable.setText(0, 0, "No games in progress found.");
+			}
+		}
+	}
+
+	private StartObservationScreen screen = new StartObservationScreen();
 	
-	Timer refreshGamesTableTimer = new Timer() {
+	private Timer refreshObservableGameListTimer = new Timer() {
 		@Override
 		public void run() {
-			updateGamesListing();
+			requestUpdateObservableGameList();
 		}
 	};
 	
 	private PageController pageController;
-
-	public StartObservationScreenController() {
-	}
 	
-	private void updateGamesListing() {
-		//TODO don't show games that need a second player here
-		pageController.gameService.getObservableGameNames(new AsyncCallback<GameListing[]>() {
-			public void onFailure(Throwable throwable) {
-				pageController.getDialogController().showError("Error Getting Games", 
-					"An error occurred getting the current games from the server.", 
-					true, 
-					throwable);
-			}
+	private void requestUpdateObservableGameList() {
+		//Protect against spurious call after screen hidden.
+		if ( null == pageController ) return;
+		
+		pageController.gameService.getObservableGameNames(new RefreshObservableGameListCallback());
+	}
 
-			public void onSuccess(final GameListing[] gamesListing) {
-				GWT.log("got list of observable games.");
-				screen.observableGamesTable.clear();
-				int i = 0;
-				for (final GameListing gameListing : gamesListing) {
-					String anchor = GameAnchor.generateAnchor(gameListing);
-					Hyperlink link = new Hyperlink(gameListing.getDisplayName(true), anchor);
-					pageController.getSoundPlayer().addMenuClick(link);
-					screen.observableGamesTable.setWidget(i++, 0, link);
-				}
-				if ( 0 == i ) {
-					screen.observableGamesTable.setText(0, 0, "No games in progress found.");
-				}
-			}
-		});
+	@Override
+	public void hideScreen() {
+		refreshObservableGameListTimer.cancel();
+		pageController = null;
 	}
 
 	@Override
 	public void createScreen(final PageController pageController, Long modelId) {
 		this.pageController = pageController;
 		pageController.setBackground(Background.MENU);
-
+		pageController.getSoundPlayer().playMenuScreenMusic();
+	    pageController.setScreenTitle("Select a Game to Observe");
+	    
 		pageController.addScreen(screen.content);
 		
-		updateGamesListing();
+		requestUpdateObservableGameList();
 		
-		refreshGamesTableTimer.cancel();
+		refreshObservableGameListTimer.cancel();
 		// TODO would scheduling each time we update work better?
 		// updates take different amounts of time for different
 		// computers/networks
-		refreshGamesTableTimer.scheduleRepeating(GAME_LIST_REFRESH_INTERVAL);
-
-		pageController.getSoundPlayer().playMenuScreenMusic();
-	    pageController.setScreenTitle("Select a Game to Observe");
+		refreshObservableGameListTimer.scheduleRepeating(GAME_LIST_REFRESH_INTERVAL_MS);
 	}
-
-	@Override
-	public void hideScreen() {
-		refreshGamesTableTimer.cancel();
-	}
-
+	
 }
