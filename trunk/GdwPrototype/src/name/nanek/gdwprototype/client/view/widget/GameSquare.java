@@ -13,9 +13,10 @@ public class GameSquare extends Image {
 	//public int col;
 	
 	public GameSquare(Marker marker) {
-		super("images/" + marker.source);
+		super("images/" + marker.source, 0, 0, 50, 50);
 		this.marker = marker;
 		addMouseDownHandler(ImageUtil.NO_DEFAULT_DRAG_HANDLER);
+		setTitle(marker.name);
 	}
 
 	public void setMarker(Marker marker) {

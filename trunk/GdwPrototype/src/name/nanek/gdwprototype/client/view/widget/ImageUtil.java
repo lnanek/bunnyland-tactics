@@ -28,9 +28,10 @@ public class ImageUtil {
 	 * @param url String source of the image
 	 * @return image
 	 */
-	public static Image getNoDefaultDragImage(final String url) {
+/*	public static Image getNoDefaultDragImage(final String url) {
 		Image image = new Image(url);
 		image.addMouseDownHandler(NO_DEFAULT_DRAG_HANDLER);
 		return image;
 	}
+	*/
 }

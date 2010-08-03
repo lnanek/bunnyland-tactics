@@ -27,23 +27,23 @@ public class HowToPlayDialog {
 		dialogVPanel.addStyleName("dialogVPanel");
 		FlexTable table = new FlexTable();
 		int row = 0;
-		table.setWidget(row, 0, new Image("images/" + Markers.CARROT.source));
+		table.setWidget(row, 0, new Image("images/" + Markers.CARROT.source, 0, 0, 50, 50));
 		table.setWidget(row++, 2, new HTML(
 				"Find the carrots! Landing on a carrot earns you a new random bunny back home, <br />" + 
 				"as long as there's an open space adjacent to your home."));
 
-		table.setWidget(row, 0, new Image("images/" + Markers.PLAYER_TWO_WARREN.source));
-		table.setWidget(row, 1, new Image("images/" + Markers.PLAYER_ONE_WARREN.source));
+		table.setWidget(row, 0, new Image("images/" + Markers.PLAYER_TWO_WARREN.source, 0, 0, 50, 50));
+		table.setWidget(row, 1, new Image("images/" + Markers.PLAYER_ONE_WARREN.source, 0, 0, 50, 50));
 		table.setWidget(row++, 2, new HTML(
 				"Stomp the enemy's home with a stomper bunny to win! <br />" + 
 				"Protect your own home to survive."));
 		
-		table.setWidget(row, 0, new Image("images/" + Markers.PLAYER_TWO_STOMPER.source));
-		table.setWidget(row, 1, new Image("images/" + Markers.PLAYER_ONE_STOMPER.source));
+		table.setWidget(row, 0, new Image("images/" + Markers.PLAYER_TWO_STOMPER.source, 0, 0, 50, 50));
+		table.setWidget(row, 1, new Image("images/" + Markers.PLAYER_ONE_STOMPER.source, 0, 0, 50, 50));
 		table.setWidget(row++, 2, new Label("Stomper bunnies remove enemies when placed on them."));
 
-		table.setWidget(row, 0, new Image("images/" + Markers.PLAYER_TWO_SCOUT.source));
-		table.setWidget(row, 1, new Image("images/" + Markers.PLAYER_ONE_SCOUT.source));
+		table.setWidget(row, 0, new Image("images/" + Markers.PLAYER_TWO_SCOUT.source, 0, 0, 50, 50));
+		table.setWidget(row, 1, new Image("images/" + Markers.PLAYER_ONE_SCOUT.source, 0, 0, 50, 50));
 		table.setWidget(row++, 2, new Label("Scout bunnies can see far, but can't remove enemies."));
 
 		dialogVPanel.add(table);

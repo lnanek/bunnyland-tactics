@@ -38,8 +38,8 @@ public class Marker implements Serializable {
 	Marker() {
 	}
 	
-	Marker(String source, boolean terrain) {
-		this(null, source, null, null, null);
+	Marker(String name, String source, boolean terrain) {
+		this(name, source, null, null, null);
 		this.terrain = terrain;
 	}
 	
