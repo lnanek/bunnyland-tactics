@@ -180,6 +180,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 			tx.begin();
 
 			Game game = new Game();
+			game.setCreatorNickname(user.getNickname());
 			Set<Position> mapPositions = null;
 			GameSettings mapSettings = null;
 			if ( null != mapId ) {

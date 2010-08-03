@@ -102,7 +102,7 @@ public class CreateGameScreenController extends ScreenController {
 				boolean foundMap = false;
 				for (final GameListing gameListing : gamesListing) {
 					if ( null != gameListing ) {
-						screen.createGameMaps.addItem(gameListing.getName(),Long.toString(gameListing.getId()));
+						screen.createGameMaps.addItem(gameListing.getDisplayName(true),Long.toString(gameListing.getId()));
 						foundMap = true;
 					}
 				}

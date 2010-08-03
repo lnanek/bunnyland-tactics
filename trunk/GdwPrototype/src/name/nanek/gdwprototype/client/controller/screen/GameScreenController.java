@@ -628,7 +628,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 					return;
 				}
 				String type = gameListing.isStartingMap() ? "Creating Map " : "Playing Game ";
-				pageController.setScreenTitle(type + gameListing.getName());
+				pageController.setScreenTitle(type + gameListing.getDisplayName(false));
 			}
 		});
 
