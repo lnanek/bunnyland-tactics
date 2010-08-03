@@ -39,11 +39,13 @@ public class GameListing implements Serializable {
 			gameName = '"' + name + '"';
 		}
 		
+		/*TODO put this back in some other time, bad for demo since doesn't show demoers nickname if we login in for them with our accounts.
 		if ( includeAuthor ) {
 			if ( !nullOrEmpty(creatorNickname) ) {
 				gameName += " (by " + creatorNickname + ")";
 			}
 		}
+		*/
 		return gameName;
 	}
 	
