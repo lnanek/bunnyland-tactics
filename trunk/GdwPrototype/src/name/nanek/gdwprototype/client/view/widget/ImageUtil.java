@@ -2,7 +2,6 @@ package name.nanek.gdwprototype.client.view.widget;
 
 import com.google.gwt.event.dom.client.MouseDownEvent;
 import com.google.gwt.event.dom.client.MouseDownHandler;
-import com.google.gwt.user.client.ui.Image;
 
 /**
  * Utility methods for working with images.

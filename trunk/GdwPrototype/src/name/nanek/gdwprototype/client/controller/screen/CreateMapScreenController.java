@@ -34,131 +34,141 @@ import com.google.gwt.user.client.ui.TextBox;
  */
 public class CreateMapScreenController extends ScreenController {
 	
-	//TODO split creategameormapscreen out of startgamescreen
+	//Have the user login if needed, otherwise start displaying the screen contents.
+	private class ShowLoginOrStartDisplayCallback implements AsyncCallback<String> {
+		public void onFailure(Throwable throwable) {
+			//Protect against spurious call after screen hidden.
+			if ( null == pageController ) return;
+			
+			//Show error.
+			pageController.getDialogController().showError("Error Logging In", 
+					"An error occurred checking if you are logged in.", 
+					true, 
+					throwable);
+		}
 
-	private static final int GAME_LIST_REFRESH_INTERVAL = 5000; // ms
+		public void onSuccess(final String loginUrl) {
+			//Protect against spurious call after screen hidden.
+			if ( null == pageController ) return;
+
+			//User needs to login.
+			if ( null != loginUrl ) {
+				Window.open(loginUrl, "_self", ""); 
+				return;
+			}
+			
+			//User is logged in, update screen.
+			screen.content.setVisible(true);
+			screen.createMapNameField.setFocus(true);
+			screen.createMapNameField.selectAll();
+		}
+	}
+
+	private class CreateMapCallback implements AsyncCallback<GameListing> {
+		public void onFailure(Throwable throwable) {
+			//Protect against spurious call after screen hidden.
+			if ( null == pageController ) return;
+
+			//Show error and enable button so user can retry.
+			pageController.getDialogController().showError("Error Creating Map", 
+					"An error occurred requesting the server create the map.", 
+					true, 
+					throwable,
+					enableCreateMapButton);
+		}
+
+		public void onSuccess(GameListing gameListing) {
+			//Go to map editor.
+			final String anchor = GameAnchor.generateAnchor(gameListing);
+			History.newItem(anchor);
+		}
+	}
+
+	//Trigger create map on clicks and enter key.
+	private class CreateMapHandler implements ClickHandler, KeyDownHandler {
+		public void onClick(ClickEvent event) {
+			requestCreateMap();
+		}
+		//XXX This can fire when a control is hidden, but focused, and a key is pressed. Confusing for users.
+		public void onKeyDown(KeyDownEvent event) {
+			if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
+				requestCreateMap();
+			}
+		}
+	}
 	
 	private PageController pageController;
 	
-	CreateMapScreen startGameScreen;
+	private CreateMapScreen screen;
 	
-	Command enableCreateMap = new Command() {
+	private Command enableCreateMapButton = new Command() {
 		public void execute() {
-			startGameScreen.createMapButton.setEnabled(true);
+			screen.createMapButton.setEnabled(true);
 		}
 	};
 
-	public CreateMapScreenController() {
-	}
-
-	private void createMap() {
+	private void requestCreateMap() {
+		//Protect against spurious call after screen hidden.
+		if ( null == pageController ) return;
 
 		//TODO catch validationexception and change error label instead of showing dialog
 		//TODO validate as the user types
 		pageController.setErrorLabel("");				
 		
 		//Validate input.
-		final String gameName = FieldVerifier.validateGameName(startGameScreen.createMapNameField.getText());
+		final String gameName = FieldVerifier.validateGameName(screen.createMapNameField.getText());
 		
 		GameSettings settings = new GameSettings();				
-		int height = FieldVerifier.validateAndParseInt("Height", startGameScreen.boardHeightField, 2, 100);
+		int height = FieldVerifier.validateAndParseInt("Height", screen.boardHeightField, 2, 100);
 		settings.setBoardHeight(height);
-		int width = FieldVerifier.validateAndParseInt("Width", startGameScreen.boardWidthField, 2, 100);
+		int width = FieldVerifier.validateAndParseInt("Width", screen.boardWidthField, 2, 100);
 		settings.setBoardWidth(width);
 
-		//Set<Marker> markers = new HashSet<Marker>();
-		for( Map.Entry<Marker, TextBox> markerVisionRangeEntry : startGameScreen.playingPieceToVisibilityField.entrySet() ) {
+		for( Map.Entry<Marker, TextBox> markerVisionRangeEntry : screen.playingPieceToVisibilityField.entrySet() ) {
 			Marker marker = markerVisionRangeEntry.getKey();
 			int visionRange = FieldVerifier.validateAndParseInt("Vision range", markerVisionRangeEntry.getValue(), 0, 100);
 			marker.visionRange = visionRange;
 		}
-		for( Map.Entry<Marker, TextBox> markerMovementRangeEntry : startGameScreen.playingPieceToMovementField.entrySet() ) {
+		for( Map.Entry<Marker, TextBox> markerMovementRangeEntry : screen.playingPieceToMovementField.entrySet() ) {
 			Marker marker = markerMovementRangeEntry.getKey();
 			int movementRange = FieldVerifier.validateAndParseInt("Movement range", markerMovementRangeEntry.getValue(), 0, 100);
 			marker.movementRange = movementRange;
 		}
-		//TODO would an arraylist be cheaper to serialize?
-		//an array doesn't work out well, not persisted on server side
+		//Using an array doesn't work out well, not persisted by default on server side.
 		Set<Marker> markers = new HashSet<Marker>(Arrays.asList(Markers.PLAYING_PIECES));
 		settings.setMarkers(markers);
 	
-		// Then, we send the input to the server.
-		startGameScreen.createMapButton.setEnabled(false);
-		pageController.gameService.createGameOrMap(gameName, settings, null, new AsyncCallback<GameListing>() {
-			public void onFailure(Throwable throwable) {
-				pageController.getDialogController().showError("Error Creating Map", 
-						"An error occurred requesting the server create the map.", 
-						true, 
-						throwable,
-						enableCreateMap);
-			}
-
-			public void onSuccess(GameListing gameListing) {
-				enableCreateMap.execute();
-				final String anchor = GameAnchor.generateAnchor(gameListing);
-				History.newItem(anchor);
-			}
-		});
+		//Disable button so we don't get double submits.
+		screen.createMapButton.setEnabled(false);
+		
+		//Send data to server.
+		pageController.gameService.createGameOrMap(gameName, settings, null, new CreateMapCallback());
 	}
 		
+	@Override
+	public void hideScreen() {
+		pageController = null;
+	}
+	
 	@Override
 	public void createScreen(final PageController pageController, Long modelId) {
 		this.pageController = pageController;
 		pageController.setBackground(Background.MENU);
-		startGameScreen = new CreateMapScreen(pageController.getSoundPlayer());
+		pageController.setScreenTitle("Create Map");
+		pageController.getSoundPlayer().playMenuScreenMusic();
 		
-		startGameScreen.content.setVisible(false);
-		pageController.addScreen(startGameScreen.content);
+		screen = new CreateMapScreen(pageController.getSoundPlayer());
+		screen.content.setVisible(false);
+		pageController.addScreen(screen.content);
 
 		//Button to create a map.
-		class CreateGameHandler implements ClickHandler, KeyDownHandler {
-			/**
-			 * Fired when the user clicks on the sendButton.
-			 */
-			public void onClick(ClickEvent event) {
-				createMap();
-			}
-
-			/**
-			 * Fired when the user types in the nameField.
-			 */
-			//TODO this can fire when hidden sometimes, maybe disable it when screen hidden or make sure focus is moved?
-			public void onKeyDown(KeyDownEvent event) {
-				if (event.getNativeKeyCode() == KeyCodes.KEY_ENTER) {
-					createMap();
-				}
-			}
-		}
-		CreateGameHandler handler = new CreateGameHandler();
-		startGameScreen.createMapButton.addClickHandler(handler);
-		startGameScreen.createMapButton.addKeyDownHandler(handler);
+		CreateMapHandler handler = new CreateMapHandler();
+		screen.createMapButton.addClickHandler(handler);
+		screen.createMapButton.addKeyDownHandler(handler);
 				
 		//TODO have user login in a popup frame instead, so they don't have to wait for the application to reload when they get back.
 		String returnUrl = Window.Location.getHref();
-		
-		pageController.gameService.getLoginUrlIfNeeded(returnUrl, new AsyncCallback<String>() {
-			public void onFailure(Throwable throwable) {
-				pageController.getDialogController().showError("Error Logging In", 
-						"An error occurred checking if you are logged in.", 
-						true, 
-						throwable);
-				// TODO go back to main menu?
-			}
-
-			public void onSuccess(final String loginUrl) {
-				if ( null != loginUrl ) {
-					Window.open(loginUrl, "_self", ""); 
-				} else {
-					startGameScreen.content.setVisible(true);
-					startGameScreen.createMapNameField.setFocus(true);
-					startGameScreen.createMapNameField.selectAll();
-				}
-			}
-		});
-
-		pageController.setScreenTitle("Create Map");
-		pageController.getSoundPlayer().playMenuScreenMusic();
+		pageController.gameService.getLoginUrlIfNeeded(returnUrl, new ShowLoginOrStartDisplayCallback());
 	}
-
 
 }

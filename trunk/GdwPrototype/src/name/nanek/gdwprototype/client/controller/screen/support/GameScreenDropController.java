@@ -14,6 +14,7 @@
 package name.nanek.gdwprototype.client.controller.screen.support;
 
 import name.nanek.gdwprototype.client.controller.screen.GameScreenController;
+import name.nanek.gdwprototype.client.model.GamePlayInfo;
 import name.nanek.gdwprototype.client.view.widget.GameSquare;
 import name.nanek.gdwprototype.client.view.widget.PaletteImage;
 import name.nanek.gdwprototype.client.view.widget.TableCellPanel;
@@ -42,6 +43,11 @@ public class GameScreenDropController extends SimpleDropController {
 
 	@Override
 	public void onDrop(DragContext context) {
+		
+		GamePlayInfo info = gameScreenController.getCurrentGamePlayInfo();
+		if ( null == info ) {
+			return;
+		}
 
 		TableCellPanel source = (TableCellPanel) context.draggable.getParent();
 
@@ -76,12 +82,9 @@ public class GameScreenDropController extends SimpleDropController {
 	}
 
 	public void onPreviewDrop(DragContext context) throws VetoDragException {
-		// if ( ((PickupDragController)
-		// context.dragController).getBehaviorDragProxy() ) {
-		
-		//Game isn't loaded yet.
-		//TODO previous game flashes on screen when starting a new game, fix that so we don't get these spurious drags from stale game displays
-		if ( null == gameScreenController.info ) {
+
+		GamePlayInfo info = gameScreenController.getCurrentGamePlayInfo();
+		if ( null == info ) {
 			throw new VetoDragException();
 		}
 		
@@ -92,7 +95,7 @@ public class GameScreenDropController extends SimpleDropController {
 		
 		//Check unit can move this far.
 		//TODO check on server as well
-		if ( !gameScreenController.info.isBuildingMap ) {
+		if ( !info.isBuildingMap ) {
 			TableCellPanel source = (TableCellPanel) context.draggable.getParent();
 			int sourceCol = source.getColumn();
 			int sourceRow = source.getRow();
@@ -144,7 +147,7 @@ public class GameScreenDropController extends SimpleDropController {
 	}
 	
 	private void vetoDropAndNotifyUser() throws VetoDragException {
-		gameScreenController.pageController.getSoundPlayer().playInGameErrorSound();
+		gameScreenController.notifyUserBadDrop();
 		throw new VetoDragException();
 	}
 

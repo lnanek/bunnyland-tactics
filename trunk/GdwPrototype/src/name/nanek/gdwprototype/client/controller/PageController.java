@@ -55,17 +55,15 @@ public class PageController {
 	}
 	
 	private void showPage(String historyToken) {
-		GWT.log("PageController#showPage: historyToken = " + historyToken);
+		//GWT.log("PageController#showPage: historyToken = " + historyToken);
 
-		
-		
 		Long currentGameId = GameAnchor.getIdFromAnchor(historyToken);
 		
 		ScreenController controller = ScreenControllers.getController(historyToken);
 		if ( null != currentController ) {
 			currentController.hideScreen();
 		}
-		GWT.log("PageController#showPage: controller = " + controller);
+		//GWT.log("PageController#showPage: controller = " + controller);
 
 		//When there's no history token, we're at the first page/main menu, so don't link the title.
 		RootPanel heading = RootPanel.get("siteHeading");

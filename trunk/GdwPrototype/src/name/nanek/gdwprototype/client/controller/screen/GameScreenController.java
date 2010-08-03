@@ -43,11 +43,175 @@ import com.google.gwt.user.client.ui.HTMLTable.CellFormatter;
  *
  */
 public class GameScreenController extends ScreenController implements FogOfWarChangeListener {
-	//TODO hotseat mode: move -> black screen with next player button -> switches player
-	
-	private static final int GAME_BOARD_REFRESH_INTERVAL = 1000; // ms
 
-	GameScreen gameScreen;
+	//TODO hotseat mode: move -> black screen with next player button -> switches player
+
+	private static final int GAME_BOARD_REFRESH_INTERVAL_MS = 1000;
+
+	private class SetupBoardCallback implements AsyncCallback<GamePlayInfo> {
+		public void onFailure(Throwable caught) {
+			if ( null == pageController ) return;
+			
+			//TODO tell user they have to close the dialog and refresh the browser to retry this one?
+			//or retry for them?
+			pageController.getDialogController().showError(
+					"Error Setting Up Board",								
+					"An error occurred asking the server for the game/map settings.",
+					true,
+					caught);
+		}
+
+		public void onSuccess(final GamePlayInfo info) {
+			if ( null == pageController ) return;
+			
+			setupBoard(info);
+		}
+	}
+
+	//TODO return title with other game setup info rather than a separate call
+	private class RequestTitleCallback implements AsyncCallback<GameListing> {
+		public void onFailure(Throwable caught) {
+			if ( null == pageController ) return;
+			
+			pageController.getDialogController().showError(
+					"Error Finding Game Or Map",								
+					"An error occurred finding the requested game or map.",
+					true,
+					caught);
+			// TODO go back to main menu? offer retry/cancel?
+		}
+
+		public void onSuccess(final GameListing gameListing) {
+			if ( null == pageController ) return;
+			
+			String type = gameListing.isStartingMap() ? "Creating Map " : "Playing Game ";
+			pageController.setScreenTitle(type + gameListing.getDisplayName(false));
+		}
+	}
+
+	private class GameDragHandler implements DragHandler {
+		@Override
+		public void onDragEnd(DragEndEvent event) {
+			if ( null == pageController ) return;
+			
+			dragInProgress = false;
+			
+			//If was dragging something in a game, not a map editor.
+			if ( null != info && !info.isBuildingMap ) {
+				//Remove highlights for where it can go.	
+				
+				CellFormatter formatter = gameScreen.gameBoard.getCellFormatter();
+				
+				int rows = gameScreen.gameBoard.getRowCount();
+				for (int row = 0; row < rows; row++) {
+					int cols = gameScreen.gameBoard.getCellCount(row);
+					for (int col = 0; col < cols; col++) {	
+						//TableCellPanel destPanel = (TableCellPanel) gameScreen.gameBoard.getWidget(row, col);
+						//destPanel.removeStyleName("validDropTarget");
+						
+						formatter.removeStyleName(row, col, "validDropTarget");
+					}
+				}
+			}
+		}
+
+		@Override
+		public void onDragStart(DragStartEvent event) {
+			if ( null == pageController ) return;
+			
+			dragInProgress = true;
+			
+			pageController.getSoundPlayer().playPickupPiceSound();
+
+			//If dragging something in a game, not a map editor.
+			if ( null != info && !info.isBuildingMap ) {
+				
+				//Highlight where it can go.
+				GameSquare gameSquare = (GameSquare) event.getContext().draggable;
+				if ( gameSquare instanceof PaletteImage ) {
+					return;
+				}
+				Marker marker = gameSquare.marker;
+				
+				TableCellPanel sourcePanel = (TableCellPanel) gameSquare.getParent();
+
+				int startRow = Math.max(0,	sourcePanel.getRow() - marker.movementRange);
+				int endRow = Math.min(gameScreen.gameBoard.getRowCount() - 1, sourcePanel.getRow() + marker.movementRange);
+					
+				CellFormatter formatter = gameScreen.gameBoard.getCellFormatter();
+				
+				for (int row = startRow; row <= endRow; row++) {
+					
+					int startCol = Math.max(0,	sourcePanel.getColumn() - marker.movementRange);
+					int endCol = Math.min(gameScreen.gameBoard.getCellCount(row) - 1, sourcePanel.getColumn() + marker.movementRange);
+					
+					for (int col = startCol; col <= endCol; col++) {	
+						int rowDistance = Math.abs(sourcePanel.getRow() - row);
+						int colDistance = Math.abs(sourcePanel.getColumn() - col);
+						int totalDistance = rowDistance + colDistance;
+						if (totalDistance <= marker.movementRange) {
+							//TableCellPanel destPanel = (TableCellPanel) gameScreen.gameBoard.getWidget(row, col);
+							//destPanel.addStyleName("validDropTarget");
+							
+							formatter.addStyleName(row, col, "validDropTarget");
+						}
+					}
+				}
+			}
+		}
+
+		@Override
+		public void onPreviewDragEnd(DragEndEvent event) throws VetoDragException {
+		}
+
+		@Override
+		public void onPreviewDragStart(DragStartEvent event) throws VetoDragException {
+			//TODO veto here if not players marker instead of adjusting draggables?
+		}
+	}
+	
+	private class RefreshGameBoardCallback implements AsyncCallback<GamePlayInfo> {
+		public void onFailure(Throwable caught) {
+			if ( null == pageController ) return;
+			
+			pageController.getDialogController().showError(
+					"Error Getting Positions",								
+					"An error occurred asking the server for the current game piece positions.",
+					true,
+					caught);
+		}
+
+		public void onSuccess(final GamePlayInfo info) {
+			if ( null == pageController ) return;
+			
+			updateGameBoardWithInfo(info);
+		}
+	}
+
+	private class MoveMarkerCallback implements AsyncCallback<GamePlayInfo> {
+		public void onFailure(Throwable caught) {
+			if ( null == pageController ) return;
+			
+			pageController.getDialogController().showError(
+					"Error Moving Piece",								
+					"An error occurred asking the game server to move the requested piece.",
+					true,
+					caught);
+			pageController.getSoundPlayer().playInGameErrorSound();
+			refreshGameBoardNeeded = true;
+			requestRefreshGameBoard();
+		}
+
+		public void onSuccess(GamePlayInfo info) {
+			if ( null == pageController ) return;
+			
+			//TODO players take turns, so nothing changed but what we dragged, so just update fog of war and turn status?
+			//technically we don't even need a positions update and it could be removed to make moving things respond quicker
+			updateGameBoardWithInfo(info);
+		}
+	}
+
+	private GameScreen gameScreen;
 
 	private Long gameId;
 
@@ -55,100 +219,62 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 
 	private boolean dragInProgress;
 
-	public PickupDragController dragController;
+	private PickupDragController dragController;
 
-	public PageController pageController;
+	private PageController pageController;
 	
 	private HashSet<GameSquare> draggables;
 	
 	private List<GameScreenDropController> boardDropControllers;
 	
-	private boolean updatesRequired = true;
+	private boolean refreshGameBoardNeeded = true;
 
 	private boolean playedGameOverMusic;
 	
-	public GamePlayInfo info;
+	private GamePlayInfo info;
 	
-	Integer lastPlayedSoundForMoveCount;
+	private Integer lastPlayedSoundForMoveCount;
 	
 	//TODO don't refresh when window blurred
 	//detecting refocus seems dicey, chrome isn't calling properly when switch back to tab from another, 
 	//but can show pause dialog and have user click to unpause
-	Timer refreshGameBoardTimer = new Timer() {
+	private Timer refreshGameBoardTimer = new Timer() {
 		@Override
 		public void run() {
-			updateGameBoard();
+			requestRefreshGameBoard();
 		}
 	};
 
-	public GameScreenController() {
+	@Override
+	public void onFogOfWarChange(Player fogOfWarAs) {
+		this.fogOfWarAs = fogOfWarAs;
+		refreshGameBoardNeeded = true;
+		requestRefreshGameBoard();
 	}
 	
-	@Override
-	public void onFogOfWarChange(Player newFogOfWarAs) {
-		fogOfWarAs = newFogOfWarAs;
-		updatesRequired = true;
-		updateGameBoard();
+	public GamePlayInfo getCurrentGamePlayInfo() {
+		return info;
 	}
 	
 	public void moveMarker(Integer sourceRow, Integer sourceColumn, Integer destRow, Integer destColumn,
 			String newImageSource, final Marker replacedMarker) {
+
+		if ( null == pageController ) return;
 		
 		//TODO clearing and restoring draggables isn't needed for map building
 		clearDraggables();
 
 		pageController.gameService.moveMarker(gameId, sourceRow, sourceColumn, destRow, destColumn,
-				newImageSource, new AsyncCallback<GamePlayInfo>() {
-					public void onFailure(Throwable caught) {
-						pageController.getDialogController().showError(
-								"Error Moving Piece",								
-								"An error occurred asking the game server to move the requested piece.",
-								true,
-								caught);
-						pageController.getSoundPlayer().playInGameErrorSound();
-						updatesRequired = true;
-						updateGameBoard();
-					}
-
-					public void onSuccess(GamePlayInfo info) {
-						/*
-						if ( null == replacedMarker ) {
-							pageController.getSoundPlayer().playPiecePlacementSound();
-						} else if ( null != replacedMarker.player ) {
-							pageController.getSoundPlayer().playDyingSound();
-						} else if (replacedMarker.source.contains("carrot")) {
-							pageController.getSoundPlayer().playCarrotSound();
-						} else {
-							pageController.getSoundPlayer().playPiecePlacementSound();
-						}
-						*/
-						
-						//TODO players take turns, so nothing changed but what we dragged, so just update fog of war and turn status?
-						//technically we don't even need a positions update and it could be removed to make moving things respond quicker
-						updateGameBoardWithInfo(info);
-					}
-				});
+				newImageSource, new MoveMarkerCallback());
 	}
 
-	private void updateGameBoard() {
+	private void requestRefreshGameBoard() {
 		
-		if ( dragInProgress || !updatesRequired ) {
+		if ( dragInProgress || !refreshGameBoardNeeded || null == pageController ) {
 			return;
 		}
 
-		pageController.gameService.getPositionsByGameId(gameId, new AsyncCallback<GamePlayInfo>() {
-			public void onFailure(Throwable caught) {
-				pageController.getDialogController().showError(
-						"Error Getting Positions",								
-						"An error occurred asking the server for the current game piece positions.",
-						true,
-						caught);
-			}
-
-			public void onSuccess(final GamePlayInfo info) {
-				updateGameBoardWithInfo(info);
-			}
-		});
+		pageController.gameService.getPositionsByGameId(gameId, new RefreshGameBoardCallback());
 	}
 	
 	private void setVisibileSquares(int markerRow, int markerCol, Marker marker, boolean[][] visibleSquares, int boardWidth, int boardHeight) {
@@ -183,7 +309,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 	}
 	
 	private void updateGameBoardWithInfo(final GamePlayInfo info) {
-		if (dragInProgress) {
+		if (dragInProgress || null == pageController) {
 			return;
 		}
 		
@@ -293,7 +419,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 					status += " The author has not yet published it for use.";
 				}
 			}
-			updatesRequired = true;
+			refreshGameBoardNeeded = true;
 		} else if ( info.ended ) {
 			if ( Player.ONE == info.winner ) {
 				status = "Black won!";
@@ -302,20 +428,20 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			} else {
 				status = "Game over.";
 			}
-			updatesRequired = false;
+			refreshGameBoardNeeded = false;
 		} else if ( null == info.playingAs ) {
 			status = "You are observing this game and cannot make moves.";
-			updatesRequired = true;
+			refreshGameBoardNeeded = true;
 		} else if ( info.isUsersTurn ) {
 			String pieceColor = info.playingAs == Player.ONE ? "black" : "red";
 			status = "It's your turn. Drag a " + pieceColor + " piece to make your move!";
-			updatesRequired = false;
+			refreshGameBoardNeeded = false;
 		} else if ( info.needsSecondPlayer ) {
 			status = "Waiting for a second player to join the game.";
-			updatesRequired = true;
+			refreshGameBoardNeeded = true;
 		} else {
 			status = "Please wait while the other player moves a piece.";
-			updatesRequired = true;
+			refreshGameBoardNeeded = true;
 		}
 		gameScreen.statusLabel.setText(status +" ");
 
@@ -383,7 +509,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		gameScreen.content.setVisible(true);
 	}
 	
-	private HashSet<Position> removeTerrainUnderUnits(Position[] positions) {
+	private static HashSet<Position> removeTerrainUnderUnits(Position[] positions) {
 		//XXX The engine can't currently show a tile on top of another,
 		//so there's an ugly hack here to filter out terrain that units are on top of.
 		//TODO show tiles on top of one another, units on top of terrain
@@ -453,203 +579,114 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		for( GameScreenDropController simpleDropController : boardDropControllers) {
 			dragController.unregisterDropController(simpleDropController);
 		}
-		pageController = null;
 		refreshGameBoardTimer.cancel();
+		info = null;
+		pageController = null;
+	}
+	
+	class SurrenderCallback implements AsyncCallback<Void> {
+		public void onFailure(Throwable caught) {
+			if ( null == pageController ) return;
+			
+			pageController.getDialogController().showError(
+					"Error Surrendering",								
+					"An error occurred asking the game server to surrender.",
+					true,
+					caught);
+			restoreDraggables();
+			gameScreen.surrenderButton.setEnabled(true);
+		}
+
+		public void onSuccess(Void unused) {
+			if ( null == pageController ) return;
+			
+			refreshGameBoardNeeded = true;
+			requestRefreshGameBoard();
+		}
+	};
+	class SurrenderClickHandler implements ClickHandler {
+		@Override
+		public void onClick(ClickEvent event) {
+			if ( null == pageController ) return;
+			
+			clearDraggables();
+			gameScreen.surrenderButton.setEnabled(false);
+			pageController.gameService.surrender(gameId, info.playingAs, new SurrenderCallback());
+		}
+	}
+	
+	class PublishMapCallback implements AsyncCallback<Void> {
+		public void onFailure(Throwable caught) {
+			if ( null == pageController ) return;
+			
+			pageController.getDialogController().showError(
+					"Error Publishing Map",								
+					"An error occurred asking the game server to publish the map.",
+					true,
+					caught);
+			gameScreen.publishMapButton.setEnabled(true);
+		}
+
+		public void onSuccess(Void unused) {
+			if ( null == pageController ) return;
+
+			//Go to create game screen.
+			History.newItem(ScreenControllers.getHistoryToken(Screen.CREATE_GAME));
+		}
+	};
+	class PublishMapClickHandler implements ClickHandler {
+		@Override
+		public void onClick(ClickEvent event) {
+			if ( null == pageController ) return;
+			
+			gameScreen.publishMapButton.setEnabled(false);
+			pageController.gameService.publishMap(gameId, new PublishMapCallback());
+		}
 	}
 	
 	@Override
 	public void createScreen(final PageController pageController, final Long gameId) {
-		
-		gameScreen = new GameScreen(pageController.getSoundPlayer());
-
 		this.gameId = gameId;
 		if ( null == gameId ) {
 			History.newItem(ScreenControllers.getHistoryToken(Screen.MENU));
 			return;
 		}
 		
+		this.pageController = pageController;
+		pageController.getSoundPlayer().playInGameMusic();
+		
+		gameScreen = new GameScreen(pageController.getSoundPlayer());
+		pageController.addScreen(gameScreen.content);	
+		gameScreen.setFogOfWarChangeListener(this);
 		//TODO remember players who have seen this before and don't show?
 		gameScreen.howToPlayDialog.show();
 
 		draggables = new HashSet<GameSquare>();
 		boardDropControllers = new LinkedList<GameScreenDropController>();
-		this.pageController = pageController;
-		pageController.getSoundPlayer().playInGameMusic();
-		pageController.addScreen(gameScreen.content);
-
-		gameScreen.setFogOfWarChangeListener(this);
-
 		dragController = new PickupDragController(RootPanel.get(), false);
 		dragController.setBehaviorDragProxy(true);
 		dragController.setBehaviorMultipleSelection(false);
-		dragController.addDragHandler(new DragHandler() {
-
-			@Override
-			public void onDragEnd(DragEndEvent event) {
-				dragInProgress = false;
-				
-				//If was dragging something in a game, not a map editor.
-				if ( null != info && !info.isBuildingMap ) {
-					//Remove highlights for where it can go.	
-					
-					CellFormatter formatter = gameScreen.gameBoard.getCellFormatter();
-					
-					int rows = gameScreen.gameBoard.getRowCount();
-					for (int row = 0; row < rows; row++) {
-						int cols = gameScreen.gameBoard.getCellCount(row);
-						for (int col = 0; col < cols; col++) {	
-							//TableCellPanel destPanel = (TableCellPanel) gameScreen.gameBoard.getWidget(row, col);
-							//destPanel.removeStyleName("validDropTarget");
-							
-							formatter.removeStyleName(row, col, "validDropTarget");
-						}
-					}
-				}
-			}
-
-			@Override
-			public void onDragStart(DragStartEvent event) {
-				dragInProgress = true;
-				
-				pageController.getSoundPlayer().playPickupPiceSound();
-
-				//If dragging something in a game, not a map editor.
-				if ( null != info && !info.isBuildingMap ) {
-					
-					//Highlight where it can go.
-					GameSquare gameSquare = (GameSquare) event.getContext().draggable;
-					if ( gameSquare instanceof PaletteImage ) {
-						return;
-					}
-					Marker marker = gameSquare.marker;
-					
-					TableCellPanel sourcePanel = (TableCellPanel) gameSquare.getParent();
-
-					int startRow = Math.max(0,	sourcePanel.getRow() - marker.movementRange);
-					int endRow = Math.min(gameScreen.gameBoard.getRowCount() - 1, sourcePanel.getRow() + marker.movementRange);
-						
-					CellFormatter formatter = gameScreen.gameBoard.getCellFormatter();
-					
-					for (int row = startRow; row <= endRow; row++) {
-						
-						int startCol = Math.max(0,	sourcePanel.getColumn() - marker.movementRange);
-						int endCol = Math.min(gameScreen.gameBoard.getCellCount(row) - 1, sourcePanel.getColumn() + marker.movementRange);
-						
-						for (int col = startCol; col <= endCol; col++) {	
-							int rowDistance = Math.abs(sourcePanel.getRow() - row);
-							int colDistance = Math.abs(sourcePanel.getColumn() - col);
-							int totalDistance = rowDistance + colDistance;
-							if (totalDistance <= marker.movementRange) {
-								//TableCellPanel destPanel = (TableCellPanel) gameScreen.gameBoard.getWidget(row, col);
-								//destPanel.addStyleName("validDropTarget");
-								
-								formatter.addStyleName(row, col, "validDropTarget");
-							}
-						}
-					}
-				}
-			}
-
-			@Override
-			public void onPreviewDragEnd(DragEndEvent event) throws VetoDragException {
-			}
-
-			@Override
-			public void onPreviewDragStart(DragStartEvent event) throws VetoDragException {
-				//TODO veto here if not players marker instead of adjusting draggables?
-			}
-		});
+		dragController.addDragHandler(new GameDragHandler());
 		
 		//Setup surrender button.
-		class SurrenderCallback implements AsyncCallback<Void> {
-			public void onFailure(Throwable caught) {
-				pageController.getDialogController().showError(
-						"Error Surrendering",								
-						"An error occurred asking the game server to surrender.",
-						true,
-						caught);
-				restoreDraggables();
-				gameScreen.surrenderButton.setEnabled(true);
-			}
 
-			public void onSuccess(Void unused) {
-				updatesRequired = true;
-				updateGameBoard();
-			}
-		};
-		class SurrenderClickHandler implements ClickHandler {
-			@Override
-			public void onClick(ClickEvent event) {
-				clearDraggables();
-				gameScreen.surrenderButton.setEnabled(false);
-				pageController.gameService.surrender(gameId, info.playingAs, new SurrenderCallback());
-			}
-		}
 		gameScreen.surrenderButton.addClickHandler(new SurrenderClickHandler());
 
 		//Setup publish map button.
-		class PublishMapCallback implements AsyncCallback<Void> {
-			public void onFailure(Throwable caught) {
-				pageController.getDialogController().showError(
-						"Error Publishing Map",								
-						"An error occurred asking the game server to publish the map.",
-						true,
-						caught);
-				gameScreen.publishMapButton.setEnabled(true);
-			}
 
-			public void onSuccess(Void unused) {
-				//updateGameBoard();
-				History.newItem(ScreenControllers.getHistoryToken(Screen.CREATE_GAME));
-			}
-		};
-		class PublishMapClickHandler implements ClickHandler {
-			@Override
-			public void onClick(ClickEvent event) {
-				gameScreen.publishMapButton.setEnabled(false);
-				pageController.gameService.publishMap(gameId, new PublishMapCallback());
-			}
-		}
 		gameScreen.publishMapButton.addClickHandler(new PublishMapClickHandler());
 
 		//Load screen title.
-		pageController.gameService.getGameListingById(gameId, new AsyncCallback<GameListing>() {
-			public void onFailure(Throwable caught) {
-				pageController.getDialogController().showError(
-						"Error Finding Game Or Map",								
-						"An error occurred finding the requested game or map.",
-						true,
-						caught);
-				// TODO go back to main menu? offer retry/cancel?
-			}
-
-			public void onSuccess(final GameListing gameListing) {
-				if ( null == pageController ) {
-					return;
-				}
-				String type = gameListing.isStartingMap() ? "Creating Map " : "Playing Game ";
-				pageController.setScreenTitle(type + gameListing.getDisplayName(false));
-			}
-		});
+		pageController.gameService.getGameListingById(gameId, new RequestTitleCallback());
 
 		//Setup board.
 		//TODO have a separate DTO with the setup information neeeded, make regular position callback quicker
-		pageController.gameService.getPositionsByGameId(gameId, new AsyncCallback<GamePlayInfo>() {
-			public void onFailure(Throwable caught) {
-				pageController.getDialogController().showError(
-						"Error Setting Up Board",								
-						"An error occurred asking the server for the game/map settings.",
-						true,
-						caught);
-			}
-
-			public void onSuccess(final GamePlayInfo info) {
-				setupBoard(info);
-			}
-		});
+		pageController.gameService.getPositionsByGameId(gameId, new SetupBoardCallback());
 	}
 	
 	private void setupBoard(GamePlayInfo info) {
+
+		if ( null == pageController ) return;
 
 		//Load piece settings.
 		//TODO just use markers from settings, don't have a static copy on client?
@@ -696,7 +733,13 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		//Start regular board updates.
 		updateGameBoardWithInfo(info);
 		//TODO only schedule a new screen update when the previous finishes? repeating might build up a queue if updates are slower than refresh interval
-		refreshGameBoardTimer.scheduleRepeating(GAME_BOARD_REFRESH_INTERVAL);
+		refreshGameBoardTimer.scheduleRepeating(GAME_BOARD_REFRESH_INTERVAL_MS);
+	}
+
+	public void notifyUserBadDrop() {		
+		if ( null == pageController ) return;
+
+		pageController.getSoundPlayer().playInGameErrorSound();
 	}
 
 }
