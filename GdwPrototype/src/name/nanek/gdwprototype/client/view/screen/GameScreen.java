@@ -73,18 +73,19 @@ public class GameScreen {
 		howToPlayDialog = new HowToPlayDialog(soundPlayer);
 		
 		//Show game status and controls at top of screen.
-		HorizontalPanel statusAndControls = new HorizontalPanel();;
-		statusAndControls.add(statusLabel);
-		statusAndControls.add(surrenderButton);
-		statusAndControls.add(publishMapButton);
-		statusAndControls.add(howToPlayButton);
+		content.add(statusLabel);
+		content.add(new HTML("<br />"));
+		HorizontalPanel controlsPanel = new HorizontalPanel();
+		controlsPanel.add(surrenderButton);
+		controlsPanel.add(publishMapButton);
+		controlsPanel.add(howToPlayButton);
 		howToPlayButton.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
 				howToPlayDialog.show();
 			}
 		});
-		content.add(statusAndControls);
+		content.add(controlsPanel);
 
 		//Setup fog of war controls for observer and map builder.
 		fogOfWarPanel.add(new Label("Fog of War:"));
@@ -110,7 +111,6 @@ public class GameScreen {
 		content.add(mapBuilderPalettePanel);
 
 		//Setup game board for players.
-		content.add(new HTML("<br />"));
 		HTML boardHeader = new HTML();
 		boardHeader.setHTML("<h3>Game board:</h3>");
 		content.add(boardHeader);

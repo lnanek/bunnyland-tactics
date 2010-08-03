@@ -8,7 +8,7 @@ import name.nanek.gdwprototype.client.model.Player;
 
 public class Markers {
 
-	public static final Marker CARROT = new Marker("tile_carrot.png", true);
+	public static final Marker CARROT = new Marker("Carrot", "tile_carrot.png", true);
 
 	public static final Marker PLAYER_ONE_STOMPER = 
 		new Marker("Player 1 Stomper", "piece_player1_warrior.png", Player.ONE, 1, 2);
@@ -17,16 +17,16 @@ public class Markers {
 		new Marker("Player 1 Scout", "piece_player1_scout.png", Player.ONE, 2, 2);
 
 	public static final Marker PLAYER_ONE_WARREN = 
-		new Marker("Player 1 Warren", "piece_player1_home.png", Player.ONE, 1, 0);
+		new Marker("Player 1 Home", "piece_player1_home.png", Player.ONE, 1, 0);
 
 	public static final Marker PLAYER_TWO_STOMPER = new Marker("Player 2 Stomper", "piece_player2_warrior.png", Player.TWO, 1, 2);
 
 	public static final Marker PLAYER_TWO_SCOUT = new Marker("Player 2 Scout", "piece_player2_scout.png", Player.TWO, 2, 2);
 
 	public static final Marker PLAYER_TWO_WARREN = 
-		new Marker("Player 2 Warren", "piece_player2_home.png", Player.TWO, 1, 0);
+		new Marker("Player 2 Home", "piece_player2_home.png", Player.TWO, 1, 0);
 	
-	public static final Marker FOG_OF_WAR = new Marker("tile_fog_of_war.png", false);
+	public static final Marker FOG_OF_WAR = new Marker("You can't see this far.", "tile_fog_of_war.png", false);
 	
 	public static final Marker[] ALL_MARKERS = new Marker[] { 
 		PLAYER_ONE_WARREN,
@@ -38,9 +38,9 @@ public class Markers {
 		PLAYER_TWO_STOMPER, 
 
 		CARROT,
-		new Marker("tile_tree.png", true), 
-		new Marker("tile_grass.png", true), 
-		new Marker("tile_hill.png", true), 
+		new Marker("Tree", "tile_tree.png", true), 
+		new Marker("Grass", "tile_grass.png", true), 
+		new Marker("Hill", "tile_hill.png", true), 
 		
 		FOG_OF_WAR,
 	};
