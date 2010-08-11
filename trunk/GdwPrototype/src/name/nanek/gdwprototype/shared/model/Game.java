@@ -17,6 +17,12 @@ import name.nanek.gdwprototype.client.model.Player;
 
 import org.datanucleus.jpa.annotations.Extension;
 
+/**
+ * A game or map.
+ * 
+ * @author Lance Nanek
+ *
+ */
 @Entity
 public class Game implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -36,7 +42,7 @@ public class Game implements Serializable {
 	@OneToMany(cascade = CascadeType.ALL)   
 	private Set<Position> positions;
 	
-	private boolean startingMap;
+	private boolean map;
 
 	@Column(nullable = false)
 	private int moveNumber = 0;
@@ -66,12 +72,12 @@ public class Game implements Serializable {
 		return ended;
 	}
 
-	public boolean isStartingMap() {
-		return startingMap;
+	public boolean isMap() {
+		return map;
 	}
 
-	public void setStartingMap(boolean startingMap) {
-		this.startingMap = startingMap;
+	public void setMap(boolean startingMap) {
+		this.map = startingMap;
 	}
 
 	public Player getWinner() {
@@ -127,7 +133,7 @@ public class Game implements Serializable {
 	}
 
 	public GameListing getListing() {
-		return new GameListing(name, keyId, startingMap, creatorNickname);
+		return new GameListing(name, keyId, map, creatorNickname);
 	}
 
 	public Set<Position> getPositions() {

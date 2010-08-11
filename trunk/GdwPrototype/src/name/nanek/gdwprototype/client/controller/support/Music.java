@@ -1,12 +1,14 @@
-/**
- * 
- */
 package name.nanek.gdwprototype.client.controller.support;
-
 
 import com.allen_sauer.gwt.voices.client.Sound;
 import com.allen_sauer.gwt.voices.client.handler.SoundHandler;
 
+/**
+ * Music that can be looped and plays at half the volume of other sounds.
+ * 
+ * @author Lance Nanek
+ *
+ */
 public class Music {
 	
 	private static final int MUSIC_VOLUME = 50;

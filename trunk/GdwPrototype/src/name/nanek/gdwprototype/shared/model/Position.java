@@ -9,6 +9,12 @@ import javax.persistence.Id;
 
 import org.datanucleus.jpa.annotations.Extension;
 
+/**
+ * A place a marker is located on the game board.
+ * 
+ * @author Lance Nanek
+ *
+ */
 @Entity
 public class Position implements Serializable {
 

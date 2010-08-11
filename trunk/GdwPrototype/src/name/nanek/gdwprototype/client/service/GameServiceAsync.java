@@ -10,7 +10,8 @@ import name.nanek.gdwprototype.shared.model.GameSettings;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
 /**
- * The async counterpart of <code>GameService</code>.
+ * Methods the client can call on the server and receive a response back later.
+ * Asynchronous counterpart to <code>GameService</code>.
  */
 public interface GameServiceAsync {
 	

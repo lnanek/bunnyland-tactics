@@ -1,5 +1,11 @@
 package name.nanek.gdwprototype.client.util;
 
+/**
+ * Utility methods for working with exceptions on the client side.
+ * 
+ * @author Lance Nanek
+ *
+ */
 public class ExceptionUtil {
 
 	public static String exceptionTextToHtml(String text) {

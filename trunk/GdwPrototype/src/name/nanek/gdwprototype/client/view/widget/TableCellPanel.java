@@ -4,6 +4,12 @@ import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 
+/**
+ * A panel that knows where it is on the game board.
+ * 
+ * @author Lance Nanek
+ *
+ */
 public class TableCellPanel extends SimplePanel {
 
 	private int row;

@@ -4,6 +4,12 @@ import java.io.Serializable;
 
 import name.nanek.gdwprototype.shared.model.Marker;
 
+/**
+ * Contains information needed to display a game board.
+ * 
+ * @author Lance Nanek
+ *
+ */
 public class GameDisplayInfo implements Serializable {
 
 	private static final long serialVersionUID = 1L;
