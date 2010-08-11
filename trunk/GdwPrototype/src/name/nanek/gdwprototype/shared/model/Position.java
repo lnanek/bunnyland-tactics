@@ -25,22 +25,19 @@ public class Position implements Serializable {
     @Extension(vendorName="datanucleus", key="gae.encoded-pk", value="true")
     private String encodedKey;
 
-	// @ManyToOne
-	// private Game game;
-
 	private int row;
 
 	private int column;
 
-	private String markerSource;
+	private Marker marker;
 
 	public Position() {
 	}
 
-	public Position(int row, int column, String markerSource) {
+	public Position(int row, int column, Marker marker) {
 		this.row = row;
 		this.column = column;
-		this.markerSource = markerSource;
+		this.marker = marker;
 	}
 
 	public int getColumn() {
@@ -50,7 +47,12 @@ public class Position implements Serializable {
 	public int getRow() {
 		return row;
 	}
+	
+	public Marker getMarker() {
+		return marker;
+	}
 
+	/*
 	public String getMarkerSource() {
 		return markerSource;
 	}
@@ -64,5 +66,6 @@ public class Position implements Serializable {
 		}
 		return fileName;
 	}
+	*/
 
 }

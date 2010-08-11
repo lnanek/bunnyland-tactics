@@ -241,7 +241,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 	}
 	
 	public void moveMarker(Integer sourceRow, Integer sourceColumn, Integer destRow, Integer destColumn,
-			String newImageSource, final Marker replacedMarker) {
+			Long movedMarkerId, final Marker replacedMarker) {
 
 		if ( null == pageController ) return;
 		
@@ -249,7 +249,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		clearDraggables();
 
 		pageController.gameService.moveMarker(gameId, sourceRow, sourceColumn, destRow, destColumn,
-				newImageSource, new MoveMarkerCallback());
+				movedMarkerId, new MoveMarkerCallback());
 	}
 
 	private void requestRefreshGameBoard() {
@@ -446,7 +446,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			//Translate the server sent positions into markers.
 			//TODO just send markers over directly
 			//TODO stop storing full URLs in DB
-			Marker marker = Markers.markerBySource.get(position.getMarkerSourceFilename());
+			Marker marker = position.getMarker();
 			int row = position.getRow();
 			int col = position.getColumn();
 			//GWT.log("Position " + row + ", " + col + " using marker: " + marker);
@@ -502,7 +502,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		filteredPositions.addAll(Arrays.asList(positions));
 		
 		for( Position first : positions ) {
-			if ( !first.getMarkerSource().contains("tile_") ) {
+			if ( !first.getMarker().terrain ) {
 				continue;
 			}
 			
@@ -669,14 +669,6 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		String type = info.map ? "Creating Map " : "Playing Game ";
 		pageController.setScreenTitle(type + info.listing.getDisplayName(false));
 
-		//Load piece settings.
-		//TODO just use markers from settings, don't have a static copy on client?
-		for( Marker settingsMarker : info.markers ) {
-			Marker marker = Markers.markerBySource.get(settingsMarker.source);
-			marker.movementRange = settingsMarker.movementRange;
-			marker.visionRange = settingsMarker.visionRange;
-		}
-		
 		//Fill build palette if needed.
 		//GWT.log("GameScreenController#initializeBoardIfNeeded: isBuildingMap = " + info.isBuildingMap);
 		//GWT.log("GameScreenController#initializeBoardIfNeeded: isUsersTurn = " + info.isUsersTurn);

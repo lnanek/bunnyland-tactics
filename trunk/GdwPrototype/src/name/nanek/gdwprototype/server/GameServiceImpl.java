@@ -38,7 +38,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 	
 	@Override
 	public GamePlayInfo moveMarker(Long gameId, Integer sourceRow, Integer sourceColumn, Integer destRow,
-			Integer destColumn, String newImageSource) throws GameException {
+			Integer destColumn, Long markerId) throws GameException {
 		
 		//System.out.println("GameServiceImpl#moveMarker: " + gameId  + ", " + sourceRow + ", " + sourceColumn + ", " + destRow
 		//		 + ", " + destColumn + ", " + newImageSource);
@@ -55,7 +55,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 
 		Game game = null;
 		try {
-			game = gameEngine.moveMarker(gameId, sourceRow, sourceColumn, destRow, destColumn, newImageSource, user, em);
+			game = gameEngine.moveMarker(gameId, sourceRow, sourceColumn, destRow, destColumn, markerId, user, em);
 			tx.commit();
 		} finally {
 			if ( null != tx && tx.isActive() ) {
@@ -235,7 +235,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 			if ( null != mapPositions ) {
 				Set<Position> gamePositions = new HashSet<Position>();
 				for ( Position mapPosition : mapPositions ) {
-					Position newPosition = new Position(mapPosition.getRow(), mapPosition.getColumn(), mapPosition.getMarkerSource());
+					Position newPosition = new Position(mapPosition.getRow(), mapPosition.getColumn(), mapPosition.getMarker());
 					//em.persist(newPosition);
 					gamePositions.add(newPosition);
 				}

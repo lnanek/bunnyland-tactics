@@ -1,8 +1,6 @@
 package name.nanek.gdwprototype.shared.model;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 import name.nanek.gdwprototype.client.model.Player;
 
@@ -72,25 +70,5 @@ public class Markers {
 		}
 		MAP_MAKING_PIECES = mapMakingPieces.toArray(new Marker[] {});
 	}
-	
-	public static Marker getEnemyWarren(Player currentUsersTurn) {
-		if ( null == currentUsersTurn ) {
-			return null;
-		}
-		return currentUsersTurn == Player.ONE ? PLAYER_TWO_WARREN : PLAYER_ONE_WARREN;
-	}
 
-	public static Marker getPlayerWarren(Player currentUsersTurn) {
-		if ( null == currentUsersTurn ) {
-			return null;
-		}
-		return currentUsersTurn == Player.ONE ? PLAYER_ONE_WARREN : PLAYER_TWO_WARREN;
-	}
-
-	public static Map<String, Marker> markerBySource = new HashMap<String, Marker>();
-	static {
-		for (int i = 0; i < ALL_MARKERS.length; i++) {
-			markerBySource.put(ALL_MARKERS[i].source, ALL_MARKERS[i]);
-		}
-	}
 }

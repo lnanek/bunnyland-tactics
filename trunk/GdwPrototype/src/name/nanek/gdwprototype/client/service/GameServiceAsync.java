@@ -32,7 +32,7 @@ public interface GameServiceAsync {
 	void getPositionsByGameId(Long id, AsyncCallback<GamePlayInfo> callback) throws GameException;
 
 	void moveMarker(Long gameId, Integer sourceRow, Integer sourceColumn, Integer destRow, Integer destColumn,
-			String newImageSource, AsyncCallback<GamePlayInfo> callback) throws GameException;
+			Long markerId, AsyncCallback<GamePlayInfo> callback) throws GameException;
 	
 	void getLoginUrlIfNeeded(String returnUrl, AsyncCallback<String> callback);
 	

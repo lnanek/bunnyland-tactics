@@ -38,7 +38,7 @@ public interface GameService extends RemoteService {
 	GameListing createGameOrMap(String name, GameSettings settings, Long mapId) throws GameException;
 
 	GamePlayInfo moveMarker(Long gameId, Integer sourceRow, Integer sourceColumn, Integer destRow,
-			Integer destColumn, String newImageSource) throws GameException;
+			Integer destColumn, Long markerId) throws GameException;
 	
 	String getLoginUrlIfNeeded(String returnUrl) throws GameException;
 	
