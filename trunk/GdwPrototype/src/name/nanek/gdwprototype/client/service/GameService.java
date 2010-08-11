@@ -1,5 +1,6 @@
 package name.nanek.gdwprototype.client.service;
 
+import name.nanek.gdwprototype.client.model.GameDisplayInfo;
 import name.nanek.gdwprototype.client.model.GameListing;
 import name.nanek.gdwprototype.client.model.GamePlayInfo;
 import name.nanek.gdwprototype.client.model.Player;
@@ -28,6 +29,8 @@ public interface GameService extends RemoteService {
 	GameListing getGameListingById(Long id) throws GameException;
 
 	GamePlayInfo getPositionsByGameId(Long id) throws GameException;
+
+	GameDisplayInfo getDisplayInfo(Long id) throws GameException;
 
 	GameListing createGameOrMap(String name, GameSettings settings, Long mapId) throws GameException;
 

@@ -14,7 +14,7 @@
 package name.nanek.gdwprototype.client.controller.screen.support;
 
 import name.nanek.gdwprototype.client.controller.screen.GameScreenController;
-import name.nanek.gdwprototype.client.model.GamePlayInfo;
+import name.nanek.gdwprototype.client.model.GameDisplayInfo;
 import name.nanek.gdwprototype.client.view.widget.GameSquare;
 import name.nanek.gdwprototype.client.view.widget.PaletteImage;
 import name.nanek.gdwprototype.client.view.widget.TableCellPanel;
@@ -44,7 +44,7 @@ public class GameScreenDropController extends SimpleDropController {
 	@Override
 	public void onDrop(DragContext context) {
 		
-		GamePlayInfo info = gameScreenController.getCurrentGamePlayInfo();
+		GameDisplayInfo info = gameScreenController.getCurrentGamePlayInfo();
 		if ( null == info ) {
 			return;
 		}
@@ -83,7 +83,7 @@ public class GameScreenDropController extends SimpleDropController {
 
 	public void onPreviewDrop(DragContext context) throws VetoDragException {
 
-		GamePlayInfo info = gameScreenController.getCurrentGamePlayInfo();
+		GameDisplayInfo info = gameScreenController.getCurrentGamePlayInfo();
 		if ( null == info ) {
 			throw new VetoDragException();
 		}
@@ -95,7 +95,7 @@ public class GameScreenDropController extends SimpleDropController {
 		
 		//Check unit can move this far.
 		//TODO check on server as well
-		if ( !info.isBuildingMap ) {
+		if ( !info.map ) {
 			TableCellPanel source = (TableCellPanel) context.draggable.getParent();
 			int sourceCol = source.getColumn();
 			int sourceRow = source.getRow();

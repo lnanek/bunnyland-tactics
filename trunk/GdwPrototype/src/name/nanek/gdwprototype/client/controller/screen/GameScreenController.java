@@ -9,7 +9,7 @@ import name.nanek.gdwprototype.client.controller.PageController;
 import name.nanek.gdwprototype.client.controller.screen.support.GameScreenDropController;
 import name.nanek.gdwprototype.client.controller.support.ScreenControllers;
 import name.nanek.gdwprototype.client.controller.support.ScreenControllers.Screen;
-import name.nanek.gdwprototype.client.model.GameListing;
+import name.nanek.gdwprototype.client.model.GameDisplayInfo;
 import name.nanek.gdwprototype.client.model.GamePlayInfo;
 import name.nanek.gdwprototype.client.model.Player;
 import name.nanek.gdwprototype.client.view.Page.Background;
@@ -48,44 +48,25 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 
 	private static final int GAME_BOARD_REFRESH_INTERVAL_MS = 1000;
 
-	private class SetupBoardCallback implements AsyncCallback<GamePlayInfo> {
+	private class SetupBoardCallback implements AsyncCallback<GameDisplayInfo> {
 		public void onFailure(Throwable caught) {
 			if ( null == pageController ) return;
 			
-			//TODO tell user they have to close the dialog and refresh the browser to retry this one?
-			//or retry for them?
+			//TODO any other errors where user has to manually refresh to retry where that could be mentioned in the error message?
+			//TODO retry for the user
+			//TODO alternate way to show errors than dialogs? "reconnecting" bar with throbber at top?
 			pageController.getDialogController().showError(
 					"Error Setting Up Board",								
-					"An error occurred asking the server for the game/map settings.",
+					"An error occurred asking the server for the game/map settings." + 
+					"You can refresh your browser to retry.",
 					true,
 					caught);
 		}
 
-		public void onSuccess(final GamePlayInfo info) {
+		public void onSuccess(final GameDisplayInfo info) {
 			if ( null == pageController ) return;
 			
 			setupBoard(info);
-		}
-	}
-
-	//TODO return title with other game setup info rather than a separate call
-	private class RequestTitleCallback implements AsyncCallback<GameListing> {
-		public void onFailure(Throwable caught) {
-			if ( null == pageController ) return;
-			
-			pageController.getDialogController().showError(
-					"Error Finding Game Or Map",								
-					"An error occurred finding the requested game or map.",
-					true,
-					caught);
-			// TODO go back to main menu? offer retry/cancel?
-		}
-
-		public void onSuccess(final GameListing gameListing) {
-			if ( null == pageController ) return;
-			
-			String type = gameListing.isStartingMap() ? "Creating Map " : "Playing Game ";
-			pageController.setScreenTitle(type + gameListing.getDisplayName(false));
 		}
 	}
 
@@ -97,7 +78,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			dragInProgress = false;
 			
 			//If was dragging something in a game, not a map editor.
-			if ( null != info && !info.isBuildingMap ) {
+			if ( null != displayInfo && !displayInfo.map ) {
 				//Remove highlights for where it can go.	
 				
 				CellFormatter formatter = gameScreen.gameBoard.getCellFormatter();
@@ -124,7 +105,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			pageController.getSoundPlayer().playPickupPiceSound();
 
 			//If dragging something in a game, not a map editor.
-			if ( null != info && !info.isBuildingMap ) {
+			if ( null != displayInfo && !displayInfo.map ) {
 				
 				//Highlight where it can go.
 				GameSquare gameSquare = (GameSquare) event.getContext().draggable;
@@ -231,7 +212,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 
 	private boolean playedGameOverMusic;
 	
-	private GamePlayInfo info;
+	private GameDisplayInfo displayInfo;
 	
 	private Integer lastPlayedSoundForMoveCount;
 	
@@ -252,8 +233,8 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		requestRefreshGameBoard();
 	}
 	
-	public GamePlayInfo getCurrentGamePlayInfo() {
-		return info;
+	public GameDisplayInfo getCurrentGamePlayInfo() {
+		return displayInfo;
 	}
 	
 	public void moveMarker(Integer sourceRow, Integer sourceColumn, Integer destRow, Integer destColumn,
@@ -313,7 +294,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			return;
 		}
 		
-		this.info = info;
+		displayInfo.playInfo = info;
 		
 		//Update publish/surrender controls.
 		//Hide if game is over or map is published.
@@ -322,7 +303,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			gameScreen.surrenderButton.setVisible(false);
 		//Else the game is still running or the map unpublished.
 		//Show publish map button if we're building a map and the user is the map creator.
-		} else if ( info.isBuildingMap ) {
+		} else if ( displayInfo.map ) {
 			gameScreen.publishMapButton.setVisible(info.isUsersTurn);
 			gameScreen.surrenderButton.setVisible(false);
 		//Show surrender button if we're playing a game and its the user's turn.
@@ -339,7 +320,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		
 		//Update fog of war controls.
 		//TODO turn off fog of war/allow players to control fog of war after game ends?
-		if ( null == info.playingAs || info.isBuildingMap || info.ended ) {
+		if ( null == info.playingAs || displayInfo.map || info.ended ) {
 			gameScreen.fogOfWarPanel.setVisible(true);
 		} else {
 			gameScreen.fogOfWarPanel.setVisible(false);
@@ -368,7 +349,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			lastPlayedSoundForMoveCount = info.moveCount;
 			
 			//Always piece placement sound when placing units on a map.
-			if ( info.isBuildingMap ) {
+			if ( displayInfo.map ) {
 				pageController.getSoundPlayer().playPiecePlacementSound();
 
 			//Both players always hear a unit dying, since they must have both had a unit involved.
@@ -387,13 +368,13 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			
 			//XXX sometimes we'll hear both a gong and a scream. 
 			//see how that sounds. maybe we should play one after the other?
-			if (!info.isBuildingMap && info.isUsersTurn ) {
+			if (!displayInfo.map && info.isUsersTurn ) {
 				pageController.getSoundPlayer().playYourTurnSound();
 			}
 		}
 		
 		//Play game over music if needed.
-		if ( !info.isBuildingMap && !playedGameOverMusic ) {
+		if ( !displayInfo.map && !playedGameOverMusic ) {
 			if ( info.ended ) {
 				if ( info.playingAs == info.winner ) {
 					pageController.getSoundPlayer().playWinGameMusic();
@@ -407,7 +388,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		//Update status.
 		//TODO bold the action verbs? bold and color the piece colors?
 		String status = "";
-		if ( info.isBuildingMap ) {
+		if ( displayInfo.map ) {
 			if ( null != info.playingAs ) {
 				status = "Drag pieces to build a map that other players start their games from.";
 				if ( !info.ended ) {
@@ -448,8 +429,8 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		//GWT.log("positions: " + info.positions.length);		
 		HashSet<Position> positions = removeTerrainUnderUnits(info.positions);	
 		//GWT.log("filtered positions: " + positions.length);
-		int boardHeight = info.boardHeight;
-		int boardWidth = info.boardWidth;
+		int boardHeight = displayInfo.boardHeight;
+		int boardWidth = displayInfo.boardWidth;
 		
 		// TODO update visibility immediately on move instead of waiting for server update?
 		
@@ -536,12 +517,12 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 	}
 
 	private void restoreDraggables() {
-		if ( null == info ) {
+		if ( null == displayInfo.playInfo ) {
 			return;
 		}
 		
 		// Make appropriate pieces draggable. Done each update to support login and hotseat play later.
-		if ( null != info.playingAs && info.isUsersTurn ) {
+		if ( null != displayInfo.playInfo.playingAs && displayInfo.playInfo.isUsersTurn ) {
 			int rowCount = gameScreen.gameBoard.getRowCount();
 			for (int row = 0; row < rowCount; row++) {
 				int cellCount = gameScreen.gameBoard.getCellCount(row);
@@ -554,7 +535,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 	}
 
 	private void makeContentsDraggableIfNeeded(TableCellPanel panel) {
-		if ( null == info ) {
+		if ( null == displayInfo.playInfo ) {
 			return;
 		}
 		
@@ -565,7 +546,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 
 		Marker marker = square.marker;
 		//TODO do we have to check if the current user is the map builder?
-		if ( info.isBuildingMap || (!info.ended && marker.player == info.playingAs && null != marker.movementRange && marker.movementRange > 0 )) {
+		if ( displayInfo.map || (!displayInfo.playInfo.ended && marker.player == displayInfo.playInfo.playingAs && null != marker.movementRange && marker.movementRange > 0 )) {
 			dragController.makeDraggable(square);
 			//TODO Slay has a nice way of showing a piece can be interacted with.
 			//Units hop up and down and buildings ready to build have a waving flag.
@@ -580,7 +561,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			dragController.unregisterDropController(simpleDropController);
 		}
 		refreshGameBoardTimer.cancel();
-		info = null;
+		displayInfo = null;
 		pageController = null;
 	}
 	
@@ -611,7 +592,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			
 			clearDraggables();
 			gameScreen.surrenderButton.setEnabled(false);
-			pageController.gameService.surrender(gameId, info.playingAs, new SurrenderCallback());
+			pageController.gameService.surrender(gameId, displayInfo.playInfo.playingAs, new SurrenderCallback());
 		}
 	}
 	
@@ -668,25 +649,20 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		dragController.setBehaviorMultipleSelection(false);
 		dragController.addDragHandler(new GameDragHandler());
 		
-		//Setup surrender button.
-
 		gameScreen.surrenderButton.addClickHandler(new SurrenderClickHandler());
-
-		//Setup publish map button.
 
 		gameScreen.publishMapButton.addClickHandler(new PublishMapClickHandler());
 
-		//Load screen title.
-		pageController.gameService.getGameListingById(gameId, new RequestTitleCallback());
-
-		//Setup board.
-		//TODO have a separate DTO with the setup information neeeded, make regular position callback quicker
-		pageController.gameService.getPositionsByGameId(gameId, new SetupBoardCallback());
+		//Setup screen with game/map specific information.
+		pageController.gameService.getDisplayInfo(gameId, new SetupBoardCallback());
 	}
 	
-	private void setupBoard(GamePlayInfo info) {
+	private void setupBoard(GameDisplayInfo info) {
 
 		if ( null == pageController ) return;
+		
+		String type = info.map ? "Creating Map " : "Playing Game ";
+		pageController.setScreenTitle(type + info.listing.getDisplayName(false));
 
 		//Load piece settings.
 		//TODO just use markers from settings, don't have a static copy on client?
@@ -699,7 +675,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		//Fill build palette if needed.
 		//GWT.log("GameScreenController#initializeBoardIfNeeded: isBuildingMap = " + info.isBuildingMap);
 		//GWT.log("GameScreenController#initializeBoardIfNeeded: isUsersTurn = " + info.isUsersTurn);
-		if ( info.isBuildingMap && info.isUsersTurn ) {
+		if ( info.map && info.playInfo.isUsersTurn ) {
 			gameScreen.mapBuilderPalettePanel.setVisible(true);
 			for (int i = 0; i < Markers.MAP_MAKING_PIECES.length; i++) {
 				Marker marker = Markers.MAP_MAKING_PIECES[i];
@@ -731,7 +707,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		}	
 		
 		//Start regular board updates.
-		updateGameBoardWithInfo(info);
+		updateGameBoardWithInfo(info.playInfo);
 		//TODO only schedule a new screen update when the previous finishes? repeating might build up a queue if updates are slower than refresh interval
 		refreshGameBoardTimer.scheduleRepeating(GAME_BOARD_REFRESH_INTERVAL_MS);
 	}
