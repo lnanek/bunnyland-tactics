@@ -6,6 +6,7 @@ import java.util.Set;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 
+import name.nanek.gdwprototype.client.model.GameDisplayInfo;
 import name.nanek.gdwprototype.client.model.GameListing;
 import name.nanek.gdwprototype.client.model.GamePlayInfo;
 import name.nanek.gdwprototype.client.model.Player;
@@ -67,27 +68,50 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 	}
 
 	@Override
-	public GamePlayInfo getPositionsByGameId(Long gameId) throws GameException {
-				
-			EntityManager em = DbUtil.createEntityManager();
-			EntityTransaction tx = null;
-			try {
-				tx = em.getTransaction();
-				tx.begin();
-				
-				Game game = em.find(Game.class, gameId);
-				game.getSettings();
-				game.getPositions();
-				return gameEngine.createGameInfo(game);
-				
-				//Don't bother committing, this was read only anyway.
-			} finally {
-				if ( null != tx && tx.isActive() ) {
-					tx.rollback();
-				}
-				em.close();
+	public GameDisplayInfo getDisplayInfo(Long gameId) throws GameException {
+
+		EntityManager em = DbUtil.createEntityManager();
+		EntityTransaction tx = null;
+		try {
+			tx = em.getTransaction();
+			tx.begin();
+
+			Game game = em.find(Game.class, gameId);
+			game.getSettings();
+			game.getPositions();
+			return gameEngine.createDisplayInfo(game);
+
+			// Don't bother committing, this was read only anyway.
+		} finally {
+			if (null != tx && tx.isActive()) {
+				tx.rollback();
 			}
+			em.close();
 		}
+	}
+
+	@Override
+	public GamePlayInfo getPositionsByGameId(Long gameId) throws GameException {
+
+		EntityManager em = DbUtil.createEntityManager();
+		EntityTransaction tx = null;
+		try {
+			tx = em.getTransaction();
+			tx.begin();
+
+			Game game = em.find(Game.class, gameId);
+			game.getSettings();
+			game.getPositions();
+			return gameEngine.createGameInfo(game);
+
+			// Don't bother committing, this was read only anyway.
+		} finally {
+			if (null != tx && tx.isActive()) {
+				tx.rollback();
+			}
+			em.close();
+		}
+	}
 
 	@Override
 	public void surrender(Long gameId, Player surrenderer) throws GameException {

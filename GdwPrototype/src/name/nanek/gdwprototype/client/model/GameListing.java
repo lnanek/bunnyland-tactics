@@ -2,6 +2,9 @@ package name.nanek.gdwprototype.client.model;
 
 import java.io.Serializable;
 
+import com.google.gwt.user.client.DOM;
+import com.google.gwt.user.client.Element;
+
 public class GameListing implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -10,17 +13,17 @@ public class GameListing implements Serializable {
 
 	private long id;
 	
-	private boolean startingMap;
+	private boolean map;
 	
 	private String creatorNickname;
 
 	private GameListing() {
 	}
 
-	public GameListing(String name, long id, boolean startingMap, String creatorNickname) {
+	public GameListing(String name, long id, boolean map, String creatorNickname) {
 		this.name = name;
 		this.id = id;
-		this.startingMap = startingMap;
+		this.map = map;
 		this.creatorNickname = creatorNickname;
 	}
 
@@ -39,13 +42,11 @@ public class GameListing implements Serializable {
 			gameName = '"' + name + '"';
 		}
 		
-		/*TODO put this back in some other time, bad for demo since doesn't show demoers nickname if we login in for them with our accounts.
 		if ( includeAuthor ) {
 			if ( !nullOrEmpty(creatorNickname) ) {
-				gameName += " (by " + creatorNickname + ")";
+				gameName += " (by " + escapeHtml(creatorNickname) + ")";
 			}
 		}
-		*/
 		return gameName;
 	}
 	
@@ -57,7 +58,14 @@ public class GameListing implements Serializable {
 		return id;
 	}
 
-	public boolean isStartingMap() {
-		return startingMap;
+	public boolean isMap() {
+		return map;
 	}
+
+	private static String escapeHtml(String maybeHtml) {
+		final Element div = DOM.createDiv();
+		DOM.setInnerText(div, maybeHtml);
+		return DOM.getInnerHTML(div);
+	}
+
 }

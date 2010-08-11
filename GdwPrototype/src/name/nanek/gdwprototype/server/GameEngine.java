@@ -10,6 +10,7 @@ import java.util.Set;
 
 import javax.persistence.EntityManager;
 
+import name.nanek.gdwprototype.client.model.GameDisplayInfo;
 import name.nanek.gdwprototype.client.model.GameListing;
 import name.nanek.gdwprototype.client.model.GamePlayInfo;
 import name.nanek.gdwprototype.client.model.Player;
@@ -33,6 +34,22 @@ public class GameEngine {
 
 	private static final Random random = new Random();
 
+	public GameDisplayInfo createDisplayInfo(Game game) {
+		if ( null == game ) return null;
+		
+		//Create the array of marker info.
+		ArrayList<Marker> markerList = new ArrayList<Marker>();
+		markerList.addAll(game.getSettings().getMarkers());
+		Marker[] markers = markerList.toArray(new Marker[] {});
+
+		//TODO can GameDisplayInfo and GameSettings be merged and used for the same things?
+		
+		GameDisplayInfo info = new GameDisplayInfo(markers, 
+				game.getSettings().getBoardHeight(), game.getSettings().getBoardWidth(),
+				game.isStartingMap(), game.getListing(), createGameInfo(game));
+		return info;
+	}
+	
 	public GamePlayInfo createGameInfo(Game game) {
 		if ( null == game ) return null;
 		
@@ -40,11 +57,6 @@ public class GameEngine {
 		ArrayList<Position> positionList = new ArrayList<Position>();
 		positionList.addAll(game.getPositions());
 		Position[] positions = positionList.toArray(new Position[] {});
-
-		//Create the array of marker info.
-		ArrayList<Marker> markerList = new ArrayList<Marker>();
-		markerList.addAll(game.getSettings().getMarkers());
-		Marker[] markers = markerList.toArray(new Marker[] {});
 
 		//Determine player/turn info.
 		boolean needsSecondPlayer = null == game.getSecondPlayerUserId();		
@@ -66,8 +78,8 @@ public class GameEngine {
 		
 		//TODO make GamePlayInfo a child of game, store these things in it directly, and return it directly instead of making a DTO?
 		GamePlayInfo info = new GamePlayInfo(positions, isUsersTurn, userPlayingAs, needsSecondPlayer, 
-				game.getSettings().getBoardHeight(), game.getSettings().getBoardWidth(), markers, game.getWinner(), 
-				game.isStartingMap(), game.isEnded(), game.getMoveCount(), game.isUnitDiedLastTurn(),
+				game.getWinner(), 
+				game.isEnded(), game.getMoveCount(), game.isUnitDiedLastTurn(),
 				game.isCarrotEatenLastTurn(), game.getCurrentUsersTurn());
 		return info;
 	}

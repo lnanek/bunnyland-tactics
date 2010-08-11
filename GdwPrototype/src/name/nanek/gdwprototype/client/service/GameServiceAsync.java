@@ -1,5 +1,6 @@
 package name.nanek.gdwprototype.client.service;
 
+import name.nanek.gdwprototype.client.model.GameDisplayInfo;
 import name.nanek.gdwprototype.client.model.GameListing;
 import name.nanek.gdwprototype.client.model.GamePlayInfo;
 import name.nanek.gdwprototype.client.model.Player;
@@ -35,4 +36,6 @@ public interface GameServiceAsync {
 	void getLoginUrlIfNeeded(String returnUrl, AsyncCallback<String> callback);
 	
 	void attemptToJoinGame(Long id, AsyncCallback<GameListing> callback) throws GameException;
+	
+	void getDisplayInfo(Long id, AsyncCallback<GameDisplayInfo> callback) throws GameException;
 }
