@@ -135,7 +135,7 @@ public class CreateMapScreenController extends ScreenController {
 			marker.movementRange = movementRange;
 		}
 		//Using an array doesn't work out well, not persisted by default on server side.
-		Set<Marker> markers = new HashSet<Marker>(Arrays.asList(Markers.PLAYING_PIECES));
+		Set<Marker> markers = new HashSet<Marker>(Arrays.asList(Markers.MAP_MAKING_PIECES));
 		settings.setMarkers(markers);
 	
 		//Disable button so we don't get double submits.

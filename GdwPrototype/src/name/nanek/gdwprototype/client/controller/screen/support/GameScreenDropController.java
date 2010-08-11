@@ -23,7 +23,6 @@ import name.nanek.gdwprototype.shared.model.Marker;
 import com.allen_sauer.gwt.dnd.client.DragContext;
 import com.allen_sauer.gwt.dnd.client.VetoDragException;
 import com.allen_sauer.gwt.dnd.client.drop.SimpleDropController;
-import com.google.gwt.user.client.ui.Image;
 
 /**
  * Handles drops on to game squares.
@@ -59,7 +58,7 @@ public class GameScreenDropController extends SimpleDropController {
 			return;
 		}
 
-		Image draggedImage = (Image) context.draggable;
+		GameSquare draggedImage = (GameSquare) context.draggable;
 		/*
 		String destImageUrl = null;
 		GameSquare destSquare = (GameSquare) dropTarget.getWidget();
@@ -75,7 +74,7 @@ public class GameScreenDropController extends SimpleDropController {
 		}
 		
 		gameScreenController.moveMarker(source.getRow(), source.getColumn(), dropTarget.getRow(), dropTarget.getColumn(),
-				draggedImage.getUrl(), replacedMarker);
+				draggedImage.marker.getKeyId(), replacedMarker);
 		dropTarget.setWidget(context.draggable);
 		super.onDrop(context);
 	}
@@ -136,7 +135,7 @@ public class GameScreenDropController extends SimpleDropController {
 
 			// TODO throw/catch an exception and veto? stale game state or
 			// something?
-			gameScreenController.moveMarker(null, null, dropTarget.getRow(), dropTarget.getColumn(), draggedImage.getUrl(), null);
+			gameScreenController.moveMarker(null, null, dropTarget.getRow(), dropTarget.getColumn(), draggedImage.marker.getKeyId(), null);
 
 			throw new VetoDragException();
 		}
