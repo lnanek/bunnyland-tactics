@@ -57,7 +57,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			//TODO alternate way to show errors than dialogs? "reconnecting" bar with throbber at top?
 			pageController.getDialogController().showError(
 					"Error Setting Up Board",								
-					"An error occurred asking the server for the game/map settings." + 
+					"An error occurred asking the server for the game/map settings. " + 
 					"You can refresh your browser to retry.",
 					true,
 					caught);
@@ -147,7 +147,10 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 
 		@Override
 		public void onPreviewDragStart(DragStartEvent event) throws VetoDragException {
-			//TODO veto here if not players marker instead of adjusting draggables?
+			//This isn't useful for deciding which pieces the player can drag.
+			//if we make everything draggable, but veto here, the cursor still changes
+			//when the draggable piece is moused over. So it is better to only make movable
+			//pieces draggable.
 		}
 	}
 	
@@ -660,6 +663,8 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 	private void setupBoard(GameDisplayInfo info) {
 
 		if ( null == pageController ) return;
+		
+		displayInfo = info;
 		
 		String type = info.map ? "Creating Map " : "Playing Game ";
 		pageController.setScreenTitle(type + info.listing.getDisplayName(false));

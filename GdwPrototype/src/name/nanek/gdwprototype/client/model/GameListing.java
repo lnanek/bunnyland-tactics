@@ -5,6 +5,12 @@ import java.io.Serializable;
 import com.google.gwt.user.client.DOM;
 import com.google.gwt.user.client.Element;
 
+/**
+ * Contains information needed to display a game or map in a list.
+ * 
+ * @author Lance Nanek
+ *
+ */
 public class GameListing implements Serializable {
 
 	private static final long serialVersionUID = 1L;

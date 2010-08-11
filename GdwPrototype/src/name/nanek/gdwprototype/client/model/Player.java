@@ -2,6 +2,12 @@ package name.nanek.gdwprototype.client.model;
 
 import java.io.Serializable;
 
+/**
+ * Enumerates possible player roles.
+ * 
+ * @author Lance Nanek
+ *
+ */
 public enum Player implements Serializable {
 
 	ONE, TWO;

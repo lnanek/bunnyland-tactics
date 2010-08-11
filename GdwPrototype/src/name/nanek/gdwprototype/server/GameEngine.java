@@ -46,7 +46,7 @@ public class GameEngine {
 		
 		GameDisplayInfo info = new GameDisplayInfo(markers, 
 				game.getSettings().getBoardHeight(), game.getSettings().getBoardWidth(),
-				game.isStartingMap(), game.getListing(), createGameInfo(game));
+				game.isMap(), game.getListing(), createGameInfo(game));
 		return info;
 	}
 	
@@ -109,7 +109,7 @@ public class GameEngine {
 			//TODO do checks on client side too for better ux?
 			
 			//Always remove the destination when map building.
-			if ( game.isStartingMap() ) {
+			if ( game.isMap() ) {
 				removeAnyPosition(destRow, destColumn, em, game);
 
 			//Otherwise it depends on what we are removing.
@@ -200,7 +200,7 @@ public class GameEngine {
 		
 		if ( changedPositions ) {
 			game.incrementMoveCount();
-			if ( !game.isStartingMap() ) {
+			if ( !game.isMap() ) {
 				game.setUnitDiedLastTurn(unitDiedThisTurn);
 				game.setCarrotEatenLastTurn(carrotEatenThisTurn);
 				game.setNextUsersTurn();

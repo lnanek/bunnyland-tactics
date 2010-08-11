@@ -26,8 +26,7 @@ import com.allen_sauer.gwt.dnd.client.drop.SimpleDropController;
 import com.google.gwt.user.client.ui.Image;
 
 /**
- * DropController which allows a widget to be dropped on a SimplePanel drop
- * target when the drop target does not yet have a child widget.
+ * Handles drops on to game squares.
  */
 public class GameScreenDropController extends SimpleDropController {
 

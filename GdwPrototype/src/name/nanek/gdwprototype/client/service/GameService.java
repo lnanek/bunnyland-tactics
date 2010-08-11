@@ -11,7 +11,10 @@ import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 /**
- * The client side stub for the RPC service.
+ * Service the remote server implements for clients to play games.
+ * 
+ * @author Lance Nanek
+ *
  */
 @RemoteServiceRelativePath("game")
 public interface GameService extends RemoteService {

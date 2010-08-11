@@ -219,7 +219,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 			} else {
 				//System.out.println("GameDataServiceImpl#createGame: starting new map");
 				game.setSettings(settings);
-				game.setStartingMap(true);
+				game.setMap(true);
 			}
 			game.setName(name);
 			game.setFirstPlayerUserId(user.getUserId());

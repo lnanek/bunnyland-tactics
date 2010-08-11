@@ -6,6 +6,12 @@ import java.util.Map;
 
 import name.nanek.gdwprototype.client.model.Player;
 
+/**
+ * Holds all available markers.
+ * 
+ * @author Lance Nanek
+ *
+ */
 public class Markers {
 
 	public static final Marker CARROT = new Marker("Carrot", "tile_carrot.png", true);

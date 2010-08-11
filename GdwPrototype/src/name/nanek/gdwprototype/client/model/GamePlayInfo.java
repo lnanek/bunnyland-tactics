@@ -4,6 +4,12 @@ import java.io.Serializable;
 
 import name.nanek.gdwprototype.shared.model.Position;
 
+/**
+ * Contains information needed to update a game board for a certain turn of play.
+ * 
+ * @author Lance Nanek
+ *
+ */
 public class GamePlayInfo implements Serializable {
 
 	private static final long serialVersionUID = 1L;
