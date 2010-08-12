@@ -2,14 +2,9 @@ package name.nanek.gdwprototype.client.model;
 
 import java.io.Serializable;
 
+import name.nanek.gdwprototype.shared.model.Marker;
 import name.nanek.gdwprototype.shared.model.Position;
 
-/**
- * Contains information needed to update a game board for a certain turn of play.
- * 
- * @author Lance Nanek
- *
- */
 public class GamePlayInfo implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -26,7 +21,15 @@ public class GamePlayInfo implements Serializable {
 	
 	public boolean ended;
 	
+	public int boardWidth;
+	
+	public int boardHeight;
+	
 	public int moveCount;
+	
+	public Marker[] markers;
+
+	public boolean isBuildingMap;
 	
 	public boolean unitDiedLastTurn;
 	
@@ -38,13 +41,17 @@ public class GamePlayInfo implements Serializable {
 	}
 
 	public GamePlayInfo(Position[] positions, boolean isUsersTurn, Player playingAs, boolean needsSecondPlayer, 
-			Player winner, boolean ended,
+			int boardHeight, int boardWidth, Marker[] markers, Player winner, boolean isBuildingMap, boolean ended,
 			int moveCount, boolean unitDiedLastTurn, boolean carrotEatenLastTurn, Player currentPlayersTurn) {
 		this.positions = positions;
 		this.isUsersTurn = isUsersTurn;
 		this.playingAs = playingAs;
 		this.needsSecondPlayer = needsSecondPlayer;
+		this.boardWidth = boardWidth;
+		this.boardHeight = boardHeight;
+		this.markers = markers;
 		this.winner = winner;
+		this.isBuildingMap = isBuildingMap;
 		this.ended = ended;
 		this.moveCount = moveCount;
 		this.unitDiedLastTurn = unitDiedLastTurn;

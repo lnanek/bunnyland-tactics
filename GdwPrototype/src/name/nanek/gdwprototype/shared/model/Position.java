@@ -9,12 +9,6 @@ import javax.persistence.Id;
 
 import org.datanucleus.jpa.annotations.Extension;
 
-/**
- * A place a marker is located on the game board.
- * 
- * @author Lance Nanek
- *
- */
 @Entity
 public class Position implements Serializable {
 
@@ -25,19 +19,22 @@ public class Position implements Serializable {
     @Extension(vendorName="datanucleus", key="gae.encoded-pk", value="true")
     private String encodedKey;
 
+	// @ManyToOne
+	// private Game game;
+
 	private int row;
 
 	private int column;
 
-	private Marker marker;
+	private String markerSource;
 
 	public Position() {
 	}
 
-	public Position(int row, int column, Marker marker) {
+	public Position(int row, int column, String markerSource) {
 		this.row = row;
 		this.column = column;
-		this.marker = marker;
+		this.markerSource = markerSource;
 	}
 
 	public int getColumn() {
@@ -47,12 +44,7 @@ public class Position implements Serializable {
 	public int getRow() {
 		return row;
 	}
-	
-	public Marker getMarker() {
-		return marker;
-	}
 
-	/*
 	public String getMarkerSource() {
 		return markerSource;
 	}
@@ -66,6 +58,5 @@ public class Position implements Serializable {
 		}
 		return fileName;
 	}
-	*/
 
 }

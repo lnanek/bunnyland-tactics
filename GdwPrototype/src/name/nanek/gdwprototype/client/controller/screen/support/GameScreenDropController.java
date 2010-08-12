@@ -14,7 +14,7 @@
 package name.nanek.gdwprototype.client.controller.screen.support;
 
 import name.nanek.gdwprototype.client.controller.screen.GameScreenController;
-import name.nanek.gdwprototype.client.model.GameDisplayInfo;
+import name.nanek.gdwprototype.client.model.GamePlayInfo;
 import name.nanek.gdwprototype.client.view.widget.GameSquare;
 import name.nanek.gdwprototype.client.view.widget.PaletteImage;
 import name.nanek.gdwprototype.client.view.widget.TableCellPanel;
@@ -23,9 +23,11 @@ import name.nanek.gdwprototype.shared.model.Marker;
 import com.allen_sauer.gwt.dnd.client.DragContext;
 import com.allen_sauer.gwt.dnd.client.VetoDragException;
 import com.allen_sauer.gwt.dnd.client.drop.SimpleDropController;
+import com.google.gwt.user.client.ui.Image;
 
 /**
- * Handles drops on to game squares.
+ * DropController which allows a widget to be dropped on a SimplePanel drop
+ * target when the drop target does not yet have a child widget.
  */
 public class GameScreenDropController extends SimpleDropController {
 
@@ -42,7 +44,7 @@ public class GameScreenDropController extends SimpleDropController {
 	@Override
 	public void onDrop(DragContext context) {
 		
-		GameDisplayInfo info = gameScreenController.getCurrentGamePlayInfo();
+		GamePlayInfo info = gameScreenController.getCurrentGamePlayInfo();
 		if ( null == info ) {
 			return;
 		}
@@ -58,7 +60,7 @@ public class GameScreenDropController extends SimpleDropController {
 			return;
 		}
 
-		GameSquare draggedImage = (GameSquare) context.draggable;
+		Image draggedImage = (Image) context.draggable;
 		/*
 		String destImageUrl = null;
 		GameSquare destSquare = (GameSquare) dropTarget.getWidget();
@@ -74,14 +76,14 @@ public class GameScreenDropController extends SimpleDropController {
 		}
 		
 		gameScreenController.moveMarker(source.getRow(), source.getColumn(), dropTarget.getRow(), dropTarget.getColumn(),
-				draggedImage.marker.getKeyId(), replacedMarker);
+				draggedImage.getUrl(), replacedMarker);
 		dropTarget.setWidget(context.draggable);
 		super.onDrop(context);
 	}
 
 	public void onPreviewDrop(DragContext context) throws VetoDragException {
 
-		GameDisplayInfo info = gameScreenController.getCurrentGamePlayInfo();
+		GamePlayInfo info = gameScreenController.getCurrentGamePlayInfo();
 		if ( null == info ) {
 			throw new VetoDragException();
 		}
@@ -93,7 +95,7 @@ public class GameScreenDropController extends SimpleDropController {
 		
 		//Check unit can move this far.
 		//TODO check on server as well
-		if ( !info.map ) {
+		if ( !info.isBuildingMap ) {
 			TableCellPanel source = (TableCellPanel) context.draggable.getParent();
 			int sourceCol = source.getColumn();
 			int sourceRow = source.getRow();
@@ -135,7 +137,7 @@ public class GameScreenDropController extends SimpleDropController {
 
 			// TODO throw/catch an exception and veto? stale game state or
 			// something?
-			gameScreenController.moveMarker(null, null, dropTarget.getRow(), dropTarget.getColumn(), draggedImage.marker.getKeyId(), null);
+			gameScreenController.moveMarker(null, null, dropTarget.getRow(), dropTarget.getColumn(), draggedImage.getUrl(), null);
 
 			throw new VetoDragException();
 		}

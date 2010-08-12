@@ -15,12 +15,6 @@ import com.google.gwt.user.client.ui.Image;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.VerticalPanel;
 
-/**
- * Dialog explaining how to play.
- * 
- * @author Lance Nanek
- *
- */
 public class HowToPlayDialog {
 
 	public final DialogBox dialogBox = new DialogBox();

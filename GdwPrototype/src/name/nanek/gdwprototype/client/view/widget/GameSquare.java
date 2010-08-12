@@ -4,12 +4,6 @@ import name.nanek.gdwprototype.shared.model.Marker;
 
 import com.google.gwt.user.client.ui.Image;
 
-/**
- * Holds a game marker.
- * 
- * @author Lance Nanek
- *
- */
 public class GameSquare extends Image {
 
 	public Marker marker;

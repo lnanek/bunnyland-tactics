@@ -6,7 +6,6 @@ import java.util.Set;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
 
-import name.nanek.gdwprototype.client.model.GameDisplayInfo;
 import name.nanek.gdwprototype.client.model.GameListing;
 import name.nanek.gdwprototype.client.model.GamePlayInfo;
 import name.nanek.gdwprototype.client.model.Player;
@@ -38,7 +37,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 	
 	@Override
 	public GamePlayInfo moveMarker(Long gameId, Integer sourceRow, Integer sourceColumn, Integer destRow,
-			Integer destColumn, Long markerId) throws GameException {
+			Integer destColumn, String newImageSource) throws GameException {
 		
 		//System.out.println("GameServiceImpl#moveMarker: " + gameId  + ", " + sourceRow + ", " + sourceColumn + ", " + destRow
 		//		 + ", " + destColumn + ", " + newImageSource);
@@ -55,7 +54,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 
 		Game game = null;
 		try {
-			game = gameEngine.moveMarker(gameId, sourceRow, sourceColumn, destRow, destColumn, markerId, user, em);
+			game = gameEngine.moveMarker(gameId, sourceRow, sourceColumn, destRow, destColumn, newImageSource, user, em);
 			tx.commit();
 		} finally {
 			if ( null != tx && tx.isActive() ) {
@@ -68,50 +67,27 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 	}
 
 	@Override
-	public GameDisplayInfo getDisplayInfo(Long gameId) throws GameException {
-
-		EntityManager em = DbUtil.createEntityManager();
-		EntityTransaction tx = null;
-		try {
-			tx = em.getTransaction();
-			tx.begin();
-
-			Game game = em.find(Game.class, gameId);
-			game.getSettings();
-			game.getPositions();
-			return gameEngine.createDisplayInfo(game);
-
-			// Don't bother committing, this was read only anyway.
-		} finally {
-			if (null != tx && tx.isActive()) {
-				tx.rollback();
-			}
-			em.close();
-		}
-	}
-
-	@Override
 	public GamePlayInfo getPositionsByGameId(Long gameId) throws GameException {
-
-		EntityManager em = DbUtil.createEntityManager();
-		EntityTransaction tx = null;
-		try {
-			tx = em.getTransaction();
-			tx.begin();
-
-			Game game = em.find(Game.class, gameId);
-			game.getSettings();
-			game.getPositions();
-			return gameEngine.createGameInfo(game);
-
-			// Don't bother committing, this was read only anyway.
-		} finally {
-			if (null != tx && tx.isActive()) {
-				tx.rollback();
+				
+			EntityManager em = DbUtil.createEntityManager();
+			EntityTransaction tx = null;
+			try {
+				tx = em.getTransaction();
+				tx.begin();
+				
+				Game game = em.find(Game.class, gameId);
+				game.getSettings();
+				game.getPositions();
+				return gameEngine.createGameInfo(game);
+				
+				//Don't bother committing, this was read only anyway.
+			} finally {
+				if ( null != tx && tx.isActive() ) {
+					tx.rollback();
+				}
+				em.close();
 			}
-			em.close();
 		}
-	}
 
 	@Override
 	public void surrender(Long gameId, Player surrenderer) throws GameException {
@@ -219,7 +195,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 			} else {
 				//System.out.println("GameDataServiceImpl#createGame: starting new map");
 				game.setSettings(settings);
-				game.setMap(true);
+				game.setStartingMap(true);
 			}
 			game.setName(name);
 			game.setFirstPlayerUserId(user.getUserId());
@@ -235,7 +211,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 			if ( null != mapPositions ) {
 				Set<Position> gamePositions = new HashSet<Position>();
 				for ( Position mapPosition : mapPositions ) {
-					Position newPosition = new Position(mapPosition.getRow(), mapPosition.getColumn(), mapPosition.getMarker());
+					Position newPosition = new Position(mapPosition.getRow(), mapPosition.getColumn(), mapPosition.getMarkerSource());
 					//em.persist(newPosition);
 					gamePositions.add(newPosition);
 				}

@@ -10,13 +10,13 @@ import java.util.Set;
 
 import javax.persistence.EntityManager;
 
-import name.nanek.gdwprototype.client.model.GameDisplayInfo;
 import name.nanek.gdwprototype.client.model.GameListing;
 import name.nanek.gdwprototype.client.model.GamePlayInfo;
 import name.nanek.gdwprototype.client.model.Player;
 import name.nanek.gdwprototype.shared.exceptions.UserFriendlyMessageException;
 import name.nanek.gdwprototype.shared.model.Game;
 import name.nanek.gdwprototype.shared.model.Marker;
+import name.nanek.gdwprototype.shared.model.Markers;
 import name.nanek.gdwprototype.shared.model.Position;
 
 import com.google.appengine.api.users.User;
@@ -33,22 +33,6 @@ public class GameEngine {
 
 	private static final Random random = new Random();
 
-	public GameDisplayInfo createDisplayInfo(Game game) {
-		if ( null == game ) return null;
-		
-		//Create the array of marker info.
-		ArrayList<Marker> markerList = new ArrayList<Marker>();
-		markerList.addAll(game.getSettings().getMarkers());
-		Marker[] markers = markerList.toArray(new Marker[] {});
-
-		//TODO can GameDisplayInfo and GameSettings be merged and used for the same things?
-		
-		GameDisplayInfo info = new GameDisplayInfo(markers, 
-				game.getSettings().getBoardHeight(), game.getSettings().getBoardWidth(),
-				game.isMap(), game.getListing(), createGameInfo(game));
-		return info;
-	}
-	
 	public GamePlayInfo createGameInfo(Game game) {
 		if ( null == game ) return null;
 		
@@ -56,6 +40,11 @@ public class GameEngine {
 		ArrayList<Position> positionList = new ArrayList<Position>();
 		positionList.addAll(game.getPositions());
 		Position[] positions = positionList.toArray(new Position[] {});
+
+		//Create the array of marker info.
+		ArrayList<Marker> markerList = new ArrayList<Marker>();
+		markerList.addAll(game.getSettings().getMarkers());
+		Marker[] markers = markerList.toArray(new Marker[] {});
 
 		//Determine player/turn info.
 		boolean needsSecondPlayer = null == game.getSecondPlayerUserId();		
@@ -77,14 +66,14 @@ public class GameEngine {
 		
 		//TODO make GamePlayInfo a child of game, store these things in it directly, and return it directly instead of making a DTO?
 		GamePlayInfo info = new GamePlayInfo(positions, isUsersTurn, userPlayingAs, needsSecondPlayer, 
-				game.getWinner(), 
-				game.isEnded(), game.getMoveCount(), game.isUnitDiedLastTurn(),
+				game.getSettings().getBoardHeight(), game.getSettings().getBoardWidth(), markers, game.getWinner(), 
+				game.isStartingMap(), game.isEnded(), game.getMoveCount(), game.isUnitDiedLastTurn(),
 				game.isCarrotEatenLastTurn(), game.getCurrentUsersTurn());
 		return info;
 	}
 	
 	public Game moveMarker(Long gameId, Integer sourceRow, Integer sourceColumn, Integer destRow, Integer destColumn,
-			Long markerId, User user, EntityManager em) {
+			String newImageSource, User user, EntityManager em) {
 		
 		//TODO this method needs massive cleanup. replace string checking with marker types, for example
 
@@ -92,7 +81,6 @@ public class GameEngine {
 		game = em.find(Game.class, gameId);
 		game.getSettings();
 		game.getPositions();
-		Marker movedMarker = em.find(Marker.class, markerId);
 
 		if ( !isUsersTurn(game, user) ) {
 			throw new UserFriendlyMessageException("It isn't your turn to move.");
@@ -103,25 +91,27 @@ public class GameEngine {
 		boolean changedPositions = false;
 		boolean unitDiedThisTurn = false;
 		boolean carrotEatenThisTurn = false;
-		boolean enemyLostHome = false;
-		if (null != destColumn && null != destRow && null != markerId) {
+		if (null != destColumn && null != destRow && null != newImageSource) {
 			// Destination so remove any old position and create new  position.
 			
 			//TODO do checks on client side too for better ux?
 			
 			//Always remove the destination when map building.
-			if ( game.isMap() ) {
+			if ( game.isStartingMap() ) {
 				removeAnyPosition(destRow, destColumn, em, game);
 
 			//Otherwise it depends on what we are removing.
 			} else {
 				boolean removeDestination = false;
+				String removeCandidate = null;
 				Position removeCandidatePosition = findCarrotOrPiecePosition(destRow, destColumn, game.getPositions());
 				if ( null != removeCandidatePosition ) {
+					removeCandidate = removeCandidatePosition.getMarkerSource();
+				}
+				if ( null != removeCandidate ) {
 
-					Marker removeCandidateMarker = removeCandidatePosition.getMarker();
-					boolean isCarrotDestination = removeCandidateMarker.role == Marker.Role.CARROT;
-					boolean isTerrainDestination = removeCandidateMarker.terrain;
+					boolean isCarrotDestination = removeCandidate.endsWith("carrot.png");
+					boolean isTerrainDestination = removeCandidate.contains("tile_");
 					
 					//Anything can remove a carrot.
 					if ( isCarrotDestination ) {
@@ -132,17 +122,25 @@ public class GameEngine {
 					} else if (!isTerrainDestination ) {
 						
 						//Must be a stomper to remove non-terrain during game.
-						if ( movedMarker.role != Marker.Role.STOMPER ) {
+						boolean isStomperSource = newImageSource.endsWith("warrior.png");
+						if ( !isStomperSource ) {
 							throw new UserFriendlyMessageException("Only stompers may land on enemies to remove them.");
 						}
 						
-						if ( removeCandidateMarker.role == Marker.Role.HOME ) {
-							if ( removeCandidateMarker.player == game.getCurrentUsersTurn() ) {
+						if ( null != game.getCurrentUsersTurn() ) {
+							//Check if got enemy warren.
+							Marker enemyWarren = Markers.getEnemyWarren(game.getCurrentUsersTurn());
+							if (removeCandidate.endsWith(enemyWarren.source)) {
+								game.setWinner(game.getCurrentUsersTurn());
+								game.setCurrentUsersTurn(null);
+								game.setEnded(true);
+							} else {	
 								//Can't go on your own warren for now.
 								//TODO prevent landing on any of your own pieces?
-								throw new UserFriendlyMessageException("You can't stomp your own warren! Think of the children!");
-							} else {
-								enemyLostHome = true;						
+								Marker playerWarren = Markers.getPlayerWarren(game.getCurrentUsersTurn());
+								if (removeCandidate.endsWith(playerWarren.source)) {
+									throw new UserFriendlyMessageException("You can't stomp your own warren! Think of the children!");
+								}
 							}
 						}
 						unitDiedThisTurn = true;
@@ -156,7 +154,7 @@ public class GameEngine {
 
 
 			
-			Position position = new Position(destRow, destColumn, movedMarker);
+			Position position = new Position(destRow, destColumn, newImageSource);
 			//persist(position);
 			game.getPositions().add(position);
 			//System.out.println("Added position.");
@@ -178,25 +176,19 @@ public class GameEngine {
 						game.getSettings().getBoardWidth());
 				
 				if ( null != newUnitLocation ) {
-					Marker marker = getNewPlayerPiece(game.getSettings().getMarkers(), game.getCurrentUsersTurn());
-					Position position = new Position(newUnitLocation.row, newUnitLocation.column, marker);
+					String markerSource = getNewPlayerPiece(game.getCurrentUsersTurn());
+					
+					Position position = new Position(newUnitLocation.row, newUnitLocation.column, 
+							markerSource);
 					//em.persist(position);
 					game.getPositions().add(position);
 				}
 			}	
 		}
 		
-		if ( enemyLostHome ) {
-			Player enemyPlayer = Player.other(game.getCurrentUsersTurn());
-			int enemyHomes = countMarkersWith(game.getPositions(), Marker.Role.HOME, enemyPlayer);
-			if ( 0 == enemyHomes ) {
-				winGame(game);
-			}
-		}
-		
 		if ( changedPositions ) {
 			game.incrementMoveCount();
-			if ( !game.isMap() ) {
+			if ( !game.isStartingMap() ) {
 				game.setUnitDiedLastTurn(unitDiedThisTurn);
 				game.setCarrotEatenLastTurn(carrotEatenThisTurn);
 				game.setNextUsersTurn();
@@ -213,36 +205,17 @@ public class GameEngine {
 		return game;
 	}
 	
-	private int countMarkersWith(Set<Position> positions, Marker.Role role, Player player) {
-		int count = 0;
-		for( Position position : positions ) {
-			Marker marker = position.getMarker();
-			if ( marker.role == role && marker.player == player ) {
-				count++;
-			}
-		}
-		return count;
-	}
+
 	
-	private Marker getMarker(Set<Marker> Markers, Marker.Role role, Player player) {
-		for( Marker marker : Markers ) {
-			if ( marker.role == role && marker.player == player ) {
-				return marker;
-			}
+	private String getNewPlayerPiece(Player currentUsersTurn) {
+		if ( currentUsersTurn == Player.ONE ) {
+			return random.nextBoolean() ? 
+					Markers.PLAYER_ONE_SCOUT.source : Markers.PLAYER_ONE_STOMPER.source;
+		} else if ( currentUsersTurn == Player.TWO ) {
+			return random.nextBoolean() ? 
+					Markers.PLAYER_TWO_SCOUT.source : Markers.PLAYER_TWO_STOMPER.source;
 		}
 		return null;
-	}
-	
-	private void winGame(Game game){
-		game.setWinner(game.getCurrentUsersTurn());
-		game.setCurrentUsersTurn(null);
-		game.setEnded(true);	
-	}
-	
-	private Marker getNewPlayerPiece(Set<Marker> markers, Player currentUsersTurn) {
-		
-		Marker.Role role = random.nextBoolean() ? Marker.Role.SCOUT : Marker.Role.STOMPER;
-		return getMarker(markers, role, currentUsersTurn);
 	}
 
 	private Point findHomeWarren(Player currentUsersTurn, Set<Position> positions) {
@@ -250,9 +223,9 @@ public class GameEngine {
 			return null;
 		}
 		
+		Marker playerWarren = Markers.getPlayerWarren(currentUsersTurn);
 		for( Position position : positions ) {
-			Marker marker = position.getMarker();
-			if ( marker.role == Marker.Role.HOME && marker.player == currentUsersTurn ) {
+			if ( position.getMarkerSource().contains(playerWarren.source) ) {
 				return new Point(position.getRow(), position.getColumn());
 			}
 		}
@@ -326,8 +299,8 @@ public class GameEngine {
 		for (Position position : positions) {
 			if (sourceRow.equals(position.getRow()) 
 					&& sourceColumn.equals(position.getColumn())
-					&& (position.getMarker().player != null
-					|| position.getMarker().role == Marker.Role.CARROT) ) {
+					&& (position.getMarkerSource().contains("piece_")
+					|| position.getMarkerSource().contains("_carrot")) ) {
 				return position;
 			}
 		}
@@ -346,22 +319,22 @@ public class GameEngine {
 	
 
 
-	private Position removeAnyPosition(Integer sourceRow, Integer sourceColumn, EntityManager em, Game game) {
+	private String removeAnyPosition(Integer sourceRow, Integer sourceColumn, EntityManager em, Game game) {
 		Position position = findAnyPosition(sourceRow, sourceColumn, game.getPositions());
 		if ( null != position ) {
 			game.getPositions().remove(position);
 			em.remove(position);
-			return position;
+			return position.getMarkerSource();
 		}
 		return null;
 	}	
 
-	private Position removeCarrotOrPiecePosition(Integer sourceRow, Integer sourceColumn, EntityManager em, Game game) {
+	private String removeCarrotOrPiecePosition(Integer sourceRow, Integer sourceColumn, EntityManager em, Game game) {
 		Position position = findCarrotOrPiecePosition(sourceRow, sourceColumn, game.getPositions());
 		if ( null != position ) {
 			game.getPositions().remove(position);
 			em.remove(position);
-			return position;
+			return position.getMarkerSource();
 		}
 		return null;
 	}	

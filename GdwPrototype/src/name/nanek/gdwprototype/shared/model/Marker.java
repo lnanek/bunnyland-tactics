@@ -11,19 +11,8 @@ import name.nanek.gdwprototype.client.model.Player;
 
 import org.datanucleus.jpa.annotations.Extension;
 
-/**
- * A marker moved on the game board.
- * 
- * @author Lance Nanek
- *
- */
 @Entity
 public class Marker implements Serializable {
-	
-	public enum Role {
-		HOME, STOMPER, CARROT, SCOUT, 
-	}
-	
 	private static final long serialVersionUID = 1L;
 	
     @Id
@@ -46,8 +35,6 @@ public class Marker implements Serializable {
 	
 	public boolean terrain;
 	
-	public Role role;
-	
 	Marker() {
 	}
 	
@@ -68,9 +55,5 @@ public class Marker implements Serializable {
 		Marker copy = new Marker(name, source, player, visionRange, movementRange);
 		copy.terrain = terrain;
 		return copy;
-	}
-
-	public Long getKeyId() {
-		return keyId;
 	}
 }

@@ -2,12 +2,6 @@ package name.nanek.gdwprototype.client.view.widget;
 
 import name.nanek.gdwprototype.client.model.GameListing;
 
-/**
- * Links to a game.
- * 
- * @author Lance Nanek
- *
- */
 public class GameAnchor {
 
 	private static final String GAME_LISTING_ANCHOR_PREFIX = "game_";

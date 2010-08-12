@@ -1,6 +1,5 @@
 package name.nanek.gdwprototype.client.service;
 
-import name.nanek.gdwprototype.client.model.GameDisplayInfo;
 import name.nanek.gdwprototype.client.model.GameListing;
 import name.nanek.gdwprototype.client.model.GamePlayInfo;
 import name.nanek.gdwprototype.client.model.Player;
@@ -11,10 +10,7 @@ import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 
 /**
- * Service the remote server implements for clients to play games.
- * 
- * @author Lance Nanek
- *
+ * The client side stub for the RPC service.
  */
 @RemoteServiceRelativePath("game")
 public interface GameService extends RemoteService {
@@ -33,12 +29,10 @@ public interface GameService extends RemoteService {
 
 	GamePlayInfo getPositionsByGameId(Long id) throws GameException;
 
-	GameDisplayInfo getDisplayInfo(Long id) throws GameException;
-
 	GameListing createGameOrMap(String name, GameSettings settings, Long mapId) throws GameException;
 
 	GamePlayInfo moveMarker(Long gameId, Integer sourceRow, Integer sourceColumn, Integer destRow,
-			Integer destColumn, Long markerId) throws GameException;
+			Integer destColumn, String newImageSource) throws GameException;
 	
 	String getLoginUrlIfNeeded(String returnUrl) throws GameException;
 	

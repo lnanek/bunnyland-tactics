@@ -2,15 +2,6 @@ package name.nanek.gdwprototype.client.model;
 
 import java.io.Serializable;
 
-import com.google.gwt.user.client.DOM;
-import com.google.gwt.user.client.Element;
-
-/**
- * Contains information needed to display a game or map in a list.
- * 
- * @author Lance Nanek
- *
- */
 public class GameListing implements Serializable {
 
 	private static final long serialVersionUID = 1L;
@@ -19,17 +10,17 @@ public class GameListing implements Serializable {
 
 	private long id;
 	
-	private boolean map;
+	private boolean startingMap;
 	
 	private String creatorNickname;
 
 	private GameListing() {
 	}
 
-	public GameListing(String name, long id, boolean map, String creatorNickname) {
+	public GameListing(String name, long id, boolean startingMap, String creatorNickname) {
 		this.name = name;
 		this.id = id;
-		this.map = map;
+		this.startingMap = startingMap;
 		this.creatorNickname = creatorNickname;
 	}
 
@@ -48,11 +39,13 @@ public class GameListing implements Serializable {
 			gameName = '"' + name + '"';
 		}
 		
+		/*TODO put this back in some other time, bad for demo since doesn't show demoers nickname if we login in for them with our accounts.
 		if ( includeAuthor ) {
 			if ( !nullOrEmpty(creatorNickname) ) {
-				gameName += " (by " + escapeHtml(creatorNickname) + ")";
+				gameName += " (by " + creatorNickname + ")";
 			}
 		}
+		*/
 		return gameName;
 	}
 	
@@ -64,14 +57,7 @@ public class GameListing implements Serializable {
 		return id;
 	}
 
-	public boolean isMap() {
-		return map;
+	public boolean isStartingMap() {
+		return startingMap;
 	}
-
-	private static String escapeHtml(String maybeHtml) {
-		final Element div = DOM.createDiv();
-		DOM.setInnerText(div, maybeHtml);
-		return DOM.getInnerHTML(div);
-	}
-
 }

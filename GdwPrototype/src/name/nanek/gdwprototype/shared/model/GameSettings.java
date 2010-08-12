@@ -14,12 +14,6 @@ import javax.persistence.OneToMany;
 
 import org.datanucleus.jpa.annotations.Extension;
 
-/**
- * Settings for a game.
- * 
- * @author Lance Nanek
- *
- */
 @Entity
 public class GameSettings implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -35,6 +29,8 @@ public class GameSettings implements Serializable {
     @OneToMany(fetch = FetchType.EAGER, cascade = 
     {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
 	private Set<Marker> markers;
+    
+    //private Game game;
 
 	private int boardWidth = 8;
 

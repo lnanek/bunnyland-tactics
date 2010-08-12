@@ -4,12 +4,6 @@ import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.Widget;
 
-/**
- * Utility methods for working with widgets.
- * 
- * @author Lance Nanek
- *
- */
 public class ScreenUtil {
 
 	public static Widget labelAndWrap(String label, Widget control) {
