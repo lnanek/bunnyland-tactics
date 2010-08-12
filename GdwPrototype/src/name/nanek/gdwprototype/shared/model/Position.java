@@ -2,10 +2,12 @@ package name.nanek.gdwprototype.shared.model;
 
 import java.io.Serializable;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.OneToOne;
 
 import org.datanucleus.jpa.annotations.Extension;
 
@@ -29,6 +31,7 @@ public class Position implements Serializable {
 
 	private int column;
 
+	@OneToOne(cascade = CascadeType.ALL)
 	private Marker marker;
 
 	public Position() {

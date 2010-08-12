@@ -92,7 +92,23 @@ public class GameEngine {
 		game = em.find(Game.class, gameId);
 		game.getSettings();
 		game.getPositions();
-		Marker movedMarker = em.find(Marker.class, markerId);
+
+		//TODO this results in an error, need to somehow force markers to be part of game entity group
+		//current automatic mapping doesn't seem to figure it out on its own even though they are descendants
+		//Marker movedMarker = em.find(Marker.class, markerId);
+
+		//Workaround
+		Marker movedMarker = null;
+		if ( null != markerId ) {
+			for ( Marker marker : game.getSettings().getMarkers() ) {
+				if ( marker.getKeyId().equals(markerId) ) {
+					//also need to copy marker because it can't have a settings parent and a position parent even though we don't map those
+					//might be better to use IDs instead of relationships at this point
+					movedMarker = marker.copy();
+				}
+			}
+		}
+
 
 		if ( !isUsersTurn(game, user) ) {
 			throw new UserFriendlyMessageException("It isn't your turn to move.");

@@ -674,10 +674,11 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		//GWT.log("GameScreenController#initializeBoardIfNeeded: isUsersTurn = " + info.isUsersTurn);
 		if ( info.map && info.playInfo.isUsersTurn ) {
 			gameScreen.mapBuilderPalettePanel.setVisible(true);
-			for (int i = 0; i < Markers.MAP_MAKING_PIECES.length; i++) {
-				Marker marker = Markers.MAP_MAKING_PIECES[i];
+			int col = 0;
+			//TODO need to sort this now
+			for ( Marker marker : info.markers ) {
 				Image image = new PaletteImage(marker);
-				TableCellPanel panel = new TableCellPanel(image, gameScreen.markers, 0, i);
+				TableCellPanel panel = new TableCellPanel(image, gameScreen.markers, 0, col++);
 				dragController.makeDraggable(image);
 				GameScreenDropController simpleDropController = new GameScreenDropController(panel, this);
 				dragController.registerDropController(simpleDropController);

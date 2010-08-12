@@ -11,6 +11,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 
 import org.datanucleus.jpa.annotations.Extension;
 
@@ -32,8 +33,7 @@ public class GameSettings implements Serializable {
     @Extension(vendorName="datanucleus", key="gae.pk-id", value="true")
     private Long keyId;
 
-    @OneToMany(fetch = FetchType.EAGER, cascade = 
-    {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
+    @OneToMany(cascade = CascadeType.ALL)
 	private Set<Marker> markers;
 
 	private int boardWidth = 8;
