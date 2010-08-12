@@ -48,25 +48,25 @@ public class Marker implements Serializable {
 	
 	public Role role;
 	
-	Marker() {
+	private Marker() {
 	}
 	
-	Marker(String name, String source, boolean terrain) {
-		this(name, source, null, null, null);
-		this.terrain = terrain;
-	}
-	
-	Marker(String name, String source, Player player, Integer visionRange, Integer movementRange) {
+	public Marker(String name, String source, Player player, Integer visionRange, Integer movementRange, Role role, boolean terrain) {
+		this.name = name;
 		this.source = source;
 		this.player = player;
 		this.visionRange = visionRange;
-		this.name = name;
 		this.movementRange = movementRange;
+		this.role = role;
+		this.terrain = terrain;
+	}
+	
+	public static Marker makeTerrain(String name, String source) {
+		return new Marker(name, source, null, null, null, null, true);
 	}
 
 	public Marker copy() {
-		Marker copy = new Marker(name, source, player, visionRange, movementRange);
-		copy.terrain = terrain;
+		Marker copy = new Marker(name, source, player, visionRange, movementRange, role, terrain);
 		return copy;
 	}
 
