@@ -76,8 +76,8 @@ public class Game implements Serializable {
 		return map;
 	}
 
-	public void setMap(boolean startingMap) {
-		this.map = startingMap;
+	public void setMap(boolean map) {
+		this.map = map;
 	}
 
 	public Player getWinner() {

@@ -129,7 +129,7 @@ public class GameScreenDropController extends SimpleDropController {
 		// from it.
 		if (sourceIsPalette) {
 			GameSquare draggedImage = (GameSquare) context.draggable;
-			GameSquare newImage = new GameSquare(draggedImage.marker);
+			GameSquare newImage = new GameSquare(draggedImage.marker, null);
 			dropTarget.setWidget(newImage);
 			context.dragController.makeDraggable(newImage);
 

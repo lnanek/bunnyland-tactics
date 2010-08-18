@@ -235,7 +235,8 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 			if ( null != mapPositions ) {
 				Set<Position> gamePositions = new HashSet<Position>();
 				for ( Position mapPosition : mapPositions ) {
-					Position newPosition = new Position(mapPosition.getRow(), mapPosition.getColumn(), mapPosition.getMarker());
+					Position newPosition = new Position(mapPosition.getRow(), mapPosition.getColumn(), 
+							mapPosition.getMarker().copy());
 					//em.persist(newPosition);
 					gamePositions.add(newPosition);
 				}

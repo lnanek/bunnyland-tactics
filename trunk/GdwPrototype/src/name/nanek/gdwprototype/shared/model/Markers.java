@@ -11,30 +11,39 @@ import name.nanek.gdwprototype.client.model.Player;
  *
  */
 public class Markers {
+	//TODO the 1-bit transparency on the animated GIFs looks really bad
+	//maybe have separate PNG frames and switch between them via timers?
+	//alternatively, have images for every combination of marker and tile
+	
+	//TODO have images for different directions? if a unit moves right, show facing right, etc.
+	
+	public static final int MARKER_HEIGHT_PX = 64;
+	
+	public static final int MARKER_WIDTH_PX = 64;
 
 	public static final Marker CARROT = 
-		new Marker("Carrot", "tile_carrot.png", null, null, null, Marker.Role.CARROT, true);
+		new Marker("Carrot", "tile_carrot.png", null, null, null, null, Marker.Role.CARROT, true);
 	
 	public static final Marker PLAYER_ONE_STOMPER = 
-		new Marker("Player 1 Stomper", "piece_player1_warrior.png", Player.ONE, 2, 2, Marker.Role.STOMPER, false);
+		new Marker("Player 1 Stomper", "piece_player1_warrior.png", "piece_player1_warrior_jumping.gif", Player.ONE, 2, 2, Marker.Role.STOMPER, false);
 
 	public static final Marker PLAYER_ONE_SCOUT = 
-		new Marker("Player 1 Scout", "piece_player1_scout.png", Player.ONE, 3, 3, Marker.Role.SCOUT, false);
+		new Marker("Player 1 Scout", "piece_player1_scout.png", "piece_player1_scout_looking_around.gif", Player.ONE, 3, 3, Marker.Role.SCOUT, false);
 
 	public static final Marker PLAYER_ONE_WARREN = 
-		new Marker("Player 1 Home", "piece_player1_home.png", Player.ONE, 1, 0, Marker.Role.HOME, false);
+		new Marker("Player 1 Home", "piece_player1_home.png", null,  Player.ONE, 1, 0, Marker.Role.HOME, false);
 
 	public static final Marker PLAYER_TWO_STOMPER = 
-		new Marker("Player 2 Stomper", "piece_player2_warrior.png", Player.TWO, 2, 2, Marker.Role.STOMPER, false);
+		new Marker("Player 2 Stomper", "piece_player2_warrior.png", "piece_player2_warrior_jumping.gif", Player.TWO, 2, 2, Marker.Role.STOMPER, false);
 
 	public static final Marker PLAYER_TWO_SCOUT = 
-		new Marker("Player 2 Scout", "piece_player2_scout.png", Player.TWO, 3, 3, Marker.Role.SCOUT, false);
+		new Marker("Player 2 Scout", "piece_player2_scout.png", "piece_player2_scout_looking_around.gif", Player.TWO, 3, 3, Marker.Role.SCOUT, false);
 
 	public static final Marker PLAYER_TWO_WARREN = 
-		new Marker("Player 2 Home", "piece_player2_home.png", Player.TWO, 1, 0, Marker.Role.HOME, false);
+		new Marker("Player 2 Home", "piece_player2_home.png", null, Player.TWO, 1, 0, Marker.Role.HOME, false);
 	
 	public static final Marker FOG_OF_WAR = 
-		new Marker("You can't see this far.", "tile_fog_of_war.png", null, null, null, null, false);
+		new Marker("You can't see this far.", "tile_fog_of_war.png", null, null, null, null, null, false);
 	
 	public static final Marker[] ALL_MARKERS = new Marker[] { 
 		PLAYER_ONE_WARREN,

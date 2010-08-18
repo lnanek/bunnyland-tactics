@@ -34,10 +34,14 @@ public class Position implements Serializable {
 	@OneToOne(cascade = CascadeType.ALL)
 	private Marker marker;
 
-	public Position() {
+	private Position() {
 	}
 
 	public Position(int row, int column, Marker marker) {
+		if ( null == marker ) {
+			throw new IllegalArgumentException("Position cannot have a null marker.");
+		}
+		
 		this.row = row;
 		this.column = column;
 		this.marker = marker;
