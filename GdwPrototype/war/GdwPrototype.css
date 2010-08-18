@@ -126,8 +126,8 @@ table {
 }
 
 .grid td, .grid th {
-	width: 50px;
-	height: 50px;
+	width: 64px;
+	height: 64px;
 	/*border: 3px solid Gray;*/
 	border-spacing: 0px;
 	padding: 0px;

@@ -105,7 +105,23 @@ public class GameEngine {
 					//also need to copy marker because it can't have a settings parent and a position parent even though we don't map those
 					//might be better to use IDs instead of relationships at this point
 					movedMarker = marker.copy();
+					break;
 				}
+			}
+			if ( null == movedMarker ) {
+				for ( Position position : game.getPositions() ) {
+					Marker marker = position.getMarker();
+					if ( marker.getKeyId().equals(markerId) ) {
+						//also need to copy marker because it can't have a settings parent and a position parent even though we don't map those
+						//might be better to use IDs instead of relationships at this point
+						movedMarker = marker.copy();
+						break;
+					}
+				}
+			}
+			
+			if ( null == movedMarker ) {
+				throw new IllegalArgumentException("Could not find marker with specified ID.");
 			}
 		}
 
@@ -194,7 +210,7 @@ public class GameEngine {
 						game.getSettings().getBoardWidth());
 				
 				if ( null != newUnitLocation ) {
-					Marker marker = getNewPlayerPiece(game.getSettings().getMarkers(), game.getCurrentUsersTurn());
+					Marker marker = getNewPlayerPiece(game.getSettings().getMarkers(), game.getCurrentUsersTurn()).copy();
 					Position position = new Position(newUnitLocation.row, newUnitLocation.column, marker);
 					//em.persist(position);
 					game.getPositions().add(position);

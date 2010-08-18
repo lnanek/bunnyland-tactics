@@ -27,7 +27,7 @@ public class GameDataAccessor {
 		
 		Query query = em.createQuery(
 				"SELECT FROM " + Game.class.getName() + " g " + 
-				"WHERE g.startingMap  = true AND g.ended = true ");
+				"WHERE g.map  = true AND g.ended = true ");
 		Collection<Game> games = query.getResultList();
 		return games;
 	}	
@@ -39,7 +39,7 @@ public class GameDataAccessor {
 		{
 			Query secondPlayerQuery = em.createQuery(
 					"SELECT FROM " + Game.class.getName() + " g " + 
-					"WHERE g.ended = false AND g.startingMap = false AND " + 
+					"WHERE g.ended = false AND g.map = false AND " + 
 					"( g.secondPlayerUserId IS NULL OR " + 
 					"g.secondPlayerUserId = :username )");
 			if ( null == userId ) {
@@ -52,7 +52,7 @@ public class GameDataAccessor {
 		{
 			Query firstPlayerQuery = em.createQuery(
 					"SELECT FROM " + Game.class.getName() + " g " + 
-					"WHERE g.ended = false AND g.startingMap = false AND " + 
+					"WHERE g.ended = false AND g.map = false AND " + 
 					"g.firstPlayerUserId = :username ");
 			if ( null == userId ) {
 				userId = "";

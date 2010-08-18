@@ -480,9 +480,12 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 					if ( null != currentImage ) {
 						currentImage.removeFromParent();
 					}
-				} else if (null == currentImage || !currentImage.getUrl().endsWith(marker.source)) {
-					Image image = new GameSquare(marker);
-					panel.setWidget(image);
+				} else {
+					String markerSource = marker.getSourceForPlayersTurn(info.currentPlayersTurn);
+					if (null == currentImage || !currentImage.getUrl().endsWith(markerSource)) {				
+						Image image = new GameSquare(marker, info.currentPlayersTurn);
+						panel.setWidget(image);
+					}
 				}				
 				if ( null != info.playingAs && info.isUsersTurn ) {
 					makeContentsDraggableIfNeeded(panel);

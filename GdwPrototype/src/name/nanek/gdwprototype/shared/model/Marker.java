@@ -35,6 +35,8 @@ public class Marker implements Serializable {
     private Long keyId;
     
 	public String source;
+    
+	public String activeSource;
 
 	public Player player;
 
@@ -51,9 +53,10 @@ public class Marker implements Serializable {
 	private Marker() {
 	}
 	
-	public Marker(String name, String source, Player player, Integer visionRange, Integer movementRange, Role role, boolean terrain) {
+	public Marker(String name, String source, String activeSource, Player player, Integer visionRange, Integer movementRange, Role role, boolean terrain) {
 		this.name = name;
 		this.source = source;
+		this.activeSource = activeSource;
 		this.player = player;
 		this.visionRange = visionRange;
 		this.movementRange = movementRange;
@@ -62,12 +65,18 @@ public class Marker implements Serializable {
 	}
 	
 	public static Marker makeTerrain(String name, String source) {
-		return new Marker(name, source, null, null, null, null, true);
+		return new Marker(name, source, null, null, null, null, null, true);
 	}
 
 	public Marker copy() {
-		Marker copy = new Marker(name, source, player, visionRange, movementRange, role, terrain);
+		Marker copy = new Marker(name, source, activeSource, player, visionRange, movementRange, role, terrain);
 		return copy;
+	}
+	
+	public String getSourceForPlayersTurn(Player currentPlayersTurn) {
+		if ( null == currentPlayersTurn || null == player || null == activeSource ) return source;
+		
+		return player == currentPlayersTurn ? activeSource : source;
 	}
 
 	public Long getKeyId() {
