@@ -1,5 +1,7 @@
 package name.nanek.gdwprototype.client.view.widget;
 
+import name.nanek.gdwprototype.shared.model.Markers;
+
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -21,7 +23,7 @@ public class TableCellPanel extends SimplePanel {
 		if (null != widget) {
 			add(widget);
 		}
-		setPixelSize(50, 50);
+		setPixelSize(Markers.MARKER_WIDTH_PX, Markers.MARKER_HEIGHT_PX);
 		table.setWidget(row, column, this);
 		this.row = row;
 		this.column = column;
