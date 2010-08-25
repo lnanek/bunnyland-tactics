@@ -2,8 +2,6 @@ package name.nanek.gdwprototype.client.controller.screen;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.List;
 
 import name.nanek.gdwprototype.client.controller.PageController;
 import name.nanek.gdwprototype.client.controller.screen.support.GameScreenDropController;
@@ -99,6 +97,11 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		@Override
 		public void onDragStart(DragStartEvent event) {
 			if ( null == pageController ) return;
+			
+			//GWT.log("onDragStart: draggable = " + event.getContext().draggable.getClass());
+			//GWT.log("onDragStart: draggable.parent = " + event.getContext().draggable.getParent().getClass());
+			
+			dragSource = (TableCellPanel) event.getContext().draggable.getParent();
 			
 			dragInProgress = true;
 			
@@ -209,8 +212,6 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 	
 	private HashSet<GameSquare> draggables;
 	
-	private List<GameScreenDropController> boardDropControllers;
-	
 	private boolean refreshGameBoardNeeded = true;
 
 	private boolean playedGameOverMusic;
@@ -218,6 +219,8 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 	private GameDisplayInfo displayInfo;
 	
 	private Integer lastPlayedSoundForMoveCount;
+	
+	private TableCellPanel dragSource;
 	
 	//TODO don't refresh when window blurred
 	//detecting refocus seems dicey, chrome isn't calling properly when switch back to tab from another, 
@@ -238,6 +241,10 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 	
 	public GameDisplayInfo getCurrentGamePlayInfo() {
 		return displayInfo;
+	}
+	
+	public TableCellPanel getDragSource() {
+		return dragSource;
 	}
 	
 	public void moveMarker(Integer sourceRow, Integer sourceColumn, Integer destRow, Integer destColumn,
@@ -554,18 +561,12 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		//TODO do we have to check if the current user is the map builder?
 		if ( displayInfo.map || (!displayInfo.playInfo.ended && marker.player == displayInfo.playInfo.playingAs && null != marker.movementRange && marker.movementRange > 0 )) {
 			dragController.makeDraggable(square);
-			//TODO Slay has a nice way of showing a piece can be interacted with.
-			//Units hop up and down and buildings ready to build have a waving flag.
-			//Something like that would help the player a lot.
 			draggables.add(square);
 		}
 	}
 
 	@Override
 	public void hideScreen() {
-		for( GameScreenDropController simpleDropController : boardDropControllers) {
-			dragController.unregisterDropController(simpleDropController);
-		}
 		refreshGameBoardTimer.cancel();
 		displayInfo = null;
 		pageController = null;
@@ -649,9 +650,8 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		gameScreen.howToPlayDialog.show();
 
 		draggables = new HashSet<GameSquare>();
-		boardDropControllers = new LinkedList<GameScreenDropController>();
 		dragController = new PickupDragController(RootPanel.get(), false);
-		dragController.setBehaviorDragProxy(true);
+		dragController.setBehaviorDragProxy(false);
 		dragController.setBehaviorMultipleSelection(false);
 		dragController.addDragHandler(new GameDragHandler());
 		
@@ -685,7 +685,6 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 				dragController.makeDraggable(image);
 				GameScreenDropController simpleDropController = new GameScreenDropController(panel, this);
 				dragController.registerDropController(simpleDropController);
-				//boardDropControllers.add(simpleDropController);
 			}
 			//TODO random options: fill board with random terrain, random palette entry that places a random terrain, random brush that can be dragged across area to add random terrain, etc..
 		} else {
@@ -700,7 +699,6 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 				TableCellPanel panel = new TableCellPanel(null, gameScreen.gameBoard, row, column);
 				GameScreenDropController simpleDropController = new GameScreenDropController(panel, this);
 				dragController.registerDropController(simpleDropController);
-				boardDropControllers.add(simpleDropController);
 				
 				//TODO need to change where can drop based on dragged piece's movement, and highlight where can drop for user as well
 				//TODO adjust what drop controllers are registered? or just veto wrong moves?

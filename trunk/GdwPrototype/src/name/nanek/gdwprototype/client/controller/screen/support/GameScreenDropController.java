@@ -47,7 +47,7 @@ public class GameScreenDropController extends SimpleDropController {
 			return;
 		}
 
-		TableCellPanel source = (TableCellPanel) context.draggable.getParent();
+		TableCellPanel source = gameScreenController.getDragSource();
 
 		// Ignore drop on to palette, assume user is putting something back.
 		if (dropTarget.getWidget() instanceof PaletteImage) {
@@ -94,7 +94,7 @@ public class GameScreenDropController extends SimpleDropController {
 		//Check unit can move this far.
 		//TODO check on server as well
 		if ( !info.map ) {
-			TableCellPanel source = (TableCellPanel) context.draggable.getParent();
+			TableCellPanel source = gameScreenController.getDragSource();
 			int sourceCol = source.getColumn();
 			int sourceRow = source.getRow();
 			
