@@ -39,6 +39,7 @@ public class HowToPlayDialog {
 		table.setCellPadding(10);
 		
 		int row = 0;
+		addHeading("Carrot", table, row++);
 		table.setWidget(row, 0, new Image("images/" + Markers.CARROT.source, 0, 0, Markers.MARKER_WIDTH_PX, Markers.MARKER_HEIGHT_PX));
 		table.getFlexCellFormatter().setColSpan(row, 0, 2);
 		table.getFlexCellFormatter().setAlignment(row, 0, 
@@ -47,16 +48,19 @@ public class HowToPlayDialog {
 				"Find the carrots! Landing on a carrot earns you a new random bunny back home, <br />" + 
 				"as long as there's an open space adjacent to your home."));
 
+		addHeading("Home", table, row++);
 		table.setWidget(row, 0, new Image("images/" + Markers.PLAYER_TWO_WARREN.source, 0, 0, Markers.MARKER_WIDTH_PX, Markers.MARKER_HEIGHT_PX));
 		table.setWidget(row, 1, new Image("images/" + Markers.PLAYER_ONE_WARREN.source, 0, 0, Markers.MARKER_WIDTH_PX, Markers.MARKER_HEIGHT_PX));
 		table.setWidget(row++, 2, new HTML(
 				"Stomp the enemy's home with a stomper bunny to win! <br />" + 
 				"Protect your own home to survive."));
-		
+
+		addHeading("Stomper", table, row++);
 		table.setWidget(row, 0, new Image("images/" + Markers.PLAYER_TWO_STOMPER.source, 0, 0, Markers.MARKER_WIDTH_PX, Markers.MARKER_HEIGHT_PX));
 		table.setWidget(row, 1, new Image("images/" + Markers.PLAYER_ONE_STOMPER.source, 0, 0, Markers.MARKER_WIDTH_PX, Markers.MARKER_HEIGHT_PX));
 		table.setWidget(row++, 2, new Label("Stomper bunnies remove enemies when placed on them."));
 
+		addHeading("Scout", table, row++);
 		table.setWidget(row, 0, new Image("images/" + Markers.PLAYER_TWO_SCOUT.source, 0, 0, Markers.MARKER_WIDTH_PX, Markers.MARKER_HEIGHT_PX));
 		table.setWidget(row, 1, new Image("images/" + Markers.PLAYER_ONE_SCOUT.source, 0, 0, Markers.MARKER_WIDTH_PX, Markers.MARKER_HEIGHT_PX));
 		table.setWidget(row++, 2, new Label("Scout bunnies can see far, but can't remove enemies."));
@@ -72,6 +76,13 @@ public class HowToPlayDialog {
 		dialogBox.setWidget(dialogVPanel);
 		
 		player.addMenuClick(closeButton);
+	}
+
+	private void addHeading(String text, FlexTable table, int row) {
+		Label label = new Label(text);
+		label.addStyleName("heavy");
+		table.setWidget(row, 0, label);
+		table.getFlexCellFormatter().setColSpan(row, 0, 3);
 	}
 
 	public void show() {
