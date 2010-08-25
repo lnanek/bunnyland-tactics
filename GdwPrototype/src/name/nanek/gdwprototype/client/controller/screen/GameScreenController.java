@@ -678,7 +678,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		if ( info.map && info.playInfo.isUsersTurn ) {
 			gameScreen.mapBuilderPalettePanel.setVisible(true);
 			int col = 0;
-			//TODO need to sort this now
+			Arrays.sort(info.markers);
 			for ( Marker marker : info.markers ) {
 				Image image = new PaletteImage(marker);
 				TableCellPanel panel = new TableCellPanel(image, gameScreen.markers, 0, col++);

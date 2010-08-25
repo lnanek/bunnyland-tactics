@@ -8,6 +8,7 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 import name.nanek.gdwprototype.client.model.Player;
+import name.nanek.gdwprototype.shared.model.support.CompareToBuilder;
 
 import org.datanucleus.jpa.annotations.Extension;
 
@@ -18,10 +19,10 @@ import org.datanucleus.jpa.annotations.Extension;
  *
  */
 @Entity
-public class Marker implements Serializable {
+public class Marker implements Serializable, Comparable<Marker> {
 	
 	public enum Role {
-		HOME, STOMPER, CARROT, SCOUT, 
+		HOME, STOMPER, SCOUT, CARROT,  
 	}
 	
 	private static final long serialVersionUID = 1L;
@@ -81,5 +82,17 @@ public class Marker implements Serializable {
 
 	public Long getKeyId() {
 		return keyId;
+	}
+
+	@Override
+	public int compareTo(Marker other) {
+		if ( this.equals(other) ) {
+			return 0;	
+		}
+		
+		return new CompareToBuilder()
+				.append(other.player, player) //Reversed so that nulls are last.
+				.append(role, other.role)
+				.toComparison();
 	}
 }
