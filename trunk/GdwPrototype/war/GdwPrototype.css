@@ -87,6 +87,19 @@ tr, td {
 }
 /* End fading the content in. */
 
+/* Markers on the game board have different layers that overlap. */
+img.gameBoardMarkerGround {
+	z-index: 1 !important;
+}
+
+img.gameBoardMarkerSurface {
+	z-index: 2 !important;
+}
+img.gameBoardMarkerUi {
+	z-index: 3 !important;
+}
+		
+
 h1 {
 	font-size: 5em;
 	font-weight: bold;

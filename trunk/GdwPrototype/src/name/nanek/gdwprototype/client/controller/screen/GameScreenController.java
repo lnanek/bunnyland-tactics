@@ -5,6 +5,7 @@ import java.util.HashSet;
 
 import name.nanek.gdwprototype.client.controller.PageController;
 import name.nanek.gdwprototype.client.controller.screen.support.GameScreenDropController;
+import name.nanek.gdwprototype.client.controller.screen.support.VisibilityCalculator;
 import name.nanek.gdwprototype.client.controller.support.ScreenControllers;
 import name.nanek.gdwprototype.client.controller.support.ScreenControllers.Screen;
 import name.nanek.gdwprototype.client.model.GameDisplayInfo;
@@ -268,30 +269,6 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		pageController.gameService.getPositionsByGameId(gameId, new RefreshGameBoardCallback());
 	}
 	
-	private void setVisibileSquares(int markerRow, int markerCol, Marker marker, boolean[][] visibleSquares, int boardWidth, int boardHeight) {
-		if (null == marker || null == marker.player || null == marker.visionRange || null == fogOfWarAs)
-			return;
-
-		if (marker.player != fogOfWarAs)
-			return;
-
-		int startRow = Math.max(0,	markerRow - marker.visionRange);
-		int endRow = Math.min(boardHeight - 1,	markerRow + marker.visionRange);
-		int startCol = Math.max(0,	markerCol - marker.visionRange);
-		int endCol = Math.min(boardWidth - 1, markerCol + marker.visionRange);
-		
-		for (int row = startRow; row <= endRow; row++) {
-			for (int column = startCol; column <= endCol; column++) {
-				int rowDistance = Math.abs(markerRow - row);
-				int colDistance = Math.abs(markerCol - column);
-				int totalDistance = rowDistance + colDistance;
-				if (totalDistance <= marker.visionRange) {
-					visibleSquares[row][column] = true;
-				}
-			}
-		}
-	}
-	
 	private void clearDraggables() {
 		for(GameSquare square : draggables) {
 			dragController.makeNotDraggable(square);
@@ -436,133 +413,55 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		}
 		gameScreen.statusLabel.setText(status +" ");
 
-		//GWT.log("positions: " + info.positions.length);		
-		HashSet<Position> positions = removeTerrainUnderUnits(info.positions);	
-		//GWT.log("filtered positions: " + positions.length);
 		int boardHeight = displayInfo.boardHeight;
 		int boardWidth = displayInfo.boardWidth;
 		
-		// TODO update visibility immediately on move instead of waiting for server update?
-		
-		Marker[][] markerPositions = new Marker[boardHeight][boardWidth];
-		boolean[][] visibleSquares = null;
-		if ( null != fogOfWarAs ) {
-			visibleSquares = new boolean[boardHeight][boardWidth];	
+		//Clear board.
+		// TODO more efficient algorithm? right now we make some things undraggable just to make them draggable again
+		clearDraggables();
+		//TODO keep track of game move number and only redo board if new move number?
+		//BUG because it is clearing everything and redoing it every update now, the unit animations restart from 0 before finishing
+		for (int row = 0; row < boardHeight; row++) {
+			for (int col = 0; col < boardWidth; col++) {				
+				TableCellPanel panel = (TableCellPanel) gameScreen.gameBoard.getWidget(row, col);
+				panel.clear();
+			}
 		}
-		for (final Position position : positions) {
-			//Translate the server sent positions into markers.
-			//TODO just send markers over directly
-			//TODO stop storing full URLs in DB
+
+		// TODO update visibility immediately on move instead of waiting for server update?		
+		boolean[][] visibleSquares = VisibilityCalculator.calculateVisibility(fogOfWarAs, boardWidth, boardHeight, info.positions);
+
+		//Black out areas not visible using fog of war.
+		for (int row = 0; row < boardHeight; row++) {
+			for (int col = 0; col < boardWidth; col++) {	
+				if ( !visibleSquares[row][col] ) {
+					TableCellPanel panel = (TableCellPanel) gameScreen.gameBoard.getWidget(row, col);
+					Image image = new GameSquare(Markers.FOG_OF_WAR, info.currentPlayersTurn);
+					panel.add(image);
+				}
+			}
+		}
+		
+		for (final Position position : info.positions) {
 			Marker marker = position.getMarker();
 			int row = position.getRow();
 			int col = position.getColumn();
-			//GWT.log("Position " + row + ", " + col + " using marker: " + marker);
-			if ( row < boardHeight && col < boardWidth ) {
-				markerPositions[row][col] = marker;
+			if ( !visibleSquares[row][col] ) {
+				continue;
 			}
 			
-			//Determine what is visible.
-			if ( null != fogOfWarAs ) {
-				setVisibileSquares(row, col, marker, visibleSquares, boardWidth, boardHeight);			
-			}
-		}
-		
-		// TODO more efficient algorithm? right now we make some things undraggable just to make them draggable again
-		clearDraggables();
-
-		//Determine a marker for each square of game board.
-		for (int row = 0; row < boardHeight; row++) {
-			for (int col = 0; col < boardWidth; col++) {	
-				//Use fog of war instead of server sent marker if not visible.
-				Marker marker = null;
-				if ( null != fogOfWarAs && !visibleSquares[row][col] ) {
-					marker = Markers.FOG_OF_WAR;
-				} else {
-					marker = markerPositions[row][col];
-				}
-				
-				TableCellPanel panel = (TableCellPanel) gameScreen.gameBoard.getWidget(row, col);
-				Image currentImage = (Image) panel.getWidget();
-				if ( null == marker ) {
-					if ( null != currentImage ) {
-						currentImage.removeFromParent();
-					}
-				} else {
-					String markerSource = marker.getSourceForPlayersTurn(info.currentPlayersTurn);
-					if (null == currentImage || !currentImage.getUrl().endsWith(markerSource)) {				
-						Image image = new GameSquare(marker, info.currentPlayersTurn);
-						panel.setWidget(image);
-					}
-				}				
-				if ( null != info.playingAs && info.isUsersTurn ) {
-					makeContentsDraggableIfNeeded(panel);
+			TableCellPanel panel = (TableCellPanel) gameScreen.gameBoard.getWidget(row, col);
+			GameSquare image = new GameSquare(marker, info.currentPlayersTurn);
+			panel.add(image);
+			if ( null != info.playingAs && info.isUsersTurn ) {
+				if ( displayInfo.map || (!displayInfo.playInfo.ended && marker.player == displayInfo.playInfo.playingAs && null != marker.movementRange && marker.movementRange > 0 )) {
+					dragController.makeDraggable(image);
+					draggables.add(image);
 				}
 			}
 		}
 		
 		gameScreen.content.setVisible(true);
-	}
-	
-	private static HashSet<Position> removeTerrainUnderUnits(Position[] positions) {
-		//XXX The engine can't currently show a tile on top of another,
-		//so there's an ugly hack here to filter out terrain that units are on top of.
-		//TODO show tiles on top of one another, units on top of terrain
-		//maybe have separate position collections for terrain and units
-		HashSet<Position> filteredPositions = new HashSet<Position>();
-		filteredPositions.addAll(Arrays.asList(positions));
-		
-		for( Position first : positions ) {
-			if ( !first.getMarker().terrain ) {
-				continue;
-			}
-			
-			for ( Position second : positions ) {
-				if ( first != second && first.getColumn() == second.getColumn() &&
-						first.getRow() == second.getRow() ) {
-
-					filteredPositions.remove(first);
-				}
-			}
-		}
-		//ArrayList<Position> filteredPositionsList = new ArrayList<Position>(filteredPositions);
-		//return filteredPositionsList.toArray(new Position[] {});
-		return filteredPositions;
-	}
-
-	private void restoreDraggables() {
-		if ( null == displayInfo.playInfo ) {
-			return;
-		}
-		
-		// Make appropriate pieces draggable. Done each update to support login and hotseat play later.
-		if ( null != displayInfo.playInfo.playingAs && displayInfo.playInfo.isUsersTurn ) {
-			int rowCount = gameScreen.gameBoard.getRowCount();
-			for (int row = 0; row < rowCount; row++) {
-				int cellCount = gameScreen.gameBoard.getCellCount(row);
-				for (int column = 0; column < cellCount; column++) {
-					TableCellPanel panel = (TableCellPanel) gameScreen.gameBoard.getWidget(row, column);
-					makeContentsDraggableIfNeeded(panel);
-				}
-			}				
-		}
-	}
-
-	private void makeContentsDraggableIfNeeded(TableCellPanel panel) {
-		if ( null == displayInfo.playInfo ) {
-			return;
-		}
-		
-		GameSquare square = (GameSquare) panel.getWidget();
-		if ( null == square || null == square.marker ) {
-			return;
-		}
-
-		Marker marker = square.marker;
-		//TODO do we have to check if the current user is the map builder?
-		if ( displayInfo.map || (!displayInfo.playInfo.ended && marker.player == displayInfo.playInfo.playingAs && null != marker.movementRange && marker.movementRange > 0 )) {
-			dragController.makeDraggable(square);
-			draggables.add(square);
-		}
 	}
 
 	@Override
@@ -581,8 +480,10 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 					"An error occurred asking the game server to surrender.",
 					true,
 					caught);
-			restoreDraggables();
 			gameScreen.surrenderButton.setEnabled(true);
+			//Force a board update so draggable pieces are draggable again.
+			refreshGameBoardNeeded = true;
+			requestRefreshGameBoard();
 		}
 
 		public void onSuccess(Void unused) {
@@ -596,7 +497,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		@Override
 		public void onClick(ClickEvent event) {
 			if ( null == pageController ) return;
-			
+
 			clearDraggables();
 			gameScreen.surrenderButton.setEnabled(false);
 			pageController.gameService.surrender(gameId, displayInfo.playInfo.playingAs, new SurrenderCallback());
@@ -681,7 +582,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			Arrays.sort(info.markers);
 			for ( Marker marker : info.markers ) {
 				Image image = new PaletteImage(marker);
-				TableCellPanel panel = new TableCellPanel(image, gameScreen.markers, 0, col++);
+				TableCellPanel panel = new TableCellPanel(image, gameScreen.markers, 0, col++, null, null);
 				dragController.makeDraggable(image);
 				GameScreenDropController simpleDropController = new GameScreenDropController(panel, this);
 				dragController.registerDropController(simpleDropController);
@@ -696,7 +597,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		int width = info.boardWidth;
 		for (int column = 0; column < width; column++) {
 			for (int row = 0; row < height; row++) {
-				TableCellPanel panel = new TableCellPanel(null, gameScreen.gameBoard, row, column);
+				TableCellPanel panel = new TableCellPanel(null, gameScreen.gameBoard, row, column, row, column);
 				GameScreenDropController simpleDropController = new GameScreenDropController(panel, this);
 				dragController.registerDropController(simpleDropController);
 				

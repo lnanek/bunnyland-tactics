@@ -2,8 +2,8 @@ package name.nanek.gdwprototype.client.view.widget;
 
 import name.nanek.gdwprototype.shared.model.Markers;
 
+import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.FlexTable;
-import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -12,28 +12,38 @@ import com.google.gwt.user.client.ui.Widget;
  * @author Lance Nanek
  *
  */
-public class TableCellPanel extends SimplePanel {
+public class TableCellPanel extends AbsolutePanel {
 
-	private int row;
+	private Integer row;
 
-	private int column;
+	private Integer column;
 
-	public TableCellPanel(Widget widget, FlexTable table, int row, int column) {
+	public TableCellPanel(Widget widget, FlexTable table, int tableRow, int tableCol, Integer gameRow, Integer gameCol) {
 		super();
 		if (null != widget) {
 			add(widget);
 		}
 		setPixelSize(Markers.MARKER_WIDTH_PX, Markers.MARKER_HEIGHT_PX);
-		table.setWidget(row, column, this);
-		this.row = row;
-		this.column = column;
+		table.setWidget(tableRow, tableCol, this);
+		this.row = gameRow;
+		this.column = gameCol;
+	}
+	
+	
+
+	@Override
+	public void add(Widget w) {
+		//All pieces should overlap.
+		super.add(w, 0, 0);
 	}
 
-	public int getRow() {
+
+
+	public Integer getRow() {
 		return row;
 	}
 
-	public int getColumn() {
+	public Integer getColumn() {
 		return column;
 	}
 
