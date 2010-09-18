@@ -30,6 +30,7 @@ public class GameSquare extends Image {
 		this.marker = marker;
 		addMouseDownHandler(ImageUtil.NO_DEFAULT_DRAG_HANDLER);
 		setTitle(marker.name);
+		addStyleName(marker.getCssLayerStyle());
 		GWT.log("GameSquare created.");
 	}
 

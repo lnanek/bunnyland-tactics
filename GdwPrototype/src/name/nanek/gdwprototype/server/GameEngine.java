@@ -86,8 +86,8 @@ public class GameEngine {
 	public Game moveMarker(Long gameId, Integer sourceRow, Integer sourceColumn, Integer destRow, Integer destColumn,
 			Long markerId, User user, EntityManager em) {
 		
-		//TODO this method needs massive cleanup. replace string checking with marker types, for example
-
+		//BUG moving terrain in map building mode is duplicating the terrain
+		
 		Game game;
 		game = em.find(Game.class, gameId);
 		game.getSettings();
@@ -140,53 +140,37 @@ public class GameEngine {
 			// Destination so remove any old position and create new  position.
 			
 			//TODO do checks on client side too for better ux?
-			
-			//Always remove the destination when map building.
-			if ( game.isMap() ) {
-				removeAnyPosition(destRow, destColumn, em, game);
-
-			//Otherwise it depends on what we are removing.
-			} else {
-				boolean removeDestination = false;
-				Position removeCandidatePosition = findCarrotOrPiecePosition(destRow, destColumn, game.getPositions());
-				if ( null != removeCandidatePosition ) {
-
-					Marker removeCandidateMarker = removeCandidatePosition.getMarker();
-					boolean isCarrotDestination = removeCandidateMarker.role == Marker.Role.CARROT;
-					boolean isTerrainDestination = removeCandidateMarker.terrain;
-					
-					//Anything can remove a carrot.
-					if ( isCarrotDestination ) {
-						removeDestination = true;
-						carrotEatenThisTurn = true;						
-					//Other terrain is ignored, units just sit on top of it for now.
-					//So continue checking if not terrain.
-					} else if (!isTerrainDestination ) {
 						
-						//Must be a stomper to remove non-terrain during game.
-						if ( movedMarker.role != Marker.Role.STOMPER ) {
-							throw new UserFriendlyMessageException("Only stompers may land on enemies to remove them.");
-						}
+			Position removeCandidatePosition = findPosition(destRow, destColumn, movedMarker.getLayer(), game.getPositions());
+			if ( null != removeCandidatePosition ) {
+				
+				//When map building, ground layer markers replace ground layer markers and 
+				//surface markers replace surface markers without any further logic. 
+				//This lets you swap terrain under a placed unit.
+				if ( !game.isMap() ) {
+					Marker removeCandidateMarker = removeCandidatePosition.getMarker();
+
+					//The rest of the time moves are only done on the surface layer. Moving on to a carrot is always allowed.
+					if ( removeCandidateMarker.role == Marker.Role.CARROT ) {
+						carrotEatenThisTurn = true;						
+					//Replacing anything else on the surface layer when not map building requires a stomper.
+					} else if ( movedMarker.role != Marker.Role.STOMPER ) {
+							throw new UserFriendlyMessageException("Only stompers may land on other units to remove them.");
+					} else {
 						
 						if ( removeCandidateMarker.role == Marker.Role.HOME ) {
 							if ( removeCandidateMarker.player == game.getCurrentUsersTurn() ) {
-								//Can't go on your own warren for now.
-								//TODO prevent landing on any of your own pieces?
+								//Can't go on your own warren.
 								throw new UserFriendlyMessageException("You can't stomp your own warren! Think of the children!");
 							} else {
 								enemyLostHome = true;						
 							}
 						}
 						unitDiedThisTurn = true;
-						removeDestination = true;
 					}
 				}
-				if ( removeDestination ) {
-					removeCarrotOrPiecePosition(destRow, destColumn, em, game);
-				}
+				removePosition(removeCandidatePosition, em, game);
 			}
-
-
 			
 			Position position = new Position(destRow, destColumn, movedMarker);
 			//persist(position);
@@ -354,6 +338,17 @@ public class GameEngine {
 		return null;
 	}
 
+	private Position findPosition(Integer sourceRow, Integer sourceColumn, Marker.Layer layer, Set<Position> positions) {
+		for (Position position : positions) {
+			if (sourceRow.equals(position.getRow()) 
+					&& sourceColumn.equals(position.getColumn())
+					&& position.getMarker().getLayer() == layer ) {
+				return position;
+			}
+		}
+		return null;
+	}
+
 	private Position findCarrotOrPiecePosition(Integer sourceRow, Integer sourceColumn, Set<Position> positions) {
 		for (Position position : positions) {
 			if (sourceRow.equals(position.getRow()) 
@@ -380,6 +375,15 @@ public class GameEngine {
 
 	private Position removeAnyPosition(Integer sourceRow, Integer sourceColumn, EntityManager em, Game game) {
 		Position position = findAnyPosition(sourceRow, sourceColumn, game.getPositions());
+		if ( null != position ) {
+			game.getPositions().remove(position);
+			em.remove(position);
+			return position;
+		}
+		return null;
+	}	
+
+	private Position removePosition(Position position, EntityManager em, Game game) {
 		if ( null != position ) {
 			game.getPositions().remove(position);
 			em.remove(position);

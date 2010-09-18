@@ -25,6 +25,10 @@ public class Marker implements Serializable, Comparable<Marker> {
 		HOME, STOMPER, SCOUT, CARROT,  
 	}
 	
+	public enum Layer {
+		GROUND, SURFACE, UI
+	}
+	
 	private static final long serialVersionUID = 1L;
 	
     @Id
@@ -63,6 +67,21 @@ public class Marker implements Serializable, Comparable<Marker> {
 		this.movementRange = movementRange;
 		this.role = role;
 		this.terrain = terrain;
+	}
+	
+	public Layer getLayer() {
+		if ( role == Role.CARROT || null != player ) return Layer.SURFACE;
+		
+		if ( terrain ) return Layer.GROUND;
+		
+		return Layer.UI;		
+	}
+	
+	public String getCssLayerStyle() {
+		String titleCaseLayer = getLayer().toString();
+		titleCaseLayer = titleCaseLayer.toLowerCase();
+		titleCaseLayer = titleCaseLayer.substring(0, 1).toUpperCase() + titleCaseLayer.substring(1);
+		return "gameBoardMarker" + titleCaseLayer;
 	}
 	
 	public static Marker makeTerrain(String name, String source) {

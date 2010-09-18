@@ -20,6 +20,8 @@ import org.datanucleus.jpa.annotations.Extension;
 @Entity
 public class Position implements Serializable {
 
+	public static enum Layer { TERRAIN, ITEM, PLAYER_PIECE }
+	
 	private static final long serialVersionUID = 1L;
 
     @Id
@@ -30,6 +32,8 @@ public class Position implements Serializable {
 	private int row;
 
 	private int column;
+	
+	private Layer layer;
 
 	@OneToOne(cascade = CascadeType.ALL)
 	private Marker marker;

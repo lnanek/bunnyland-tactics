@@ -23,6 +23,8 @@ import name.nanek.gdwprototype.shared.model.Marker;
 import com.allen_sauer.gwt.dnd.client.DragContext;
 import com.allen_sauer.gwt.dnd.client.VetoDragException;
 import com.allen_sauer.gwt.dnd.client.drop.SimpleDropController;
+import com.google.gwt.user.client.ui.HasWidgets;
+import com.google.gwt.user.client.ui.Widget;
 
 /**
  * Handles drops on to game squares.
@@ -33,10 +35,13 @@ public class GameScreenDropController extends SimpleDropController {
 
 	private final GameScreenController gameScreenController;
 
+	private final boolean isDropTargetPalette;
+	
 	public GameScreenDropController(TableCellPanel dropTarget, GameScreenController gameScreenController) {
 		super(dropTarget);
 		this.dropTarget = dropTarget;
 		this.gameScreenController = gameScreenController;
+		isDropTargetPalette = null == dropTarget.getColumn()&& null == dropTarget.getRow();
 	}
 
 	@Override
@@ -50,7 +55,7 @@ public class GameScreenDropController extends SimpleDropController {
 		TableCellPanel source = gameScreenController.getDragSource();
 
 		// Ignore drop on to palette, assume user is putting something back.
-		if (dropTarget.getWidget() instanceof PaletteImage) {
+		if ( isDropTargetPalette ) {
 			gameScreenController.moveMarker(source.getRow(), source.getColumn(), null, null, null, null);
 
 			context.draggable.removeFromParent();
@@ -59,24 +64,36 @@ public class GameScreenDropController extends SimpleDropController {
 		}
 
 		GameSquare draggedImage = (GameSquare) context.draggable;
-		/*
-		String destImageUrl = null;
-		GameSquare destSquare = (GameSquare) dropTarget.getWidget();
-		if ( null != destSquare ) {
-			destImageUrl = destSquare.getUrl();
-		}
-		*/
 		
-		Marker replacedMarker= null;
-		GameSquare destSquare = (GameSquare) dropTarget.getWidget();
-		if ( null != destSquare ) {
-			replacedMarker = destSquare.marker;
-		}
-		
+		GameSquare removedSquare = setMarker(draggedImage);
+		Marker removedMarker = null != removedSquare ? removedSquare.marker : null;
+
 		gameScreenController.moveMarker(source.getRow(), source.getColumn(), dropTarget.getRow(), dropTarget.getColumn(),
-				draggedImage.marker.getKeyId(), replacedMarker);
-		dropTarget.setWidget(context.draggable);
+				draggedImage.marker.getKeyId(), removedMarker);
 		super.onDrop(context);
+	}
+	
+	private GameSquare setMarker(GameSquare newSquare) {
+		GameSquare removedSquare = null;
+		Marker newMarker = newSquare.marker;
+		for( Widget check : dropTarget ) {
+			GameSquare checkSquare = (GameSquare) check;
+			if ( checkSquare.marker.getLayer() == newMarker.getLayer() ){
+				removedSquare = checkSquare;
+				dropTarget.remove(checkSquare);
+			}
+		}
+		dropTarget.add(newSquare);
+		return removedSquare;
+	}
+	
+	public static boolean contains(HasWidgets widgets, Widget widget) {
+		for( Widget check : widgets ) {
+			if ( check == widget ){
+				return true;
+			}
+		}
+		return false;
 	}
 
 	public void onPreviewDrop(DragContext context) throws VetoDragException {
@@ -87,7 +104,7 @@ public class GameScreenDropController extends SimpleDropController {
 		}
 		
 		// Veto drops to source, so picking up and dropping doesn't count as move.
-		if ( dropTarget.getWidget() == context.draggable ) {
+		if ( contains(dropTarget, context.draggable) ) {
 			throw new VetoDragException();
 		}
 		
@@ -111,10 +128,9 @@ public class GameScreenDropController extends SimpleDropController {
 			}
 		}
 
-		boolean destinationIsPalette = dropTarget.getWidget() instanceof PaletteImage;
 		boolean sourceIsPalette = context.draggable instanceof PaletteImage;
 
-		if (destinationIsPalette) {
+		if (isDropTargetPalette) {
 			// Rearranging the palette is not supported.
 			if (sourceIsPalette) {
 				vetoDropAndNotifyUser();
@@ -129,13 +145,14 @@ public class GameScreenDropController extends SimpleDropController {
 		// from it.
 		if (sourceIsPalette) {
 			GameSquare draggedImage = (GameSquare) context.draggable;
-			GameSquare newImage = new GameSquare(draggedImage.marker, null);
-			dropTarget.setWidget(newImage);
+			GameSquare newImage = new GameSquare(draggedImage.marker, null);			
+			GameSquare removedSquare = setMarker(newImage);
+			Marker removedMarker = null != removedSquare ? removedSquare.marker : null;
 			context.dragController.makeDraggable(newImage);
 
 			// TODO throw/catch an exception and veto? stale game state or
 			// something?
-			gameScreenController.moveMarker(null, null, dropTarget.getRow(), dropTarget.getColumn(), draggedImage.marker.getKeyId(), null);
+			gameScreenController.moveMarker(null, null, dropTarget.getRow(), dropTarget.getColumn(), draggedImage.marker.getKeyId(), removedMarker);
 
 			throw new VetoDragException();
 		}
