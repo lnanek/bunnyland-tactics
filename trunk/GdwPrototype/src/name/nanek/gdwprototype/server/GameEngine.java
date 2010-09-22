@@ -174,11 +174,12 @@ public class GameEngine {
 			}
 			
 			Position position = new Position(destRow, destColumn, movedMarker);
-			
-            KeyRange range = em.getService().allocateIds("Position", 1);
-            Key key = range.getStart();
+				
+			Key parent = em.associatedKey(game);			
+			KeyRange range = em.getService().allocateIds(parent, "Position", 1);
+			Key key = range.getStart();
             position.setKeyId(key.getId()); 
-            
+			
 			//persist(position);
 			game.addPosition(position);
 			//System.out.println("Added position.");

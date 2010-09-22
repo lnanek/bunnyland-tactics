@@ -27,7 +27,7 @@ public class Marker implements Serializable, Comparable<Marker> {
 	
 	private static final long serialVersionUID = 1L;
 	
-	@Key private Long keyId;
+	//@Key private Long keyId;
     
 	public String source;
     
@@ -90,7 +90,8 @@ public class Marker implements Serializable, Comparable<Marker> {
 	}
 
 	public Long getKeyId() {
-		return keyId;
+		return 0L;
+		//return keyId;
 	}
 
 	@Override
