@@ -8,11 +8,10 @@ import java.util.Iterator;
 import name.nanek.gdwprototype.shared.model.Game;
 
 import com.google.appengine.api.datastore.Query.FilterOperator;
-import com.google.code.twig.ObjectDatastore;
-import com.google.code.twig.FindCommand.MergeOperator;
-import com.google.code.twig.FindCommand.RootFindCommand;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Iterators;
+import com.vercer.engine.persist.ObjectDatastore;
+import com.vercer.engine.persist.FindCommand.RootFindCommand;
 
 /**
  * Runs queries for game data.
@@ -29,7 +28,7 @@ public class GameDataAccessor {
 		return em.find().type(Game.class)
 			.addFilter("map", FilterOperator.EQUAL, true)
 			.addFilter("ended", FilterOperator.EQUAL, true)
-			.now();
+			.returnResultsNow();
 	}	
 
 	public Iterator<Game> getJoinableGames(ObjectDatastore em, String userId) {
@@ -39,12 +38,12 @@ public class GameDataAccessor {
 			.addFilter("map", FilterOperator.EQUAL, false)
 			.addFilter("ended", FilterOperator.EQUAL, false);
 		
-		find.branch(MergeOperator.OR).addChildCommand()
+		find.addChildQuery()
 			.addFilter("firstPlayerUserId", FilterOperator.EQUAL, userId)
-			.branch(MergeOperator.OR).addChildCommand()
+			.addChildQuery()
 			.addFilter("secondPlayerUserId", FilterOperator.EQUAL, userId)
 			.addFilter("secondPlayerUserId", FilterOperator.EQUAL, null);
-		return find.now();
+		return find.returnResultsNow();
 	}	
 
 	public Iterator<Game> getObservableGames(ObjectDatastore em, final String userId) {
@@ -70,7 +69,7 @@ public class GameDataAccessor {
 		
 		Iterator<Game> notFirstPlayer = em.find().type(Game.class)
 			.addFilter("firstPlayerUserId", FilterOperator.NOT_EQUAL, userId)
-			.now();		
+			.returnResultsNow();		
 		
 		//TODO maybe just store a list of player IDs? might work better given the data store's limitations re different properties		
 		Predicate<Game> notSecondPlayerPredicate = new Predicate<Game>() {

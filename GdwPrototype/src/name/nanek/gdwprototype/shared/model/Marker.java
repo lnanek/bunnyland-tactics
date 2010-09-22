@@ -2,11 +2,12 @@ package name.nanek.gdwprototype.shared.model;
 
 import java.io.Serializable;
 
+import javax.persistence.Id;
+
+import com.vercer.engine.persist.annotation.Key;
+
 import name.nanek.gdwprototype.client.model.Player;
 import name.nanek.gdwprototype.shared.model.support.CompareToBuilder;
-
-import com.google.code.twig.annotation.Id;
-import com.google.code.twig.annotation.Key;
 
 /**
  * A marker moved on the game board.
@@ -26,7 +27,7 @@ public class Marker implements Serializable, Comparable<Marker> {
 	
 	private static final long serialVersionUID = 1L;
 	
-	@Id private Long keyId;
+	@Key private Long keyId;
     
 	public String source;
     
