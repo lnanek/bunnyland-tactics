@@ -1,21 +1,16 @@
 package name.nanek.gdwprototype.shared.model;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
-
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
 
 import name.nanek.gdwprototype.client.model.GameListing;
 import name.nanek.gdwprototype.client.model.Player;
 
-import org.datanucleus.jpa.annotations.Extension;
+import com.google.code.twig.annotation.Child;
+import com.google.code.twig.annotation.Entity;
+import com.google.code.twig.annotation.Id;
+import com.google.code.twig.annotation.Key;
 
 /**
  * A game or map.
@@ -23,28 +18,20 @@ import org.datanucleus.jpa.annotations.Extension;
  * @author Lance Nanek
  *
  */
-@Entity
+//@Entity(allocateIdsBy=10)
 public class Game implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-    @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    @Extension(vendorName="datanucleus", key="gae.encoded-pk", value="true")
-    private String encodedKey;
+	@Id private Long keyId;
 
-    @Extension(vendorName="datanucleus", key="gae.pk-id", value="true")
-    private Long keyId;
+	@Child private Set<Position> positions = new HashSet<Position>();
+
+	@Child private GameSettings settings;
 
 	private String name;
-
-	// @OneToMany(mappedBy="game", fetch=FetchType.EAGER)
-	// @OneToMany(mappedBy="game")
-	@OneToMany(cascade = CascadeType.ALL)   
-	private Set<Position> positions;
 	
 	private boolean map;
 
-	@Column(nullable = false)
 	private int moveNumber = 0;
 
 	private String firstPlayerUserId;
@@ -62,11 +49,6 @@ public class Game implements Serializable {
 	private boolean unitDiedLastTurn;
 	
 	private boolean carrotEatenLastTurn;
-
-	//@OneToOne (mappedBy = "game", fetch = FetchType.EAGER, cascade = 
-    //{CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REMOVE})
-	@OneToOne(cascade = CascadeType.ALL)
-	private GameSettings settings;
 	
 	public boolean isEnded() {
 		return ended;
@@ -134,6 +116,10 @@ public class Game implements Serializable {
 
 	public GameListing getListing() {
 		return new GameListing(name, keyId, map, creatorNickname);
+	}
+	
+	public void setKeyId(long keyId) {
+		this.keyId = keyId;
 	}
 
 	public Set<Position> getPositions() {

@@ -2,15 +2,11 @@ package name.nanek.gdwprototype.shared.model;
 
 import java.io.Serializable;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-
 import name.nanek.gdwprototype.client.model.Player;
 import name.nanek.gdwprototype.shared.model.support.CompareToBuilder;
 
-import org.datanucleus.jpa.annotations.Extension;
+import com.google.code.twig.annotation.Id;
+import com.google.code.twig.annotation.Key;
 
 /**
  * A marker moved on the game board.
@@ -18,7 +14,6 @@ import org.datanucleus.jpa.annotations.Extension;
  * @author Lance Nanek
  *
  */
-@Entity
 public class Marker implements Serializable, Comparable<Marker> {
 	
 	public enum Role {
@@ -31,13 +26,7 @@ public class Marker implements Serializable, Comparable<Marker> {
 	
 	private static final long serialVersionUID = 1L;
 	
-    @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    @Extension(vendorName="datanucleus", key="gae.encoded-pk", value="true")
-    private String encodedKey;
-
-    @Extension(vendorName="datanucleus", key="gae.pk-id", value="true")
-    private Long keyId;
+	@Id private Long keyId;
     
 	public String source;
     
