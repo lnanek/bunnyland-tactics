@@ -2,14 +2,9 @@ package name.nanek.gdwprototype.shared.model;
 
 import java.io.Serializable;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToOne;
-
-import org.datanucleus.jpa.annotations.Extension;
+import com.google.code.twig.annotation.Child;
+import com.google.code.twig.annotation.Id;
+import com.google.code.twig.annotation.Key;
 
 /**
  * A place a marker is located on the game board.
@@ -17,26 +12,21 @@ import org.datanucleus.jpa.annotations.Extension;
  * @author Lance Nanek
  *
  */
-@Entity
 public class Position implements Serializable {
 
 	public static enum Layer { TERRAIN, ITEM, PLAYER_PIECE }
 	
 	private static final long serialVersionUID = 1L;
 
-    @Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    @Extension(vendorName="datanucleus", key="gae.encoded-pk", value="true")
-    private String encodedKey;
+	@Id private Long keyId;
+
+	@Child private Marker marker;
 
 	private int row;
 
 	private int column;
 	
 	private Layer layer;
-
-	@OneToOne(cascade = CascadeType.ALL)
-	private Marker marker;
 
 	private Position() {
 	}

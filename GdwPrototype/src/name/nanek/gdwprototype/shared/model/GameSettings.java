@@ -4,14 +4,9 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.OneToMany;
-
-import org.datanucleus.jpa.annotations.Extension;
+import com.google.code.twig.annotation.Child;
+import com.google.code.twig.annotation.Id;
+import com.google.code.twig.annotation.Key;
 
 /**
  * Settings for a game.
@@ -19,20 +14,12 @@ import org.datanucleus.jpa.annotations.Extension;
  * @author Lance Nanek
  *
  */
-@Entity
 public class GameSettings implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	@Id
-    @GeneratedValue(strategy=GenerationType.IDENTITY)
-    @Extension(vendorName="datanucleus", key="gae.encoded-pk", value="true")
-    private String encodedKey;
+	@Id private Long keyId;
 
-    @Extension(vendorName="datanucleus", key="gae.pk-id", value="true")
-    private Long keyId;
-
-    @OneToMany(cascade = CascadeType.ALL)
-	private Set<Marker> markers;
+    @Child private Set<Marker> markers;
 
 	private int boardWidth = 8;
 
@@ -67,10 +54,16 @@ public class GameSettings implements Serializable {
 		copy.setBoardHeight(boardHeight);
 		copy.setBoardWidth(boardWidth);
 		Set<Marker> copyMarkers = new HashSet<Marker>();
+		
 		for( Marker marker : markers ) {
 			copyMarkers.add(marker.copy());
 		}
+		
 		copy.setMarkers(copyMarkers);
 		return copy;
+	}
+
+	public void setKeyId(long id) {
+		this.keyId = id;
 	}	
 }

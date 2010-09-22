@@ -3,8 +3,9 @@ package name.nanek.gdwprototype.server;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityTransaction;
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyRange;
+import com.google.appengine.api.datastore.Transaction;
 
 import name.nanek.gdwprototype.client.model.GameDisplayInfo;
 import name.nanek.gdwprototype.client.model.GameListing;
@@ -21,6 +22,7 @@ import name.nanek.gdwprototype.shared.model.Position;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.code.twig.ObjectDatastore;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 /**
@@ -49,11 +51,10 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 			throw new UserFriendlyMessageException("You need to login to make a move.");
 		}
 			
-		EntityManager em = DbUtil.createEntityManager();
-		EntityTransaction tx = em.getTransaction();
-		tx.begin();
+		ObjectDatastore em = DbUtil.createObjectDatastore();
 
 		Game game = null;
+		Transaction tx = em.beginTransaction();
 		try {
 			game = gameEngine.moveMarker(gameId, sourceRow, sourceColumn, destRow, destColumn, markerId, user, em);
 			tx.commit();
@@ -61,110 +62,89 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 			if ( null != tx && tx.isActive() ) {
 				tx.rollback();
 			}
-			em.close();
+			
 		}
 
-		return gameEngine.createGameInfo(game);
+		return gameEngine.createPlayInfo(game);
 	}
 
 	@Override
 	public GameDisplayInfo getDisplayInfo(Long gameId) throws GameException {
 
-		EntityManager em = DbUtil.createEntityManager();
-		EntityTransaction tx = null;
+		ObjectDatastore em = DbUtil.createObjectDatastore();
+		Transaction tx = em.beginTransaction();
 		try {
-			tx = em.getTransaction();
-			tx.begin();
-
-			Game game = em.find(Game.class, gameId);
-			game.getSettings();
-			game.getPositions();
+			Game game = em.load(Game.class, gameId);
 			return gameEngine.createDisplayInfo(game);
 
 			// Don't bother committing, this was read only anyway.
 		} finally {
-			if (null != tx && tx.isActive()) {
+			if ( null != tx && tx.isActive() ) {
 				tx.rollback();
 			}
-			em.close();
 		}
 	}
 
 	@Override
 	public GamePlayInfo getPositionsByGameId(Long gameId) throws GameException {
 
-		EntityManager em = DbUtil.createEntityManager();
-		EntityTransaction tx = null;
+		ObjectDatastore em = DbUtil.createObjectDatastore();
+		Transaction tx = em.beginTransaction();
 		try {
-			tx = em.getTransaction();
-			tx.begin();
-
-			Game game = em.find(Game.class, gameId);
-			game.getSettings();
-			game.getPositions();
-			return gameEngine.createGameInfo(game);
+			Game game = em.load(Game.class, gameId);
+			return gameEngine.createPlayInfo(game);
 
 			// Don't bother committing, this was read only anyway.
 		} finally {
-			if (null != tx && tx.isActive()) {
+			if ( null != tx && tx.isActive() ) {
 				tx.rollback();
 			}
-			em.close();
 		}
 	}
 
 	@Override
 	public void surrender(Long gameId, Player surrenderer) throws GameException {
 		
-		EntityManager em = DbUtil.createEntityManager();
-		EntityTransaction tx = null;
+		ObjectDatastore em = DbUtil.createObjectDatastore();
+		Transaction tx = em.beginTransaction();
 		try {
-			tx = em.getTransaction();
-			tx.begin();
-			
-			Game game = em.find(Game.class, gameId);
+			Game game = em.load(Game.class, gameId);
 			game.setEnded(true);
 			game.setWinner(Player.other(surrenderer));
+			em.update(game);
 			
 			tx.commit();
 		} finally {
 			if ( null != tx && tx.isActive() ) {
 				tx.rollback();
 			}
-			em.close();
 		}
 	}
 
 	@Override
 	public void publishMap(Long mapId) throws GameException {
-		EntityManager em = DbUtil.createEntityManager();
-		EntityTransaction tx = null;
+		ObjectDatastore em = DbUtil.createObjectDatastore();
+		Transaction tx = em.beginTransaction();
 		try {
-			tx = em.getTransaction();
-			tx.begin();
-			
-			Game game = em.find(Game.class, mapId);
+			Game game = em.load(Game.class, mapId);
 			game.setEnded(true);
+			em.update(game);
 			
 			tx.commit();
 		} finally {
 			if ( null != tx && tx.isActive() ) {
 				tx.rollback();
 			}
-			em.close();
 		}
 	}
 	
 	@Override
 	public GameListing getGameListingById(Long id) throws GameException {
 		
-		EntityManager em = DbUtil.createEntityManager();
-		EntityTransaction tx = null;
+		ObjectDatastore em = DbUtil.createObjectDatastore();
+		Transaction tx = em.beginTransaction();
 		try {
-			tx = em.getTransaction();
-			tx.begin();
-			
-			Game game = em.find(Game.class, id);
+			Game game = em.load(Game.class, id);
 
 			if (null == game) {
 				return null;
@@ -178,7 +158,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 			if ( null != tx && tx.isActive() ) {
 				tx.rollback();
 			}
-			em.close();
+			
 		}
 	}
 
@@ -197,12 +177,10 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 			throw new UserFriendlyMessageException("You need to login to create a game.");
 		}
 		
-		EntityManager em = DbUtil.createEntityManager();
-		EntityTransaction tx = null;
+		ObjectDatastore em = DbUtil.createObjectDatastore();
+		Transaction tx = em.beginTransaction();
 		try {	
-			tx = em.getTransaction();
-			tx.begin();
-
+			
 			Game game = new Game();
 			game.setCreatorNickname(user.getNickname());
 			Set<Position> mapPositions = null;
@@ -210,7 +188,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 			if ( null != mapId ) {
 	
 				//System.out.println("GameDataServiceImpl#createGame: starting game from map: " + mapId);
-				Game map = em.find(Game.class, mapId);
+				Game map = em.load(Game.class, mapId);
 				mapSettings = map.getSettings();
 				mapPositions = map.getPositions();
 				
@@ -225,11 +203,6 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 			game.setFirstPlayerUserId(user.getUserId());
 			game.setEnded(false);
 
-			//No need to dirty check the map.
-			//em.clear();
-			tx.rollback();
-			tx = em.getTransaction();
-			tx.begin();			
 			
 			//em.persist(game.getSettings());
 			if ( null != mapPositions ) {
@@ -242,7 +215,17 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 				}
 				game.setPositions(gamePositions);
 			}
-			em.persist(game);
+			
+            KeyRange range = em.getService().allocateIds("Game", 1);
+            Key key = range.getStart();
+            game.setKeyId(key.getId()); 
+            
+            range = em.getService().allocateIds("GameSettings", 1);
+            key = range.getStart();
+            game.getSettings().setKeyId(key.getId()); 
+			
+			em.store(game);
+			//em.store().instance(game).batch().now();
 			
 			tx.commit();
 			
@@ -251,7 +234,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 			if ( null != tx && tx.isActive() ) {
 				tx.rollback();
 			}
-			em.close();
+			
 		}
 	}
 	
@@ -265,14 +248,11 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 			throw new UserFriendlyMessageException("You need to login to join a game.");
 		}
 	        
-		EntityManager em = DbUtil.createEntityManager();
-		EntityTransaction tx = null;
+		ObjectDatastore em = DbUtil.createObjectDatastore();
+		Transaction tx = em.beginTransaction();
 		try {
-			tx = em.getTransaction();
-			tx.begin();
+			Game game = em.load(Game.class, id);
 			
-			Game game = em.find(Game.class, id);
-
 			if (null == game) {
 				throw new UserFriendlyMessageException("Couldn't find requested game.");
 			}
@@ -286,6 +266,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 				game.setSecondPlayerUserId(user.getUserId());
 				listing = game.getListing();
 			}
+			em.update(game);
 			
 			tx.commit();
 			
@@ -295,7 +276,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 			if ( null != tx && tx.isActive() ) {
 				tx.rollback();
 			}
-			em.close();
+			
 		}
 	}
 	
@@ -314,21 +295,19 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 	
 	@Override
 	public GameListing[] getMapNames() throws GameException {
-		EntityManager em = DbUtil.createEntityManager();
-		EntityTransaction tx = null;
+		ObjectDatastore em = DbUtil.createObjectDatastore();
+		//Transaction tx = em.beginTransaction();
 		try {
-			tx = em.getTransaction();
-			tx.begin();
 			
 			GameListing[] listings = gameEngine.getListings(gameDataAccessor.getMaps(em));
 			return listings;
 
 			//Don't bother committing, this was read only anyway.
 		} finally {
-			if ( null != tx && tx.isActive() ) {
-				tx.rollback();
-			}
-			em.close();
+		//	if ( null != tx && tx.isActive() ) {
+		//		tx.rollback();
+		//	}
+			
 		}
 	}
 
@@ -342,21 +321,19 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 	public GameListing[] getJoinableGameNames() throws GameException {
         String username = getUserId();
         
-		EntityManager em = DbUtil.createEntityManager();
-		EntityTransaction tx = null;
+		ObjectDatastore em = DbUtil.createObjectDatastore();
+		//Transaction tx = em.beginTransaction();
 		try {
-			tx = em.getTransaction();
-			tx.begin();
 			
 			GameListing[] listings = gameEngine.getListings(gameDataAccessor.getJoinableGames(em, username));
 			return listings;
 
 			//Don't bother committing, this was read only anyway.
 		} finally {
-			if ( null != tx && tx.isActive() ) {
-				tx.rollback();
-			}
-			em.close();
+		//	if ( null != tx && tx.isActive() ) {
+		//		tx.rollback();
+		//	}
+			
 		}
 	}
 
@@ -364,21 +341,19 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 	public GameListing[] getObservableGameNames() throws GameException {
         String username = getUserId();
         
-		EntityManager em = DbUtil.createEntityManager();
-		EntityTransaction tx = null;
+		ObjectDatastore em = DbUtil.createObjectDatastore();
+		//Transaction tx = em.beginTransaction();
 		try {
-			tx = em.getTransaction();
-			tx.begin();
 			
 			GameListing[] listings = gameEngine.getListings(gameDataAccessor.getObservableGames(em, username));
 			return listings;
 
 			//Don't bother committing, this was read only anyway.
 		} finally {
-			if ( null != tx && tx.isActive() ) {
-				tx.rollback();
-			}
-			em.close();
+		//	if ( null != tx && tx.isActive() ) {
+		//		tx.rollback();
+		//	}
+			
 		}
 	}
 

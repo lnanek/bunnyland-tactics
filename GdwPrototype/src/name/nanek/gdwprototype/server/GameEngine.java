@@ -4,11 +4,9 @@
 package name.nanek.gdwprototype.server;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.Set;
-
-import javax.persistence.EntityManager;
 
 import name.nanek.gdwprototype.client.model.GameDisplayInfo;
 import name.nanek.gdwprototype.client.model.GameListing;
@@ -22,6 +20,7 @@ import name.nanek.gdwprototype.shared.model.Position;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.code.twig.ObjectDatastore;
 
 /**
  * Performs game logic related actions.
@@ -45,15 +44,17 @@ public class GameEngine {
 		
 		GameDisplayInfo info = new GameDisplayInfo(markers, 
 				game.getSettings().getBoardHeight(), game.getSettings().getBoardWidth(),
-				game.isMap(), game.getListing(), createGameInfo(game));
+				game.isMap(), game.getListing(), createPlayInfo(game));
 		return info;
 	}
 	
-	public GamePlayInfo createGameInfo(Game game) {
+	public GamePlayInfo createPlayInfo(Game game) {
 		if ( null == game ) return null;
 		
 		//Create the array of position info.
 		ArrayList<Position> positionList = new ArrayList<Position>();
+		System.out.println("GameDataServiceImpl#createPlayInfo: positions are: " + game.getPositions() );	
+
 		positionList.addAll(game.getPositions());
 		Position[] positions = positionList.toArray(new Position[] {});
 
@@ -84,14 +85,11 @@ public class GameEngine {
 	}
 	
 	public Game moveMarker(Long gameId, Integer sourceRow, Integer sourceColumn, Integer destRow, Integer destColumn,
-			Long markerId, User user, EntityManager em) {
+			Long markerId, User user, ObjectDatastore em) {
 		
 		//BUG moving terrain in map building mode is duplicating the terrain
 		
-		Game game;
-		game = em.find(Game.class, gameId);
-		game.getSettings();
-		game.getPositions();
+		Game game = em.load(Game.class, gameId);
 
 		//TODO this results in an error, need to somehow force markers to be part of game entity group
 		//current automatic mapping doesn't seem to figure it out on its own even though they are descendants
@@ -219,6 +217,7 @@ public class GameEngine {
 			}
 		}
 		
+		em.update(game);
 		/*
 		 * if ( changedPositions ) { //tx = em.getTransaction();
 		 * //tx.begin(); int newMoveCount = game.incrementMoveCount();
@@ -373,30 +372,30 @@ public class GameEngine {
 	
 
 
-	private Position removeAnyPosition(Integer sourceRow, Integer sourceColumn, EntityManager em, Game game) {
+	private Position removeAnyPosition(Integer sourceRow, Integer sourceColumn, ObjectDatastore em, Game game) {
 		Position position = findAnyPosition(sourceRow, sourceColumn, game.getPositions());
 		if ( null != position ) {
 			game.getPositions().remove(position);
-			em.remove(position);
+			//em.delete(position);
 			return position;
 		}
 		return null;
 	}	
 
-	private Position removePosition(Position position, EntityManager em, Game game) {
+	private Position removePosition(Position position, ObjectDatastore em, Game game) {
 		if ( null != position ) {
 			game.getPositions().remove(position);
-			em.remove(position);
+			//em.delete(position);
 			return position;
 		}
 		return null;
 	}	
 
-	private Position removeCarrotOrPiecePosition(Integer sourceRow, Integer sourceColumn, EntityManager em, Game game) {
+	private Position removeCarrotOrPiecePosition(Integer sourceRow, Integer sourceColumn, ObjectDatastore em, Game game) {
 		Position position = findCarrotOrPiecePosition(sourceRow, sourceColumn, game.getPositions());
 		if ( null != position ) {
 			game.getPositions().remove(position);
-			em.remove(position);
+			//em.delete(position);
 			return position;
 		}
 		return null;
@@ -418,9 +417,10 @@ public class GameEngine {
 		throw new IllegalStateException("Can't determine the current user.");
 	}
 
-	GameListing[] getListings(Collection<Game> games) {
+	GameListing[] getListings(Iterator<Game> games) {
 		ArrayList<GameListing> list = new ArrayList<GameListing>();
-		for (Game game : games) {
+		while( games.hasNext() ) {
+			Game game = games.next();
 			list.add(game.getListing());
 		}
 		GameListing[] array = list.toArray(new GameListing[] {});
