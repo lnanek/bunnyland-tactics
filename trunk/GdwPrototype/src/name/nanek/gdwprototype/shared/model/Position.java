@@ -2,9 +2,10 @@ package name.nanek.gdwprototype.shared.model;
 
 import java.io.Serializable;
 
-import com.google.code.twig.annotation.Child;
-import com.google.code.twig.annotation.Id;
-import com.google.code.twig.annotation.Key;
+import javax.persistence.Id;
+
+import com.vercer.engine.persist.annotation.Child;
+import com.vercer.engine.persist.annotation.Key;
 
 /**
  * A place a marker is located on the game board.
@@ -18,7 +19,7 @@ public class Position implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 
-	@Id private Long keyId;
+	@Key private Long keyId;
 
 	@Child private Marker marker;
 
@@ -51,6 +52,10 @@ public class Position implements Serializable {
 	
 	public Marker getMarker() {
 		return marker;
+	}
+
+	public void setKeyId(long id) {
+		this.keyId = id;
 	}
 
 	/*

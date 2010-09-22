@@ -4,9 +4,10 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.google.code.twig.annotation.Child;
-import com.google.code.twig.annotation.Id;
-import com.google.code.twig.annotation.Key;
+import javax.persistence.Id;
+
+import com.vercer.engine.persist.annotation.Child;
+import com.vercer.engine.persist.annotation.Key;
 
 /**
  * Settings for a game.
@@ -17,7 +18,7 @@ import com.google.code.twig.annotation.Key;
 public class GameSettings implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	@Id private Long keyId;
+	@Key private Long keyId;
 
     @Child private Set<Marker> markers;
 

@@ -4,13 +4,13 @@ import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.persistence.Id;
+
 import name.nanek.gdwprototype.client.model.GameListing;
 import name.nanek.gdwprototype.client.model.Player;
 
-import com.google.code.twig.annotation.Child;
-import com.google.code.twig.annotation.Entity;
-import com.google.code.twig.annotation.Id;
-import com.google.code.twig.annotation.Key;
+import com.vercer.engine.persist.annotation.Child;
+import com.vercer.engine.persist.annotation.Key;
 
 /**
  * A game or map.
@@ -22,9 +22,9 @@ import com.google.code.twig.annotation.Key;
 public class Game implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	@Id private Long keyId;
+	@Key private Long keyId;
 
-	@Child private Set<Position> positions = new HashSet<Position>();
+	@Child private Set<Position> positions;
 
 	@Child private GameSettings settings;
 
@@ -164,6 +164,13 @@ public class Game implements Serializable {
 
 	public void setCreatorNickname(String creatorNickname) {
 		this.creatorNickname = creatorNickname;
+	}
+
+	public void addPosition(Position position) {
+		if ( null == positions ) {
+			positions = new HashSet<Position>();
+		}
+		positions.add(position);
 	}
 	
 }

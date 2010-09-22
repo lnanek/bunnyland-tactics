@@ -17,10 +17,12 @@ import name.nanek.gdwprototype.shared.model.Game;
 import name.nanek.gdwprototype.shared.model.Marker;
 import name.nanek.gdwprototype.shared.model.Position;
 
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyRange;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
-import com.google.code.twig.ObjectDatastore;
+import com.vercer.engine.persist.ObjectDatastore;
 
 /**
  * Performs game logic related actions.
@@ -54,8 +56,9 @@ public class GameEngine {
 		//Create the array of position info.
 		ArrayList<Position> positionList = new ArrayList<Position>();
 		System.out.println("GameDataServiceImpl#createPlayInfo: positions are: " + game.getPositions() );	
-
-		positionList.addAll(game.getPositions());
+		if ( null != game.getPositions() ) {
+			positionList.addAll(game.getPositions());
+		}
 		Position[] positions = positionList.toArray(new Position[] {});
 
 		//Determine player/turn info.
@@ -171,8 +174,13 @@ public class GameEngine {
 			}
 			
 			Position position = new Position(destRow, destColumn, movedMarker);
+			
+            KeyRange range = em.getService().allocateIds("Position", 1);
+            Key key = range.getStart();
+            position.setKeyId(key.getId()); 
+            
 			//persist(position);
-			game.getPositions().add(position);
+			game.addPosition(position);
 			//System.out.println("Added position.");
 			changedPositions = true;
 		}
@@ -338,6 +346,9 @@ public class GameEngine {
 	}
 
 	private Position findPosition(Integer sourceRow, Integer sourceColumn, Marker.Layer layer, Set<Position> positions) {
+		if ( null == positions ) {
+			return null;
+		}
 		for (Position position : positions) {
 			if (sourceRow.equals(position.getRow()) 
 					&& sourceColumn.equals(position.getColumn())
@@ -349,6 +360,9 @@ public class GameEngine {
 	}
 
 	private Position findCarrotOrPiecePosition(Integer sourceRow, Integer sourceColumn, Set<Position> positions) {
+		if ( null == positions ) {
+			return null;
+		}
 		for (Position position : positions) {
 			if (sourceRow.equals(position.getRow()) 
 					&& sourceColumn.equals(position.getColumn())
@@ -361,6 +375,9 @@ public class GameEngine {
 	}
 
 	private Position findAnyPosition(Integer sourceRow, Integer sourceColumn, Set<Position> positions) {
+		if ( null == positions ) {
+			return null;
+		}
 		for (Position position : positions) {
 			if (sourceRow.equals(position.getRow()) 
 					&& sourceColumn.equals(position.getColumn()) ) {

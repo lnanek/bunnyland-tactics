@@ -3,10 +3,6 @@ package name.nanek.gdwprototype.server;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.google.appengine.api.datastore.Key;
-import com.google.appengine.api.datastore.KeyRange;
-import com.google.appengine.api.datastore.Transaction;
-
 import name.nanek.gdwprototype.client.model.GameDisplayInfo;
 import name.nanek.gdwprototype.client.model.GameListing;
 import name.nanek.gdwprototype.client.model.GamePlayInfo;
@@ -19,11 +15,14 @@ import name.nanek.gdwprototype.shared.model.Game;
 import name.nanek.gdwprototype.shared.model.GameSettings;
 import name.nanek.gdwprototype.shared.model.Position;
 
+import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyRange;
+import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
-import com.google.code.twig.ObjectDatastore;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
+import com.vercer.engine.persist.ObjectDatastore;
 
 /**
  * Handles game service requests.
@@ -216,6 +215,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 				game.setPositions(gamePositions);
 			}
 			
+			
             KeyRange range = em.getService().allocateIds("Game", 1);
             Key key = range.getStart();
             game.setKeyId(key.getId()); 
@@ -223,6 +223,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
             range = em.getService().allocateIds("GameSettings", 1);
             key = range.getStart();
             game.getSettings().setKeyId(key.getId()); 
+			
 			
 			em.store(game);
 			//em.store().instance(game).batch().now();
