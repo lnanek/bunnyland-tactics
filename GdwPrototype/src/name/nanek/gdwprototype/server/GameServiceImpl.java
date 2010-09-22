@@ -220,11 +220,10 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
             Key key = range.getStart();
             game.setKeyId(key.getId()); 
             
-            range = em.getService().allocateIds("GameSettings", 1);
+            range = em.getService().allocateIds(key, "GameSettings", 1);
             key = range.getStart();
             game.getSettings().setKeyId(key.getId()); 
-			
-			
+						
 			em.store(game);
 			//em.store().instance(game).batch().now();
 			
