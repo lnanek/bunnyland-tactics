@@ -1,7 +1,9 @@
 package name.nanek.gdwprototype.client.model;
 
 import java.io.Serializable;
+import java.util.Map;
 
+import name.nanek.gdwprototype.shared.model.Marker;
 import name.nanek.gdwprototype.shared.model.Position;
 
 /**
@@ -14,7 +16,7 @@ public class GamePlayInfo implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	public Position[] positions;
+	public Map<Position, Marker> positions;
 	
 	public boolean isUsersTurn;
 	
@@ -37,7 +39,7 @@ public class GamePlayInfo implements Serializable {
 	private GamePlayInfo() {
 	}
 
-	public GamePlayInfo(Position[] positions, boolean isUsersTurn, Player playingAs, boolean needsSecondPlayer, 
+	public GamePlayInfo(Map<Position, Marker> positions, boolean isUsersTurn, Player playingAs, boolean needsSecondPlayer, 
 			Player winner, boolean ended,
 			int moveCount, boolean unitDiedLastTurn, boolean carrotEatenLastTurn, Player currentPlayersTurn) {
 		this.positions = positions;

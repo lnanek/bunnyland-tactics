@@ -1,5 +1,7 @@
 package name.nanek.gdwprototype.client.controller.screen.support;
 
+import java.util.Map;
+
 import name.nanek.gdwprototype.client.model.Player;
 import name.nanek.gdwprototype.shared.model.Marker;
 import name.nanek.gdwprototype.shared.model.Position;
@@ -21,7 +23,7 @@ public class VisibilityCalculator {
 		}
 	}
 	
-	public static boolean[][] calculateVisibility(Player fogOfWarAs, int boardWidth, int boardHeight, Position[] positions) {
+	public static boolean[][] calculateVisibility(Player fogOfWarAs, int boardWidth, int boardHeight, Map<Position, Marker> positions) {
 		boolean[][] visibleSquares = new boolean[boardHeight][boardWidth];	
 		if ( null == fogOfWarAs ) {
 			//TODO cache an all true grid?
@@ -29,8 +31,9 @@ public class VisibilityCalculator {
 			return visibleSquares;
 		}
 		
-		for (final Position position : positions) {
-			Marker marker = position.getMarker();
+		for (Map.Entry<Position, Marker> entry : positions.entrySet() ) {
+			Position position = entry.getKey();
+			Marker marker = entry.getValue();
 			int markerRow = position.getRow();
 			int markerCol = position.getColumn();
 			

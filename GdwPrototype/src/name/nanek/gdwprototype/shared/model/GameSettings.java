@@ -1,13 +1,11 @@
 package name.nanek.gdwprototype.shared.model;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.persistence.Id;
 
-import com.vercer.engine.persist.annotation.Child;
-import com.vercer.engine.persist.annotation.Key;
+import com.googlecode.objectify.Key;
+import com.googlecode.objectify.annotation.Parent;
 
 /**
  * Settings for a game.
@@ -18,13 +16,17 @@ import com.vercer.engine.persist.annotation.Key;
 public class GameSettings implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	@Key private Long keyId;
+	@Id private Long keyId;
 
-    @Child private Set<Marker> markers;
+	@Parent Key<Game> game;
 
 	private int boardWidth = 8;
 
 	private int boardHeight = 8;
+	
+	public void setGame(Key<Game> game) {
+		this.game = game;
+	}
 
 	public int getBoardWidth() {
 		return boardWidth;
@@ -42,29 +44,14 @@ public class GameSettings implements Serializable {
 		this.boardHeight = boardHeight;
 	}
 
-	public Set<Marker> getMarkers() {
-		return markers;
-	}
-
-	public void setMarkers(Set<Marker> markers) {
-		this.markers = markers;
-	}
-
 	public GameSettings copy() {
 		GameSettings copy = new GameSettings();
 		copy.setBoardHeight(boardHeight);
 		copy.setBoardWidth(boardWidth);
-		Set<Marker> copyMarkers = new HashSet<Marker>();
-		
-		for( Marker marker : markers ) {
-			copyMarkers.add(marker.copy());
-		}
-		
-		copy.setMarkers(copyMarkers);
 		return copy;
 	}
 
-	public void setKeyId(long id) {
+	public void setKeyId(Long id) {
 		this.keyId = id;
 	}	
 }

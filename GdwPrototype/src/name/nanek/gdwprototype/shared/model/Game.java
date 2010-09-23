@@ -1,16 +1,11 @@
 package name.nanek.gdwprototype.shared.model;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.persistence.Id;
 
 import name.nanek.gdwprototype.client.model.GameListing;
 import name.nanek.gdwprototype.client.model.Player;
-
-import com.vercer.engine.persist.annotation.Child;
-import com.vercer.engine.persist.annotation.Key;
 
 /**
  * A game or map.
@@ -22,11 +17,7 @@ import com.vercer.engine.persist.annotation.Key;
 public class Game implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	@Key private Long keyId;
-
-	@Child private Set<Position> positions;
-
-	@Child private GameSettings settings;
+	@Id private Long keyId;
 
 	private String name;
 	
@@ -86,14 +77,6 @@ public class Game implements Serializable {
 		return firstPlayerUserId;
 	}
 
-	public GameSettings getSettings() {
-		return settings;
-	}
-
-	public void setSettings(GameSettings settings) {
-		this.settings = settings;
-	}
-
 	public void setFirstPlayerUserId(String firstPlayerUserId) {
 		this.firstPlayerUserId = firstPlayerUserId;
 	}
@@ -120,14 +103,6 @@ public class Game implements Serializable {
 	
 	public void setKeyId(long keyId) {
 		this.keyId = keyId;
-	}
-
-	public Set<Position> getPositions() {
-		return positions;
-	}
-
-	public void setPositions(Set<Position> positions) {
-		this.positions = positions;
 	}
 
 	public int incrementMoveCount() {
@@ -164,13 +139,6 @@ public class Game implements Serializable {
 
 	public void setCreatorNickname(String creatorNickname) {
 		this.creatorNickname = creatorNickname;
-	}
-
-	public void addPosition(Position position) {
-		if ( null == positions ) {
-			positions = new HashSet<Position>();
-		}
-		positions.add(position);
 	}
 	
 }

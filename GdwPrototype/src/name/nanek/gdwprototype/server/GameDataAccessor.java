@@ -3,15 +3,10 @@
  */
 package name.nanek.gdwprototype.server;
 
-import java.util.Iterator;
-
 import name.nanek.gdwprototype.shared.model.Game;
 
-import com.google.appengine.api.datastore.Query.FilterOperator;
-import com.google.common.base.Predicate;
-import com.google.common.collect.Iterators;
-import com.vercer.engine.persist.ObjectDatastore;
-import com.vercer.engine.persist.FindCommand.RootFindCommand;
+import com.googlecode.objectify.Objectify;
+import com.googlecode.objectify.Query;
 
 /**
  * Runs queries for game data.
@@ -22,55 +17,44 @@ import com.vercer.engine.persist.FindCommand.RootFindCommand;
 public class GameDataAccessor {
 	//TODO some of the displayed collections in the UI are shuffling order on update. use ordered collections here and make sure sorted by something, like id/age at least
 
-	public Iterator<Game> getMaps(ObjectDatastore em) {
+	public Iterable<Game> getMaps(Objectify ofy) {
 		//Games created as a map and published (ended).
 		
-		return em.find().type(Game.class)
-			.addFilter("map", FilterOperator.EQUAL, true)
-			.addFilter("ended", FilterOperator.EQUAL, true)
-			.returnResultsNow();
+		Query<Game> q = ofy.query(Game.class)
+			.filter("map = ", true)
+			.filter("ended = ", true);
+		return q;
 	}	
 
-	public Iterator<Game> getJoinableGames(ObjectDatastore em, String userId) {
+	public Iterable<Game> getJoinableGames(Objectify ofy, String userId) {
 		//Joinable if created as a game and user is a player or there is no second player yet.
 		
-		RootFindCommand<Game> find = em.find().type(Game.class)
-			.addFilter("map", FilterOperator.EQUAL, false)
-			.addFilter("ended", FilterOperator.EQUAL, false);
-		
-		find.addChildQuery()
-			.addFilter("firstPlayerUserId", FilterOperator.EQUAL, userId)
-			.addChildQuery()
-			.addFilter("secondPlayerUserId", FilterOperator.EQUAL, userId)
-			.addFilter("secondPlayerUserId", FilterOperator.EQUAL, null);
-		return find.returnResultsNow();
+		Query<Game> q = ofy.query(Game.class)
+			.filter("map = ", false)
+			.filter("ended = ", false)
+			.filter("firstPlayerUserId = ", userId)
+			.filter("secondPlayerUserId = ", userId)
+			.filter("secondPlayerUserId = ", null);
+		return q;
 	}	
 
-	public Iterator<Game> getObservableGames(ObjectDatastore em, final String userId) {
+	public Iterable<Game> getObservableGames(Objectify ofy, final String userId) {
 		//Allow observation of games that have a second player.
 		
 		//TODO what to do about players who open a second browser, where they aren't logged in, and observe to cheat?
 		//is IP detection enough? or should observation only be allowed of replays after the game is over?
 		//what about players who logout, take a look, then log back in? maybe require login to view games?
+		//then they need two accounts at least
 		
-		/*Didn't work. Twig-persist 2 alpha may not support AND yet...
-		RootFindCommand<Game> find = em.find().type(Game.class);
-
-		find.branch(MergeOperator.AND).addChildCommand()
-			//XXX NOT_EQUAL threw unsupported operation exception, it just gets translated to this anyway.
-			.addFilter("firstPlayerUserId", FilterOperator.LESS_THAN, userId)
-			.addFilter("firstPlayerUserId", FilterOperator.GREATER_THAN, userId)
-			.branch(MergeOperator.AND).addChildCommand()
-			.addFilter("secondPlayerUserId", FilterOperator.LESS_THAN, userId)
-			.addFilter("secondPlayerUserId", FilterOperator.GREATER_THAN, userId);
-			//.addFilter("secondPlayerUserId", FilterOperator.NOT_EQUAL, null);
-		return find.now();
-		*/
+		Query<Game> q = ofy.query(Game.class)
+			.filter("map = ", false)
+			.filter("ended = ", false)
+			.filter("firstPlayerUserId != ", userId)
+			.filter("secondPlayerUserId != ", userId)
+			.filter("secondPlayerUserId != ", null);
+		return q;
 		
-		Iterator<Game> notFirstPlayer = em.find().type(Game.class)
-			.addFilter("firstPlayerUserId", FilterOperator.NOT_EQUAL, userId)
-			.returnResultsNow();		
-		
+		/*
 		//TODO maybe just store a list of player IDs? might work better given the data store's limitations re different properties		
 		Predicate<Game> notSecondPlayerPredicate = new Predicate<Game>() {
 			@Override
@@ -79,5 +63,6 @@ public class GameDataAccessor {
 			}
 		};
 		return Iterators.filter(notFirstPlayer, notSecondPlayerPredicate);
+		*/
 	}	
 }

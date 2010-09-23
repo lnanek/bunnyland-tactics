@@ -6,6 +6,7 @@ import name.nanek.gdwprototype.client.model.GamePlayInfo;
 import name.nanek.gdwprototype.client.model.Player;
 import name.nanek.gdwprototype.shared.exceptions.GameException;
 import name.nanek.gdwprototype.shared.model.GameSettings;
+import name.nanek.gdwprototype.shared.model.Marker;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
 
@@ -25,7 +26,7 @@ public interface GameServiceAsync {
 
 	void getObservableGameNames(AsyncCallback<GameListing[]> callback) throws GameException;
 
-	void createGameOrMap(String input, GameSettings settings, Long mapId, AsyncCallback<GameListing> callback) throws GameException;
+	void createGameOrMap(String input, GameSettings settings, Marker[] markers, Long mapId, AsyncCallback<GameListing> callback) throws GameException;
 
 	void getGameListingById(Long id, AsyncCallback<GameListing> callback) throws GameException;
 
