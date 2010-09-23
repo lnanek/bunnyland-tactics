@@ -4,8 +4,8 @@ import java.io.Serializable;
 
 import javax.persistence.Id;
 
-import com.vercer.engine.persist.annotation.Child;
-import com.vercer.engine.persist.annotation.Key;
+import com.googlecode.objectify.Key;
+import com.googlecode.objectify.annotation.Parent;
 
 /**
  * A place a marker is located on the game board.
@@ -19,9 +19,11 @@ public class Position implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 
-	@Key private Long keyId;
-
-	@Child private Marker marker;
+	@Id private Long keyId;
+	
+	@Parent Key<Game> game;
+	
+	private Key<Marker> marker;
 
 	private int row;
 
@@ -32,7 +34,7 @@ public class Position implements Serializable {
 	private Position() {
 	}
 
-	public Position(int row, int column, Marker marker) {
+	public Position(int row, int column, Key<Marker> marker) {
 		if ( null == marker ) {
 			throw new IllegalArgumentException("Position cannot have a null marker.");
 		}
@@ -50,12 +52,31 @@ public class Position implements Serializable {
 		return row;
 	}
 	
+	/*
 	public Marker getMarker() {
 		return marker;
 	}
+	*/
 
 	public void setKeyId(long id) {
 		this.keyId = id;
+	}
+
+	public void setGame(Key<Game> gameKey) {
+		this.game = gameKey;
+	}
+
+	public Position copy() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void setMarkerKey(Key<Marker> gameMarkerKey) {
+		this.marker = gameMarkerKey;
+	}
+	
+	public Key<Marker> getMarkerKey() {
+		return marker;
 	}
 
 	/*

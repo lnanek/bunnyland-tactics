@@ -2,6 +2,7 @@ package name.nanek.gdwprototype.client.controller.screen;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Map;
 
 import name.nanek.gdwprototype.client.controller.PageController;
 import name.nanek.gdwprototype.client.controller.screen.support.GameScreenDropController;
@@ -442,8 +443,9 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			}
 		}
 		
-		for (final Position position : info.positions) {
-			Marker marker = position.getMarker();
+		for (Map.Entry<Position, Marker> entry : info.positions.entrySet() ) {
+			Position position = entry.getKey();
+			Marker marker = entry.getValue();
 			int row = position.getRow();
 			int col = position.getColumn();
 			if ( !visibleSquares[row][col] ) {

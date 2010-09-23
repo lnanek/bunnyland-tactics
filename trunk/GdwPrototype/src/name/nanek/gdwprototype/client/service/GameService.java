@@ -6,6 +6,7 @@ import name.nanek.gdwprototype.client.model.GamePlayInfo;
 import name.nanek.gdwprototype.client.model.Player;
 import name.nanek.gdwprototype.shared.exceptions.GameException;
 import name.nanek.gdwprototype.shared.model.GameSettings;
+import name.nanek.gdwprototype.shared.model.Marker;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -35,7 +36,7 @@ public interface GameService extends RemoteService {
 
 	GameDisplayInfo getDisplayInfo(Long id) throws GameException;
 
-	GameListing createGameOrMap(String name, GameSettings settings, Long mapId) throws GameException;
+	GameListing createGameOrMap(String name, GameSettings settings, Marker[] markers, Long mapId) throws GameException;
 
 	GamePlayInfo moveMarker(Long gameId, Integer sourceRow, Integer sourceColumn, Integer destRow,
 			Integer destColumn, Long markerId) throws GameException;

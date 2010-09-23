@@ -4,10 +4,11 @@ import java.io.Serializable;
 
 import javax.persistence.Id;
 
-import com.vercer.engine.persist.annotation.Key;
-
 import name.nanek.gdwprototype.client.model.Player;
 import name.nanek.gdwprototype.shared.model.support.CompareToBuilder;
+
+import com.googlecode.objectify.Key;
+import com.googlecode.objectify.annotation.Parent;
 
 /**
  * A marker moved on the game board.
@@ -27,7 +28,9 @@ public class Marker implements Serializable, Comparable<Marker> {
 	
 	private static final long serialVersionUID = 1L;
 	
-	//@Key private Long keyId;
+	@Id private Long keyId;
+	
+	@Parent private Key<GameSettings> settings;
     
 	public String source;
     
@@ -45,7 +48,7 @@ public class Marker implements Serializable, Comparable<Marker> {
 	
 	public Role role;
 	
-	private Marker() {
+	protected Marker() {
 	}
 	
 	public Marker(String name, String source, String activeSource, Player player, Integer visionRange, Integer movementRange, Role role, boolean terrain) {
@@ -104,5 +107,9 @@ public class Marker implements Serializable, Comparable<Marker> {
 				.append(other.player, player) //Reversed so that nulls are last.
 				.append(role, other.role)
 				.toComparison();
+	}
+
+	public void setSettingsKey(Key<GameSettings> gameSettingsKey) {
+		this.settings = gameSettingsKey;		
 	}
 }

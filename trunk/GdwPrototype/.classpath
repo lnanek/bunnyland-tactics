@@ -9,6 +9,6 @@
 	<classpathentry kind="lib" path="war/WEB-INF/lib/google-collections-1.0.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="con" path="com.google.appengine.eclipse.core.GAE_CONTAINER"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/twig-persist-1.0.4.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/objectify-2.2.1.jar" sourcepath="lib/objectify-2.2.1_source.zip"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

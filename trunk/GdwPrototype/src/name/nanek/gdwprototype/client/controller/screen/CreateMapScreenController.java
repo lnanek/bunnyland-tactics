@@ -1,9 +1,6 @@
 package name.nanek.gdwprototype.client.controller.screen;
 
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 import name.nanek.gdwprototype.client.controller.PageController;
 import name.nanek.gdwprototype.client.model.GameListing;
@@ -134,15 +131,12 @@ public class CreateMapScreenController extends ScreenController {
 			int movementRange = FieldVerifier.validateAndParseInt("Movement range", markerMovementRangeEntry.getValue(), 0, 100);
 			marker.movementRange = movementRange;
 		}
-		//Using an array doesn't work out well, not persisted by default on server side.
-		Set<Marker> markers = new HashSet<Marker>(Arrays.asList(Markers.MAP_MAKING_PIECES));
-		settings.setMarkers(markers);
 	
 		//Disable button so we don't get double submits.
 		screen.createMapButton.setEnabled(false);
 		
 		//Send data to server.
-		pageController.gameService.createGameOrMap(gameName, settings, null, new CreateMapCallback());
+		pageController.gameService.createGameOrMap(gameName, settings, Markers.MAP_MAKING_PIECES, null, new CreateMapCallback());
 	}
 		
 	@Override

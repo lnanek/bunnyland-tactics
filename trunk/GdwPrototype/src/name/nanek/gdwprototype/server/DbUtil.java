@@ -1,7 +1,12 @@
 package name.nanek.gdwprototype.server;
 
-import com.vercer.engine.persist.ObjectDatastore;
-import com.vercer.engine.persist.annotation.AnnotationObjectDatastore;
+import name.nanek.gdwprototype.shared.model.Game;
+import name.nanek.gdwprototype.shared.model.GameSettings;
+import name.nanek.gdwprototype.shared.model.Marker;
+import name.nanek.gdwprototype.shared.model.Position;
+
+import com.googlecode.objectify.Objectify;
+import com.googlecode.objectify.ObjectifyService;
 
 /**
  * Creates Twig-persist ORM library data stores.
@@ -11,8 +16,21 @@ import com.vercer.engine.persist.annotation.AnnotationObjectDatastore;
  */
 public final class DbUtil {
 	
-	public static ObjectDatastore createObjectDatastore() {
-		return new AnnotationObjectDatastore();
+	static {
+		
+		ObjectifyService.register(Game.class);
+		ObjectifyService.register(GameSettings.class);
+		ObjectifyService.register(Marker.class);
+		ObjectifyService.register(Position.class);
+		
+	}
+	
+	public static Objectify createObjectify() {
+		return ObjectifyService.begin();
+	}
+	
+	public static Objectify beginTransaction() {
+		return ObjectifyService.begin();
 	}
 	
 }
