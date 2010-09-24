@@ -28,17 +28,11 @@ public class Position implements Serializable {
 	private int row;
 
 	private int column;
-	
-	private Layer layer;
 
 	private Position() {
 	}
 
 	public Position(int row, int column, Key<Marker> marker, Key<Game> game) {
-		if ( null == marker ) {
-			throw new IllegalArgumentException("Position cannot have a null marker.");
-		}
-		
 		this.row = row;
 		this.column = column;
 		this.marker = marker;
@@ -52,12 +46,6 @@ public class Position implements Serializable {
 	public int getRow() {
 		return row;
 	}
-	
-	/*
-	public Marker getMarker() {
-		return marker;
-	}
-	*/
 
 	public void setKeyId(long id) {
 		this.keyId = id;
@@ -68,8 +56,7 @@ public class Position implements Serializable {
 	}
 
 	public Position copy() {
-		// TODO Auto-generated method stub
-		return null;
+		return new Position(row, column, null, null);
 	}
 
 	public void setMarkerKey(Key<Marker> gameMarkerKey) {
@@ -81,10 +68,6 @@ public class Position implements Serializable {
 	}
 
 	/*
-	public String getMarkerSource() {
-		return markerSource;
-	}
-
 	public String getMarkerSourceFilename() {
 
 		String fileName = markerSource;
@@ -95,5 +78,4 @@ public class Position implements Serializable {
 		return fileName;
 	}
 	*/
-
 }

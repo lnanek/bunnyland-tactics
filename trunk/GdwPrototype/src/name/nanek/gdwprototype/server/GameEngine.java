@@ -82,8 +82,6 @@ public class GameEngine {
 	public Game moveMarker(Long gameId, Integer sourceRow, Integer sourceColumn, Integer destRow, Integer destColumn,
 			Long markerId, User user, Objectify em) {
 		
-		//BUG moving terrain in map building mode is duplicating the terrain
-		
 		Key<Game> gameKey = new Key<Game>(Game.class, gameId);
 		Game game = em.get(gameKey);
 
@@ -102,7 +100,7 @@ public class GameEngine {
 
 		Map<Position, Marker> positions = getPositionsMap(em, game);
 		
-		//TODO make sure the piece moved belongs to the player as well
+		//TODO make sure the piece moved belongs to the player when non-map making mode as well
 		
 		boolean changedPositions = false;
 		boolean unitDiedThisTurn = false;
@@ -151,7 +149,7 @@ public class GameEngine {
 
 		if (null != sourceColumn && null != sourceRow) {
 			// Source so delete it.
-			removeCarrotOrPiecePosition(sourceRow, sourceColumn, em, game, positions);
+			removeAnyPosition(sourceRow, sourceColumn, em, game, positions);
 			changedPositions = true;
 		}
 
@@ -181,7 +179,9 @@ public class GameEngine {
 			Player enemyPlayer = Player.other(game.getCurrentUsersTurn());
 			int enemyHomes = countMarkersWith(positions, Marker.Role.HOME, enemyPlayer);
 			if ( 0 == enemyHomes ) {
-				winGame(game);
+				game.setWinner(game.getCurrentUsersTurn());
+				game.setCurrentUsersTurn(null);
+				game.setEnded(true);	
 			}
 		}
 		
@@ -195,13 +195,6 @@ public class GameEngine {
 		}
 		
 		em.put(game);
-		/*
-		 * if ( changedPositions ) { //tx = em.getTransaction();
-		 * //tx.begin(); int newMoveCount = game.incrementMoveCount();
-		 * //tx.commit(); //tx = null; return newMoveCount; }
-		 * 
-		 * return game.getMoveCount();
-		 */
 		return game;
 	}
 
@@ -234,31 +227,10 @@ public class GameEngine {
 		return null;
 	}
 	
-	private void winGame(Game game){
-		game.setWinner(game.getCurrentUsersTurn());
-		game.setCurrentUsersTurn(null);
-		game.setEnded(true);	
-	}
-	
 	private Marker getNewPlayerPiece(List<Marker> markers, Player currentUsersTurn) {
 		
 		Marker.Role role = random.nextBoolean() ? Marker.Role.SCOUT : Marker.Role.STOMPER;
 		return getMarker(markers, role, currentUsersTurn);
-	}
-
-	private Point findHomeWarren(Player currentUsersTurn, Map<Position, Marker> positions) {
-		if ( null == currentUsersTurn ) {
-			return null;
-		}
-		
-		for (Map.Entry<Position, Marker> position : positions.entrySet() ) {
-			Marker marker = position.getValue();
-			if ( marker.role == Marker.Role.HOME && marker.player == currentUsersTurn ) {
-				return new Point(position.getKey().getRow(), position.getKey().getColumn());
-			}
-		}
-		
-		return null;
 	}
 	
 	//TODO must be a cleaner way then iterating through so many positions
@@ -323,6 +295,21 @@ public class GameEngine {
 		return null;
 	}
 
+	private Point findHomeWarren(Player currentUsersTurn, Map<Position, Marker> positions) {
+		if ( null == currentUsersTurn ) {
+			return null;
+		}
+		
+		for (Map.Entry<Position, Marker> position : positions.entrySet() ) {
+			Marker marker = position.getValue();
+			if ( marker.role == Marker.Role.HOME && marker.player == currentUsersTurn ) {
+				return new Point(position.getKey().getRow(), position.getKey().getColumn());
+			}
+		}
+		
+		return null;
+	}
+
 	private Position findPosition(Integer sourceRow, Integer sourceColumn, Marker.Layer layer, Map<Position, Marker> positions) {
 		if ( null == positions ) {
 			return null;
@@ -378,11 +365,6 @@ public class GameEngine {
 			return position;
 		}
 		return null;
-	}	
-
-	private Position removeCarrotOrPiecePosition(Integer sourceRow, Integer sourceColumn, Objectify em, Game game, Map<Position, Marker> positions) {
-		Position position = findCarrotOrPiecePosition(sourceRow, sourceColumn, positions);
-		return removePosition(position, em, game);
 	}	
 	
 	public static boolean isUsersTurn(Game game, User user) {
