@@ -4,8 +4,7 @@ import java.io.Serializable;
 
 import javax.persistence.Id;
 
-import name.nanek.gdwprototype.client.model.GameListing;
-import name.nanek.gdwprototype.client.model.Player;
+import name.nanek.gdwprototype.shared.model.support.StringUtil;
 
 /**
  * A game or map.
@@ -13,11 +12,10 @@ import name.nanek.gdwprototype.client.model.Player;
  * @author Lance Nanek
  *
  */
-//@Entity(allocateIdsBy=10)
 public class Game implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	@Id private Long keyId;
+	@Id private Long id;
 
 	private String name;
 	
@@ -40,6 +38,26 @@ public class Game implements Serializable {
 	private boolean unitDiedLastTurn;
 	
 	private boolean carrotEatenLastTurn;
+	
+	private int boardWidth = 8;
+
+	private int boardHeight = 8;
+	
+	public int getBoardWidth() {
+		return boardWidth;
+	}
+
+	public void setBoardWidth(int boardWidth) {
+		this.boardWidth = boardWidth;
+	}
+
+	public int getBoardHeight() {
+		return boardHeight;
+	}
+
+	public void setBoardHeight(int boardHeight) {
+		this.boardHeight = boardHeight;
+	}
 	
 	public boolean isEnded() {
 		return ended;
@@ -97,14 +115,6 @@ public class Game implements Serializable {
 		this.name = name;
 	}
 
-	public GameListing getListing() {
-		return new GameListing(name, keyId, map, creatorNickname);
-	}
-	
-	public void setKeyId(long keyId) {
-		this.keyId = keyId;
-	}
-
 	public int incrementMoveCount() {
 		return ++moveNumber;
 	}
@@ -139,6 +149,33 @@ public class Game implements Serializable {
 
 	public void setCreatorNickname(String creatorNickname) {
 		this.creatorNickname = creatorNickname;
+	}
+	
+	public Long getId() {
+		return id;
+	}
+
+	public String getLinkName() {
+		if (null == name) {
+			return null;
+		}
+		return name.replace(' ', '_');
+	}
+
+	public String getDisplayName(boolean includeAuthor) {
+		String gameName;
+		if ( StringUtil.nullOrEmpty(name) ) {
+			gameName = Long.toString(id);
+		} else {
+			gameName = '"' + name + '"';
+		}
+		
+		if ( includeAuthor ) {
+			if ( !StringUtil.nullOrEmpty(creatorNickname) ) {
+				gameName += " (by " + StringUtil.escapeHtml(creatorNickname) + ")";
+			}
+		}
+		return gameName;
 	}
 	
 }

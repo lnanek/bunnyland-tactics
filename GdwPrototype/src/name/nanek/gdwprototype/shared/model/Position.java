@@ -19,7 +19,8 @@ public class Position implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 
-	@Id private Long keyId;
+	@SuppressWarnings("unused") //Used by ORM.
+	@Id private Long id;
 	
 	@Parent Key<Game> game;
 	
@@ -29,6 +30,7 @@ public class Position implements Serializable {
 
 	private int column;
 
+	@SuppressWarnings("unused") //Used by ORM.
 	private Position() {
 	}
 
@@ -47,23 +49,19 @@ public class Position implements Serializable {
 		return row;
 	}
 
-	public void setKeyId(long id) {
-		this.keyId = id;
-	}
-
-	public void setGame(Key<Game> gameKey) {
-		this.game = gameKey;
+	public void setGame(Key<Game> game) {
+		this.game = game;
 	}
 
 	public Position copy() {
 		return new Position(row, column, null, null);
 	}
 
-	public void setMarkerKey(Key<Marker> gameMarkerKey) {
-		this.marker = gameMarkerKey;
+	public void setMarker(Key<Marker> marker) {
+		this.marker = marker;
 	}
 	
-	public Key<Marker> getMarkerKey() {
+	public Key<Marker> getMarker() {
 		return marker;
 	}
 

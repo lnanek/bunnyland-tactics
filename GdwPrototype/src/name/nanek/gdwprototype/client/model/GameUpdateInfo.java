@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.Map;
 
 import name.nanek.gdwprototype.shared.model.Marker;
+import name.nanek.gdwprototype.shared.model.Player;
 import name.nanek.gdwprototype.shared.model.Position;
 
 /**
@@ -12,7 +13,7 @@ import name.nanek.gdwprototype.shared.model.Position;
  * @author Lance Nanek
  *
  */
-public class GamePlayInfo implements Serializable {
+public class GameUpdateInfo implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -36,10 +37,11 @@ public class GamePlayInfo implements Serializable {
 	
 	public Player currentPlayersTurn;
 	
-	private GamePlayInfo() {
+	@SuppressWarnings("unused") //Used by GWT serialization.
+	private GameUpdateInfo() {
 	}
 
-	public GamePlayInfo(Map<Position, Marker> positions, boolean isUsersTurn, Player playingAs, boolean needsSecondPlayer, 
+	public GameUpdateInfo(Map<Position, Marker> positions, boolean isUsersTurn, Player playingAs, boolean needsSecondPlayer, 
 			Player winner, boolean ended,
 			int moveCount, boolean unitDiedLastTurn, boolean carrotEatenLastTurn, Player currentPlayersTurn) {
 		this.positions = positions;

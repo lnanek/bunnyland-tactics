@@ -1,8 +1,8 @@
 package name.nanek.gdwprototype.client.view.screen;
 
 import name.nanek.gdwprototype.client.controller.support.SoundPlayer;
-import name.nanek.gdwprototype.client.model.Player;
 import name.nanek.gdwprototype.client.view.HowToPlayDialog;
+import name.nanek.gdwprototype.shared.model.Player;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;

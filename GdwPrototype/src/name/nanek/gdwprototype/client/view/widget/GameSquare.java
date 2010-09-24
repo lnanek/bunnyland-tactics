@@ -1,7 +1,7 @@
 package name.nanek.gdwprototype.client.view.widget;
 
-import name.nanek.gdwprototype.client.model.Player;
 import name.nanek.gdwprototype.shared.model.Marker;
+import name.nanek.gdwprototype.shared.model.Player;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.user.client.ui.Image;

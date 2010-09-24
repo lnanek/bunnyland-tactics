@@ -4,7 +4,6 @@ import java.io.Serializable;
 
 import javax.persistence.Id;
 
-import name.nanek.gdwprototype.client.model.Player;
 import name.nanek.gdwprototype.shared.model.support.CompareToBuilder;
 
 import com.googlecode.objectify.Key;
@@ -28,9 +27,10 @@ public class Marker implements Serializable, Comparable<Marker> {
 	
 	private static final long serialVersionUID = 1L;
 	
-	@Id private Long keyId;
+	@Id private Long id;
 	
-	@Parent private Key<GameSettings> settings;
+	@SuppressWarnings("unused") //Used by ORM.
+	@Parent private Key<Game> game;
     
 	public String source;
     
@@ -92,8 +92,8 @@ public class Marker implements Serializable, Comparable<Marker> {
 		return player == currentPlayersTurn ? activeSource : source;
 	}
 
-	public Long getKeyId() {
-		return keyId;
+	public Long getId() {
+		return id;
 	}
 
 	@Override
@@ -108,7 +108,7 @@ public class Marker implements Serializable, Comparable<Marker> {
 				.toComparison();
 	}
 
-	public void setSettingsKey(Key<GameSettings> gameSettingsKey) {
-		this.settings = gameSettingsKey;		
+	public void setGame(Key<Game> game) {
+		this.game = game;		
 	}
 }

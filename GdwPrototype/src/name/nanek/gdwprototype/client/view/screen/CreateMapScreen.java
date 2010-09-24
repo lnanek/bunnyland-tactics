@@ -6,7 +6,7 @@ import java.util.Map;
 import name.nanek.gdwprototype.client.controller.support.SoundPlayer;
 import name.nanek.gdwprototype.client.view.screen.support.ScreenUtil;
 import name.nanek.gdwprototype.shared.model.Marker;
-import name.nanek.gdwprototype.shared.model.Markers;
+import name.nanek.gdwprototype.shared.model.DefaultMarkers;
 
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.TextBox;
@@ -42,7 +42,7 @@ public class CreateMapScreen {
 		content.add(ScreenUtil.labelAndWrap("Board Height: ", boardHeightField));
 
 		//TODO use a table and have columns for visibility and movement?
-		for ( Marker marker : Markers.PLAYING_PIECES ) {
+		for ( Marker marker : DefaultMarkers.PLAYING_PIECES ) {
 			//Create visibility field for piece.
 			{
 				TextBox visibilityField = new TextBox();

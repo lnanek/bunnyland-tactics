@@ -10,8 +10,7 @@ import name.nanek.gdwprototype.client.controller.screen.support.VisibilityCalcul
 import name.nanek.gdwprototype.client.controller.support.ScreenControllers;
 import name.nanek.gdwprototype.client.controller.support.ScreenControllers.Screen;
 import name.nanek.gdwprototype.client.model.GameDisplayInfo;
-import name.nanek.gdwprototype.client.model.GamePlayInfo;
-import name.nanek.gdwprototype.client.model.Player;
+import name.nanek.gdwprototype.client.model.GameUpdateInfo;
 import name.nanek.gdwprototype.client.view.Page.Background;
 import name.nanek.gdwprototype.client.view.screen.GameScreen;
 import name.nanek.gdwprototype.client.view.screen.GameScreen.FogOfWarChangeListener;
@@ -19,7 +18,8 @@ import name.nanek.gdwprototype.client.view.widget.GameSquare;
 import name.nanek.gdwprototype.client.view.widget.PaletteImage;
 import name.nanek.gdwprototype.client.view.widget.TableCellPanel;
 import name.nanek.gdwprototype.shared.model.Marker;
-import name.nanek.gdwprototype.shared.model.Markers;
+import name.nanek.gdwprototype.shared.model.DefaultMarkers;
+import name.nanek.gdwprototype.shared.model.Player;
 import name.nanek.gdwprototype.shared.model.Position;
 
 import com.allen_sauer.gwt.dnd.client.DragEndEvent;
@@ -78,7 +78,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			dragInProgress = false;
 			
 			//If was dragging something in a game, not a map editor.
-			if ( null != displayInfo && !displayInfo.map ) {
+			if ( null != displayInfo && !displayInfo.game.isMap() ) {
 				//Remove highlights for where it can go.	
 				
 				CellFormatter formatter = gameScreen.gameBoard.getCellFormatter();
@@ -110,7 +110,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			pageController.getSoundPlayer().playPickupPiceSound();
 
 			//If dragging something in a game, not a map editor.
-			if ( null != displayInfo && !displayInfo.map ) {
+			if ( null != displayInfo && !displayInfo.game.isMap() ) {
 				
 				//Highlight where it can go.
 				GameSquare gameSquare = (GameSquare) event.getContext().draggable;
@@ -159,7 +159,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		}
 	}
 	
-	private class RefreshGameBoardCallback implements AsyncCallback<GamePlayInfo> {
+	private class RefreshGameBoardCallback implements AsyncCallback<GameUpdateInfo> {
 		public void onFailure(Throwable caught) {
 			if ( null == pageController ) return;
 			
@@ -170,14 +170,14 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 					caught);
 		}
 
-		public void onSuccess(final GamePlayInfo info) {
+		public void onSuccess(final GameUpdateInfo info) {
 			if ( null == pageController ) return;
 			
 			updateGameBoardWithInfo(info);
 		}
 	}
 
-	private class MoveMarkerCallback implements AsyncCallback<GamePlayInfo> {
+	private class MoveMarkerCallback implements AsyncCallback<GameUpdateInfo> {
 		public void onFailure(Throwable caught) {
 			if ( null == pageController ) return;
 			
@@ -191,7 +191,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			requestRefreshGameBoard();
 		}
 
-		public void onSuccess(GamePlayInfo info) {
+		public void onSuccess(GameUpdateInfo info) {
 			if ( null == pageController ) return;
 			
 			//TODO players take turns, so nothing changed but what we dragged, so just update fog of war and turn status?
@@ -277,7 +277,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		draggables.clear();
 	}
 	
-	private void updateGameBoardWithInfo(final GamePlayInfo info) {
+	private void updateGameBoardWithInfo(final GameUpdateInfo info) {
 		if (dragInProgress || null == pageController) {
 			return;
 		}
@@ -291,7 +291,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			gameScreen.surrenderButton.setVisible(false);
 		//Else the game is still running or the map unpublished.
 		//Show publish map button if we're building a map and the user is the map creator.
-		} else if ( displayInfo.map ) {
+		} else if ( displayInfo.game.isMap() ) {
 			gameScreen.publishMapButton.setVisible(info.isUsersTurn);
 			gameScreen.surrenderButton.setVisible(false);
 		//Show surrender button if we're playing a game and its the user's turn.
@@ -308,7 +308,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		
 		//Update fog of war controls.
 		//TODO turn off fog of war/allow players to control fog of war after game ends?
-		if ( null == info.playingAs || displayInfo.map || info.ended ) {
+		if ( null == info.playingAs || displayInfo.game.isMap() || info.ended ) {
 			gameScreen.fogOfWarPanel.setVisible(true);
 		} else {
 			gameScreen.fogOfWarPanel.setVisible(false);
@@ -337,7 +337,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			lastPlayedSoundForMoveCount = info.moveCount;
 			
 			//Always piece placement sound when placing units on a map.
-			if ( displayInfo.map ) {
+			if ( displayInfo.game.isMap() ) {
 				pageController.getSoundPlayer().playPiecePlacementSound();
 
 			//Both players always hear a unit dying, since they must have both had a unit involved.
@@ -356,13 +356,13 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			
 			//XXX sometimes we'll hear both a gong and a scream. 
 			//see how that sounds. maybe we should play one after the other?
-			if (!displayInfo.map && info.isUsersTurn ) {
+			if (!displayInfo.game.isMap() && info.isUsersTurn ) {
 				pageController.getSoundPlayer().playYourTurnSound();
 			}
 		}
 		
 		//Play game over music if needed.
-		if ( !displayInfo.map && !playedGameOverMusic ) {
+		if ( !displayInfo.game.isMap() && !playedGameOverMusic ) {
 			if ( info.ended ) {
 				if ( info.playingAs == info.winner ) {
 					pageController.getSoundPlayer().playWinGameMusic();
@@ -376,7 +376,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		//Update status.
 		//TODO bold the action verbs? bold and color the piece colors?
 		String status = "";
-		if ( displayInfo.map ) {
+		if ( displayInfo.game.isMap() ) {
 			if ( null != info.playingAs ) {
 				status = "Drag pieces to build a map that other players start their games from.";
 				if ( !info.ended ) {
@@ -414,8 +414,8 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		}
 		gameScreen.statusLabel.setText(status +" ");
 
-		int boardHeight = displayInfo.boardHeight;
-		int boardWidth = displayInfo.boardWidth;
+		int boardHeight = displayInfo.game.getBoardHeight();
+		int boardWidth = displayInfo.game.getBoardWidth();
 		
 		//Clear board.
 		// TODO more efficient algorithm? right now we make some things undraggable just to make them draggable again
@@ -437,7 +437,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			for (int col = 0; col < boardWidth; col++) {	
 				if ( !visibleSquares[row][col] ) {
 					TableCellPanel panel = (TableCellPanel) gameScreen.gameBoard.getWidget(row, col);
-					Image image = new GameSquare(Markers.FOG_OF_WAR, info.currentPlayersTurn);
+					Image image = new GameSquare(DefaultMarkers.FOG_OF_WAR, info.currentPlayersTurn);
 					panel.add(image);
 				}
 			}
@@ -456,7 +456,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 			GameSquare image = new GameSquare(marker, info.currentPlayersTurn);
 			panel.add(image);
 			if ( null != info.playingAs && info.isUsersTurn ) {
-				if ( displayInfo.map || (!displayInfo.playInfo.ended && marker.player == displayInfo.playInfo.playingAs && null != marker.movementRange && marker.movementRange > 0 )) {
+				if ( displayInfo.game.isMap() || (!displayInfo.playInfo.ended && marker.player == displayInfo.playInfo.playingAs && null != marker.movementRange && marker.movementRange > 0 )) {
 					dragController.makeDraggable(image);
 					draggables.add(image);
 				}
@@ -572,13 +572,13 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		
 		displayInfo = info;
 		
-		String type = info.map ? "Creating Map " : "Playing Game ";
-		pageController.setScreenTitle(type + info.listing.getDisplayName(false));
+		String type = info.game.isMap() ? "Creating Map " : "Playing Game ";
+		pageController.setScreenTitle(type + info.game.getDisplayName(false));
 
 		//Fill build palette if needed.
 		//GWT.log("GameScreenController#initializeBoardIfNeeded: isBuildingMap = " + info.isBuildingMap);
 		//GWT.log("GameScreenController#initializeBoardIfNeeded: isUsersTurn = " + info.isUsersTurn);
-		if ( info.map && info.playInfo.isUsersTurn ) {
+		if ( info.game.isMap() && info.playInfo.isUsersTurn ) {
 			gameScreen.mapBuilderPalettePanel.setVisible(true);
 			int col = 0;
 			Arrays.sort(info.markers);
@@ -595,8 +595,8 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		}
 		
 		//Fill board table for game size.
-		int height = info.boardHeight;
-		int width = info.boardWidth;
+		int height = info.game.getBoardHeight();
+		int width = info.game.getBoardWidth();
 		for (int column = 0; column < width; column++) {
 			for (int row = 0; row < height; row++) {
 				TableCellPanel panel = new TableCellPanel(null, gameScreen.gameBoard, row, column, row, column);

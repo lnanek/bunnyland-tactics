@@ -1,6 +1,6 @@
 package name.nanek.gdwprototype.client.view.widget;
 
-import name.nanek.gdwprototype.shared.model.Markers;
+import name.nanek.gdwprototype.shared.model.DefaultMarkers;
 
 import com.google.gwt.user.client.ui.AbsolutePanel;
 import com.google.gwt.user.client.ui.FlexTable;
@@ -23,7 +23,7 @@ public class TableCellPanel extends AbsolutePanel {
 		if (null != widget) {
 			add(widget);
 		}
-		setPixelSize(Markers.MARKER_WIDTH_PX, Markers.MARKER_HEIGHT_PX);
+		setPixelSize(DefaultMarkers.MARKER_WIDTH_PX, DefaultMarkers.MARKER_HEIGHT_PX);
 		table.setWidget(tableRow, tableCol, this);
 		this.row = gameRow;
 		this.column = gameCol;

@@ -69,7 +69,7 @@ public class GameScreenDropController extends SimpleDropController {
 		Marker removedMarker = null != removedSquare ? removedSquare.marker : null;
 
 		gameScreenController.moveMarker(source.getRow(), source.getColumn(), dropTarget.getRow(), dropTarget.getColumn(),
-				draggedImage.marker.getKeyId(), removedMarker);
+				draggedImage.marker.getId(), removedMarker);
 		super.onDrop(context);
 	}
 	
@@ -110,7 +110,7 @@ public class GameScreenDropController extends SimpleDropController {
 		
 		//Check unit can move this far.
 		//TODO check on server as well
-		if ( !info.map ) {
+		if ( !info.game.isMap() ) {
 			TableCellPanel source = gameScreenController.getDragSource();
 			int sourceCol = source.getColumn();
 			int sourceRow = source.getRow();
@@ -152,7 +152,7 @@ public class GameScreenDropController extends SimpleDropController {
 
 			// TODO throw/catch an exception and veto? stale game state or
 			// something?
-			gameScreenController.moveMarker(null, null, dropTarget.getRow(), dropTarget.getColumn(), draggedImage.marker.getKeyId(), removedMarker);
+			gameScreenController.moveMarker(null, null, dropTarget.getRow(), dropTarget.getColumn(), draggedImage.marker.getId(), removedMarker);
 
 			throw new VetoDragException();
 		}

@@ -3,14 +3,13 @@ package name.nanek.gdwprototype.client.controller.screen;
 import java.util.Map;
 
 import name.nanek.gdwprototype.client.controller.PageController;
-import name.nanek.gdwprototype.client.model.GameListing;
 import name.nanek.gdwprototype.client.view.Page.Background;
 import name.nanek.gdwprototype.client.view.screen.CreateMapScreen;
 import name.nanek.gdwprototype.client.view.widget.GameAnchor;
 import name.nanek.gdwprototype.shared.FieldVerifier;
-import name.nanek.gdwprototype.shared.model.GameSettings;
+import name.nanek.gdwprototype.shared.model.Game;
 import name.nanek.gdwprototype.shared.model.Marker;
-import name.nanek.gdwprototype.shared.model.Markers;
+import name.nanek.gdwprototype.shared.model.DefaultMarkers;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -61,7 +60,7 @@ public class CreateMapScreenController extends ScreenController {
 		}
 	}
 
-	private class CreateMapCallback implements AsyncCallback<GameListing> {
+	private class CreateMapCallback implements AsyncCallback<Game> {
 		public void onFailure(Throwable throwable) {
 			//Protect against spurious call after screen hidden.
 			if ( null == pageController ) return;
@@ -74,7 +73,7 @@ public class CreateMapScreenController extends ScreenController {
 					enableCreateMapButton);
 		}
 
-		public void onSuccess(GameListing gameListing) {
+		public void onSuccess(Game gameListing) {
 			//Go to map editor.
 			final String anchor = GameAnchor.generateAnchor(gameListing);
 			History.newItem(anchor);
@@ -115,11 +114,8 @@ public class CreateMapScreenController extends ScreenController {
 		//Validate input.
 		final String gameName = FieldVerifier.validateGameName(screen.createMapNameField.getText());
 		
-		GameSettings settings = new GameSettings();				
 		int height = FieldVerifier.validateAndParseInt("Height", screen.boardHeightField, 2, 100);
-		settings.setBoardHeight(height);
 		int width = FieldVerifier.validateAndParseInt("Width", screen.boardWidthField, 2, 100);
-		settings.setBoardWidth(width);
 
 		for( Map.Entry<Marker, TextBox> markerVisionRangeEntry : screen.playingPieceToVisibilityField.entrySet() ) {
 			Marker marker = markerVisionRangeEntry.getKey();
@@ -136,7 +132,7 @@ public class CreateMapScreenController extends ScreenController {
 		screen.createMapButton.setEnabled(false);
 		
 		//Send data to server.
-		pageController.gameService.createGameOrMap(gameName, settings, Markers.MAP_MAKING_PIECES, null, new CreateMapCallback());
+		pageController.gameService.createGameOrMap(gameName, width, height, DefaultMarkers.MAP_MAKING_PIECES, null, new CreateMapCallback());
 	}
 		
 	@Override

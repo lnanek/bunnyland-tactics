@@ -1,10 +1,10 @@
 package name.nanek.gdwprototype.client.controller.screen;
 
 import name.nanek.gdwprototype.client.controller.PageController;
-import name.nanek.gdwprototype.client.model.GameListing;
 import name.nanek.gdwprototype.client.view.Page.Background;
 import name.nanek.gdwprototype.client.view.screen.StartGameScreen;
 import name.nanek.gdwprototype.client.view.widget.GameAnchor;
+import name.nanek.gdwprototype.shared.model.Game;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -93,7 +93,7 @@ public class StartGameScreenController extends ScreenController {
 	}
 	
 	
-	private class RefreshJoinableGameListCallback implements AsyncCallback<GameListing[]> {
+	private class RefreshJoinableGameListCallback implements AsyncCallback<Game[]> {
 
 		public void onFailure(Throwable throwable) {
 			//Protect against spurious call after screen hidden.
@@ -106,13 +106,13 @@ public class StartGameScreenController extends ScreenController {
 					throwable);
 		}
 
-		public void onSuccess(final GameListing[] gamesListing) {
+		public void onSuccess(final Game[] gamesListing) {
 			//Protect against spurious call after screen hidden.
 			if ( null == pageController ) return;
 			
 			screen.joinableGamesTable.clear();
 			int row = 0;
-			for (final GameListing gameListing : gamesListing) {
+			for (final Game gameListing : gamesListing) {
 				if ( null != gameListing ) {
 					Anchor link = new Anchor(gameListing.getDisplayName(true));
 					pageController.getSoundPlayer().addMenuClick(link);
@@ -126,7 +126,7 @@ public class StartGameScreenController extends ScreenController {
 		}
 	}
 
-	private class JoinGameCallback implements AsyncCallback<GameListing> {
+	private class JoinGameCallback implements AsyncCallback<Game> {
 		@Override
 		public void onFailure(Throwable throwable) {
 			//Protect against spurious call after screen hidden.
@@ -140,7 +140,7 @@ public class StartGameScreenController extends ScreenController {
 		}
 
 		@Override
-		public void onSuccess(GameListing result) {
+		public void onSuccess(Game result) {
 			//Protect against spurious call after screen hidden.
 			if ( null == pageController ) return;
 			
