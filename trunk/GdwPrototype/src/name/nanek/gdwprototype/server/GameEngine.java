@@ -5,6 +5,7 @@ package name.nanek.gdwprototype.server;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
@@ -39,8 +40,9 @@ public class GameEngine {
 		if ( null == game ) return null;
 		
 		//Create the array of marker info.	
-		GameSettings gameSettings = em.query(GameSettings.class).filter("game", game).get();
-		List<Marker> markerList =  em.query(Marker.class).filter("settings", gameSettings).list();
+
+		GameSettings gameSettings = em.query(GameSettings.class).ancestor(game).get();
+		List<Marker> markerList =  em.query(Marker.class).ancestor(gameSettings).list();
 		Marker[] markers = markerList.toArray(new Marker[] {});
 
 		GameDisplayInfo info = new GameDisplayInfo(markers, 
@@ -82,8 +84,12 @@ public class GameEngine {
 		
 		//BUG moving terrain in map building mode is duplicating the terrain
 		
-		Game game = em.get(Game.class, gameId);
-		Key<GameSettings> gameSettingsKey = em.query(GameSettings.class).filter("game", game).getKey();
+		Key<Game> gameKey = new Key<Game>(Game.class, gameId);
+		Game game = em.get(gameKey);
+
+		Key<GameSettings> gameSettingsKey = em.query(GameSettings.class).ancestor(game).getKey();
+		GameSettings gameSettings = em.get(gameSettingsKey);		
+		
 		Key<Marker> movedMarkerKey = new Key<Marker>(gameSettingsKey, Marker.class, markerId);
 		Marker movedMarker = em.get(movedMarkerKey);
 		if ( null == movedMarker ) {
@@ -94,7 +100,6 @@ public class GameEngine {
 			throw new UserFriendlyMessageException("It isn't your turn to move.");
 		}
 
-		GameSettings gameSettings = em.get(gameSettingsKey);
 		Map<Position, Marker> positions = getPositionsMap(em, game);
 		
 		//TODO make sure the piece moved belongs to the player as well
@@ -139,7 +144,7 @@ public class GameEngine {
 				removePosition(removeCandidatePosition, em, game);
 			}
 			
-			Position position = new Position(destRow, destColumn, movedMarkerKey);
+			Position position = new Position(destRow, destColumn, movedMarkerKey, gameKey);
 			em.put(position);
 			changedPositions = true;
 		}
@@ -152,7 +157,10 @@ public class GameEngine {
 
 		//Now that move is complete, if a carrot was eaten, generate a new unit if a spot is available.
 		if ( carrotEatenThisTurn ) {
+			
+			//BUG we're in a transaction, so this returns board state from before the move
 			positions = getPositionsMap(em, game);
+			
 			Point homeWarrenLocation = findHomeWarren(game.getCurrentUsersTurn(), positions);
 			if ( null != homeWarrenLocation ) {
 				Point newUnitLocation = findNearbyOpenSpot(homeWarrenLocation, 
@@ -160,10 +168,10 @@ public class GameEngine {
 						gameSettings.getBoardWidth());
 				
 				if ( null != newUnitLocation ) {
-					List<Marker> markers = em.query(Marker.class).filter("settings", gameSettings).list();
+					List<Marker> markers = em.query(Marker.class).ancestor(gameSettings).list();
 					Marker marker = getNewPlayerPiece(markers, game.getCurrentUsersTurn());
 					Key<Marker> markerKey = new Key<Marker>(gameSettingsKey, Marker.class, marker.getKeyId());
-					Position position = new Position(newUnitLocation.row, newUnitLocation.column, markerKey);
+					Position position = new Position(newUnitLocation.row, newUnitLocation.column, markerKey, gameKey);
 					em.put(position);
 				}
 			}	
@@ -199,7 +207,7 @@ public class GameEngine {
 
 	private Map<Position, Marker> getPositionsMap(Objectify em, Game game) {
 		Map<Position, Marker> positions = new HashMap<Position, Marker>();
-		for ( Position position : em.query(Position.class).filter("game", game) ) {
+		for ( Position position : em.query(Position.class).ancestor(game) ) {
 			Marker marker = em.get(position.getMarkerKey());
 			positions.put(position, marker);
 		}
@@ -394,8 +402,13 @@ public class GameEngine {
 	}
 
 	GameListing[] getListings(Iterable<Game> games) {
+		return getListings(games.iterator());		
+	}
+
+	GameListing[] getListings(Iterator<Game> games) {
 		ArrayList<GameListing> list = new ArrayList<GameListing>();
-		for( Game game : games ) {
+		while ( games.hasNext() ) {
+			Game game = games.next();
 			list.add(game.getListing());
 		}
 		GameListing[] array = list.toArray(new GameListing[] {});

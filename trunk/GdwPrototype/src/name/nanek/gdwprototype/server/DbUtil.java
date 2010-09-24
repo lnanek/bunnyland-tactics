@@ -9,7 +9,7 @@ import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
 
 /**
- * Creates Twig-persist ORM library data stores.
+ * Creates Objectify-AppEngine ORM library data stores.
  * 
  * @author Lance Nanek
  *
@@ -17,12 +17,10 @@ import com.googlecode.objectify.ObjectifyService;
 public final class DbUtil {
 	
 	static {
-		
 		ObjectifyService.register(Game.class);
 		ObjectifyService.register(GameSettings.class);
 		ObjectifyService.register(Marker.class);
 		ObjectifyService.register(Position.class);
-		
 	}
 	
 	public static Objectify createObjectify() {
@@ -30,7 +28,7 @@ public final class DbUtil {
 	}
 	
 	public static Objectify beginTransaction() {
-		return ObjectifyService.begin();
+		return ObjectifyService.beginTransaction();
 	}
 	
 }
