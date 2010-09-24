@@ -34,7 +34,7 @@ public class Position implements Serializable {
 	private Position() {
 	}
 
-	public Position(int row, int column, Key<Marker> marker) {
+	public Position(int row, int column, Key<Marker> marker, Key<Game> game) {
 		if ( null == marker ) {
 			throw new IllegalArgumentException("Position cannot have a null marker.");
 		}
@@ -42,6 +42,7 @@ public class Position implements Serializable {
 		this.row = row;
 		this.column = column;
 		this.marker = marker;
+		this.game = game;
 	}
 
 	public int getColumn() {

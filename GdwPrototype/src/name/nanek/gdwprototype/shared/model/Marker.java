@@ -93,8 +93,7 @@ public class Marker implements Serializable, Comparable<Marker> {
 	}
 
 	public Long getKeyId() {
-		return 0L;
-		//return keyId;
+		return keyId;
 	}
 
 	@Override

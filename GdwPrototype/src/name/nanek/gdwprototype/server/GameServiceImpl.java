@@ -13,6 +13,7 @@ import name.nanek.gdwprototype.shared.model.GameSettings;
 import name.nanek.gdwprototype.shared.model.Marker;
 import name.nanek.gdwprototype.shared.model.Position;
 
+import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
@@ -27,7 +28,6 @@ import com.googlecode.objectify.Objectify;
  */
 @SuppressWarnings("serial")
 public class GameServiceImpl extends RemoteServiceServlet implements GameService {
-	//TODO put transactions back in now that understand about default fetch groups
 	
 	protected GameEngine gameEngine = new GameEngine();
 	
@@ -37,40 +37,42 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 	public GamePlayInfo moveMarker(Long gameId, Integer sourceRow, Integer sourceColumn, Integer destRow,
 			Integer destColumn, Long markerId) throws GameException {
 		
-		//System.out.println("GameServiceImpl#moveMarker: " + gameId  + ", " + sourceRow + ", " + sourceColumn + ", " + destRow
-		//		 + ", " + destColumn + ", " + newImageSource);
-		 
-		UserService userService = UserServiceFactory.getUserService();
-		User user = userService.getCurrentUser();
-		if (user == null) {
-			throw new UserFriendlyMessageException("You need to login to make a move.");
-		}
+		System.out.println("GameServiceImpl#moveMarker: " + gameId  + ", " + sourceRow + ", " + sourceColumn + ", " + destRow
+				 + ", " + destColumn + ", " + markerId);
+		
+		User user = requireUser();
 			
-		Game game = null;
 		Objectify em = DbUtil.beginTransaction();
 		try {
-			game = gameEngine.moveMarker(gameId, sourceRow, sourceColumn, destRow, destColumn, markerId, user, em);
-			
+			gameEngine.moveMarker(gameId, sourceRow, sourceColumn, destRow, destColumn, markerId, user, em);
 			em.getTxn().commit();
+			
+			//Query returns data from start of transaction, so we need a new transaction to build updated display data.
+			//Unfortunately this means the client might get an error returned despite a move actually happening.
+			//But I guess that was always possible via  network error before as well.
+			em = DbUtil.beginTransaction();
+			Game game = em.get(Game.class, gameId);
+			return gameEngine.createPlayInfo(game, em);
 		} finally {
 			rollbackIfNeeded(em);
-		}
-
-		return gameEngine.createPlayInfo(game, em);
+		}		
 	}
 
 	@Override
 	public GameDisplayInfo getDisplayInfo(Long gameId) throws GameException {
+		Objectify em = DbUtil.beginTransaction();
+		try {
+			Game game = em.get(Game.class, gameId);
+			return gameEngine.createDisplayInfo(game, em);
 
-		Objectify em = DbUtil.createObjectify();
-
-		Game game = em.get(Game.class, gameId);
-		return gameEngine.createDisplayInfo(game, em);
+			// Don't bother committing, this was read only anyway.
+		} finally {
+			rollbackIfNeeded(em);
+		}		
 	}
-
+	
 	@Override
 	public GamePlayInfo getPositionsByGameId(Long gameId) throws GameException {
-
 		Objectify em = DbUtil.beginTransaction();
 		try {
 			Game game = em.get(Game.class, gameId);
@@ -113,84 +115,19 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 	}
 	
 	@Override
-	public GameListing getGameListingById(Long id) throws GameException {
+	public GameListing getGameListingById(Long gameId) throws GameException {
 		
-		Objectify em = DbUtil.createObjectify();
-		Game game = em.get(Game.class, id);
-
-		if (null == game) {
-			return null;
-		}
-		GameListing listing = game.getListing();
-
-		return listing;
-	}
-
-	@Override
-	public GameListing createGameOrMap(String name, GameSettings settings, Marker[] markers, Long mapId) throws GameException {
-		FieldVerifier.validateGameName(name);
-
-		User user = requireUser();
 		Objectify em = DbUtil.beginTransaction();
 		try {
-			
-			Game game = new Game();
-			game.setCreatorNickname(user.getNickname());
-			game.setName(name);
-			game.setFirstPlayerUserId(user.getUserId());
-			game.setEnded(false);
-			if ( null == mapId ) {
-				game.setMap(true);
+			Game game = em.get(Game.class, gameId);
+			if (null == game) {
+				return null;
 			}
-			Key<Game> gameKey = em.put(game);
-			
-			//If we're a map, we use the settings passed to us and have no positions.
-			if ( null == mapId ) {
-				settings.setGame(gameKey);
-				Key<GameSettings> gameSettingsKey = em.put(settings);
-				for ( Marker marker : markers ) {
-					marker.setSettingsKey(gameSettingsKey);
-					em.put(marker);
-				}
-				return game.getListing();
-			} else {
-				//Otherwise we're creating a game and have a map to start from.
-				//Copy settings and positions from map.
-				Game map = em.get(Game.class, mapId);				
-				GameSettings mapSettings = em.query(GameSettings.class).filter("game", map).get();
-				GameSettings gameSettings = mapSettings.copy();
-				gameSettings.setGame(gameKey);
-				Key<GameSettings> gameSettingsKey = em.put(gameSettings);							
-				for ( Marker mapMarker :  em.query(Marker.class).filter("settings", mapSettings) ) {
-					Marker gameMarker = mapMarker.copy();
-					gameMarker.setSettingsKey(gameSettingsKey);
-					Key<Marker> gameMarkerKey = em.put(gameMarker);
-					
-					for ( Position mapPosition :  em.query(Position.class).filter("marker", gameMarker) ) {
-						Position gamePosition = mapPosition.copy();
-						gamePosition.setGame(gameKey);
-						gamePosition.setMarkerKey(gameMarkerKey);
-						em.put(gamePosition);
-					}
-				}
-			}
-			
-			em.getTxn().commit();
-			
-			return game.getListing();
+			GameListing listing = game.getListing();
+			return listing;
 		} finally {
 			rollbackIfNeeded(em);
 		}
-	}
-	
-	private User requireUser() {
-		final User user = getUser();
-		if (user == null) {
-			//TODO maybe have a general purpose "need to login" exception with login URL?
-			//all RPC calls needing user information could detect and redirect users not logged in
-			throw new UserFriendlyMessageException("You need to login to join a game.");
-		}
-		return user;
 	}
 	
 	@Override
@@ -225,18 +162,6 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 		}
 	}
 	
-	private void rollbackIfNeeded(Objectify ofy) {
-	    if (ofy.getTxn().isActive()) {
-	    	ofy.getTxn().rollback();
-	    }		
-	}
-
-	private User getUser() {
-        UserService userService = UserServiceFactory.getUserService();
-        User user = userService.getCurrentUser();
-        return user;
-	}
-	
 	@Override
 	public String getLoginUrlIfNeeded(String returnUrl) {
         UserService userService = UserServiceFactory.getUserService();
@@ -253,12 +178,6 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 		Objectify em = DbUtil.createObjectify();
 		GameListing[] listings = gameEngine.getListings(gameDataAccessor.getMaps(em));
 		return listings;
-	}
-
-	private String getUserId() {
-        UserService userService = UserServiceFactory.getUserService();
-        User user = userService.getCurrentUser();
-        return null != user ? user.getUserId() : null;
 	}
 	
 	@Override
@@ -277,6 +196,118 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 		Objectify em = DbUtil.createObjectify();
 		GameListing[] listings = gameEngine.getListings(gameDataAccessor.getObservableGames(em, username));
 		return listings;
+	}
+
+	@Override
+	public GameListing createGameOrMap(String name, GameSettings settings, Marker[] markers, Long mapId) throws GameException {
+		FieldVerifier.validateGameName(name);
+
+		User user = requireUser();
+		Objectify em = DbUtil.beginTransaction();
+		try {
+			
+			Game game = new Game();
+			game.setCreatorNickname(user.getNickname());
+			game.setName(name);
+			game.setFirstPlayerUserId(user.getUserId());
+			game.setEnded(false);
+			if ( null == mapId ) {
+				game.setMap(true);
+			}
+			Key<Game> gameKey = em.put(game);
+			
+			//If we're a map, we use the settings passed to us and have no positions.
+			if ( null == mapId ) {
+				settings.setGame(gameKey);
+				Key<GameSettings> gameSettingsKey = em.put(settings);
+				for ( Marker marker : markers ) {
+					marker.setSettingsKey(gameSettingsKey);
+					em.put(marker);
+				}
+			} else {
+				//Otherwise we're creating a game and have a map to start from.
+				//Copy settings and positions from map.
+				Game map = em.get(Game.class, mapId);				
+				GameSettings mapSettings = em.query(GameSettings.class).ancestor(map).get();
+				GameSettings gameSettings = mapSettings.copy();
+				gameSettings.setGame(gameKey);
+				Key<GameSettings> gameSettingsKey = em.put(gameSettings);							
+				for ( Marker mapMarker :  em.query(Marker.class).ancestor(mapSettings) ) {
+					Marker gameMarker = mapMarker.copy();
+					gameMarker.setSettingsKey(gameSettingsKey);
+					Key<Marker> gameMarkerKey = em.put(gameMarker);
+					
+					for ( Position mapPosition :  em.query(Position.class).filter("marker", gameMarker) ) {
+						Position gamePosition = mapPosition.copy();
+						gamePosition.setGame(gameKey);
+						gamePosition.setMarkerKey(gameMarkerKey);
+						em.put(gamePosition);
+					}
+				}
+			}
+			
+			em.getTxn().commit();			
+			return game.getListing();
+		} finally {
+			rollbackIfNeeded(em);
+		}
+	}
+	
+	private Game requireGame(Objectify ofy, Long gameId) {
+		return requireGameOrMap(ofy, gameId, "Couldn't find requested game. It may have been deleted.");
+	}
+	
+	private Game requireMap(Objectify ofy, Long gameId) {
+		return requireGameOrMap(ofy, gameId, "Couldn't find requested map. It may have been deleted.");
+	}
+	
+	private Game requireGameOrMap(Objectify ofy, Long gameOrMapId, String errorMessage) {
+		if ( null == gameOrMapId ) {
+			throw new UserFriendlyMessageException(errorMessage);
+		}
+		
+		Game gameOrMap = ofy.get(Game.class, gameOrMapId);
+		if (null == gameOrMap) {
+			throw new UserFriendlyMessageException(errorMessage);
+		}
+		return gameOrMap;
+	}
+	
+	private User requireUser() {
+		final User user = getUser();
+		if (user == null) {
+			//TODO maybe have a general purpose "need to login" exception with login URL?
+			//all RPC calls needing user information could detect and redirect users not logged in
+			throw new UserFriendlyMessageException("You need to login to join a game.");
+		}
+		return user;
+	}
+	
+	private void rollbackIfNeeded(Objectify ofy) {
+		if ( null == ofy ) {
+			return;
+		}
+		
+		Transaction tx = ofy.getTxn();
+		if ( null == tx ) {
+			return;
+		}
+		
+	    if (tx.isActive()) {
+	    	tx.rollback();
+	    }		
+	}
+
+	private User getUser() {
+        UserService userService = UserServiceFactory.getUserService();
+        User user = userService.getCurrentUser();
+        return user;
+	}
+
+	private String getUserId() {
+        UserService userService = UserServiceFactory.getUserService();
+        User user = userService.getCurrentUser();
+        return null != user ? user.getUserId() : null;
 	}
 
 }

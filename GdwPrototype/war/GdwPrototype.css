@@ -88,6 +88,7 @@ tr, td {
 /* End fading the content in. */
 
 /* Markers on the game board have different layers that overlap. */
+/*BUG Markers in game and build palette are now showing up on top of the error message popup dialog. */
 img.gameBoardMarkerGround {
 	z-index: 1 !important;
 }

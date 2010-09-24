@@ -3,8 +3,12 @@
  */
 package name.nanek.gdwprototype.server;
 
+import java.util.Iterator;
+
 import name.nanek.gdwprototype.shared.model.Game;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterators;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.Query;
 
@@ -38,7 +42,7 @@ public class GameDataAccessor {
 		return q;
 	}	
 
-	public Iterable<Game> getObservableGames(Objectify ofy, final String userId) {
+	public Iterator<Game> getObservableGames(Objectify ofy, final String userId) {
 		//Allow observation of games that have a second player.
 		
 		//TODO what to do about players who open a second browser, where they aren't logged in, and observe to cheat?
@@ -49,20 +53,17 @@ public class GameDataAccessor {
 		Query<Game> q = ofy.query(Game.class)
 			.filter("map = ", false)
 			.filter("ended = ", false)
-			.filter("firstPlayerUserId != ", userId)
 			.filter("secondPlayerUserId != ", userId)
-			.filter("secondPlayerUserId != ", null);
-		return q;
+			.filter("secondPlayerUserId != ", null);	
 		
-		/*
 		//TODO maybe just store a list of player IDs? might work better given the data store's limitations re different properties		
-		Predicate<Game> notSecondPlayerPredicate = new Predicate<Game>() {
+		Predicate<Game> notFirstPlayerPredicate = new Predicate<Game>() {
 			@Override
 			public boolean apply(Game input) {
-				return !input.getSecondPlayerUserId().equals(userId);
+				return !input.getFirstPlayerUserId().equals(userId);
 			}
 		};
-		return Iterators.filter(notFirstPlayer, notSecondPlayerPredicate);
-		*/
+		return Iterators.filter(q.iterator(), notFirstPlayerPredicate);
+		
 	}	
 }
