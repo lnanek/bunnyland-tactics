@@ -62,7 +62,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 	public GameDisplayInfo getDisplayInfo(Long gameId) throws GameException {
 		Objectify em = DbUtil.beginTransaction();
 		try {
-			Game game = em.get(Game.class, gameId);
+			Game game = requireGame(em, gameId);
 			return gameEngine.createDisplayInfo(game, em);
 
 			// Don't bother committing, this was read only anyway.
@@ -75,7 +75,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 	public GamePlayInfo getPositionsByGameId(Long gameId) throws GameException {
 		Objectify em = DbUtil.beginTransaction();
 		try {
-			Game game = em.get(Game.class, gameId);
+			Game game = requireGame(em, gameId);
 			return gameEngine.createPlayInfo(game, em);
 
 			// Don't bother committing, this was read only anyway.
@@ -89,7 +89,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 		
 		Objectify em = DbUtil.beginTransaction();
 		try {
-			Game game = em.get(Game.class, gameId);
+			Game game = requireGame(em, gameId);
 			game.setEnded(true);
 			game.setWinner(Player.other(surrenderer));
 			em.put(game);
@@ -104,9 +104,9 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 	public void publishMap(Long mapId) throws GameException {
 		Objectify em = DbUtil.beginTransaction();
 		try {
-			Game game = em.get(Game.class, mapId);
-			game.setEnded(true);
-			em.put(game);
+			Game map = requireMap(em, mapId);
+			map.setEnded(true);
+			em.put(map);
 			
 			em.getTxn().commit();
 		} finally {
@@ -119,10 +119,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 		
 		Objectify em = DbUtil.beginTransaction();
 		try {
-			Game game = em.get(Game.class, gameId);
-			if (null == game) {
-				return null;
-			}
+			Game game = requireGame(em, gameId);
 			GameListing listing = game.getListing();
 			return listing;
 		} finally {
@@ -131,18 +128,13 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 	}
 	
 	@Override
-	public GameListing attemptToJoinGame(final Long id) throws GameException {
+	public GameListing attemptToJoinGame(final Long gameId) throws GameException {
 
 		final User user = requireUser();
 	        
 		Objectify ofy = DbUtil.beginTransaction();
 		try {
-			Game game = ofy.get(Game.class, id);
-			
-			if (null == game) {
-				throw new UserFriendlyMessageException("Couldn't find requested game.");
-			}
-			
+			Game game = requireGame(ofy, gameId);
 			GameListing listing = null;
 			if ( user.getUserId().equals(game.getFirstPlayerUserId()) ) {
 				//User is already player one.
@@ -203,7 +195,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 		FieldVerifier.validateGameName(name);
 
 		User user = requireUser();
-		Objectify em = DbUtil.beginTransaction();
+		Objectify createOfy = DbUtil.beginTransaction();
 		try {
 			
 			Game game = new Game();
@@ -214,42 +206,48 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 			if ( null == mapId ) {
 				game.setMap(true);
 			}
-			Key<Game> gameKey = em.put(game);
+			Key<Game> gameKey = createOfy.put(game);
 			
 			//If we're a map, we use the settings passed to us and have no positions.
 			if ( null == mapId ) {
 				settings.setGame(gameKey);
-				Key<GameSettings> gameSettingsKey = em.put(settings);
+				Key<GameSettings> gameSettingsKey = createOfy.put(settings);
 				for ( Marker marker : markers ) {
 					marker.setSettingsKey(gameSettingsKey);
-					em.put(marker);
+					createOfy.put(marker);
 				}
 			} else {
 				//Otherwise we're creating a game and have a map to start from.
 				//Copy settings and positions from map.
-				Game map = em.get(Game.class, mapId);				
-				GameSettings mapSettings = em.query(GameSettings.class).ancestor(map).get();
-				GameSettings gameSettings = mapSettings.copy();
-				gameSettings.setGame(gameKey);
-				Key<GameSettings> gameSettingsKey = em.put(gameSettings);							
-				for ( Marker mapMarker :  em.query(Marker.class).ancestor(mapSettings) ) {
-					Marker gameMarker = mapMarker.copy();
-					gameMarker.setSettingsKey(gameSettingsKey);
-					Key<Marker> gameMarkerKey = em.put(gameMarker);
-					
-					for ( Position mapPosition :  em.query(Position.class).filter("marker", gameMarker) ) {
-						Position gamePosition = mapPosition.copy();
-						gamePosition.setGame(gameKey);
-						gamePosition.setMarkerKey(gameMarkerKey);
-						em.put(gamePosition);
+				//Each game/map is a separate entity group, so we need a second transaction for this.
+				Objectify referenceOfy = DbUtil.beginTransaction();
+				try {
+					Game map = requireMap(referenceOfy, mapId);		
+					GameSettings mapSettings = referenceOfy.query(GameSettings.class).ancestor(map).get();
+					GameSettings gameSettings = mapSettings.copy();
+					gameSettings.setGame(gameKey);
+					Key<GameSettings> gameSettingsKey = createOfy.put(gameSettings);							
+					for ( Marker mapMarker :  referenceOfy.query(Marker.class).ancestor(mapSettings) ) {
+						Marker gameMarker = mapMarker.copy();
+						gameMarker.setSettingsKey(gameSettingsKey);
+						Key<Marker> gameMarkerKey = createOfy.put(gameMarker);
+						
+						for ( Position mapPosition :  referenceOfy.query(Position.class).ancestor(map).filter("marker", mapMarker) ) {
+							Position gamePosition = mapPosition.copy();
+							gamePosition.setGame(gameKey);
+							gamePosition.setMarkerKey(gameMarkerKey);
+							createOfy.put(gamePosition);
+						}
 					}
+				} finally {
+					rollbackIfNeeded(referenceOfy);
 				}
 			}
 			
-			em.getTxn().commit();			
+			createOfy.getTxn().commit();			
 			return game.getListing();
 		} finally {
-			rollbackIfNeeded(em);
+			rollbackIfNeeded(createOfy);
 		}
 	}
 	
