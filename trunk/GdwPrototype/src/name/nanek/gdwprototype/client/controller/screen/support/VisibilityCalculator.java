@@ -2,8 +2,8 @@ package name.nanek.gdwprototype.client.controller.screen.support;
 
 import java.util.Map;
 
-import name.nanek.gdwprototype.client.model.Player;
 import name.nanek.gdwprototype.shared.model.Marker;
+import name.nanek.gdwprototype.shared.model.Player;
 import name.nanek.gdwprototype.shared.model.Position;
 
 /**

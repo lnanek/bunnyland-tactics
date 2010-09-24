@@ -1,6 +1,6 @@
 package name.nanek.gdwprototype.client.view.widget;
 
-import name.nanek.gdwprototype.client.model.GameListing;
+import name.nanek.gdwprototype.shared.model.Game;
 
 /**
  * Links to a game.
@@ -21,7 +21,7 @@ public class GameAnchor {
 	 *            GameListing detailing game
 	 * @return anchor to use
 	 */
-	public static String generateAnchor(GameListing listing) {
+	public static String generateAnchor(Game listing) {
 		String prefixAndId = GAME_LISTING_ANCHOR_PREFIX + listing.getId();
 		
 		String linkName = listing.getLinkName();

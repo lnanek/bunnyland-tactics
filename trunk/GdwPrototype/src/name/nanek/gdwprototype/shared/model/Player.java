@@ -1,4 +1,4 @@
-package name.nanek.gdwprototype.client.model;
+package name.nanek.gdwprototype.shared.model;
 
 import java.io.Serializable;
 

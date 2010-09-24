@@ -1,16 +1,14 @@
 package name.nanek.gdwprototype.server;
 
 import name.nanek.gdwprototype.client.model.GameDisplayInfo;
-import name.nanek.gdwprototype.client.model.GameListing;
-import name.nanek.gdwprototype.client.model.GamePlayInfo;
-import name.nanek.gdwprototype.client.model.Player;
+import name.nanek.gdwprototype.client.model.GameUpdateInfo;
 import name.nanek.gdwprototype.client.service.GameService;
 import name.nanek.gdwprototype.shared.FieldVerifier;
 import name.nanek.gdwprototype.shared.exceptions.GameException;
 import name.nanek.gdwprototype.shared.exceptions.UserFriendlyMessageException;
 import name.nanek.gdwprototype.shared.model.Game;
-import name.nanek.gdwprototype.shared.model.GameSettings;
 import name.nanek.gdwprototype.shared.model.Marker;
+import name.nanek.gdwprototype.shared.model.Player;
 import name.nanek.gdwprototype.shared.model.Position;
 
 import com.google.appengine.api.datastore.Transaction;
@@ -34,7 +32,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 	private GameDataAccessor gameDataAccessor = new GameDataAccessor();
 	
 	@Override
-	public GamePlayInfo moveMarker(Long gameId, Integer sourceRow, Integer sourceColumn, Integer destRow,
+	public GameUpdateInfo moveMarker(Long gameId, Integer sourceRow, Integer sourceColumn, Integer destRow,
 			Integer destColumn, Long markerId) throws GameException {
 		
 		System.out.println("GameServiceImpl#moveMarker: " + gameId  + ", " + sourceRow + ", " + sourceColumn + ", " + destRow
@@ -72,7 +70,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 	}
 	
 	@Override
-	public GamePlayInfo getPositionsByGameId(Long gameId) throws GameException {
+	public GameUpdateInfo getPositionsByGameId(Long gameId) throws GameException {
 		Objectify em = DbUtil.beginTransaction();
 		try {
 			Game game = requireGame(em, gameId);
@@ -115,40 +113,36 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 	}
 	
 	@Override
-	public GameListing getGameListingById(Long gameId) throws GameException {
+	public Game getGameListingById(Long gameId) throws GameException {
 		
 		Objectify em = DbUtil.beginTransaction();
 		try {
 			Game game = requireGame(em, gameId);
-			GameListing listing = game.getListing();
-			return listing;
+			return game;
 		} finally {
 			rollbackIfNeeded(em);
 		}
 	}
 	
 	@Override
-	public GameListing attemptToJoinGame(final Long gameId) throws GameException {
+	public Game attemptToJoinGame(final Long gameId) throws GameException {
 
 		final User user = requireUser();
 	        
 		Objectify ofy = DbUtil.beginTransaction();
 		try {
 			Game game = requireGame(ofy, gameId);
-			GameListing listing = null;
 			if ( user.getUserId().equals(game.getFirstPlayerUserId()) ) {
 				//User is already player one.
 				//TODO switch to hotseat mode?
-				listing = game.getListing();
 			} else if ( null == game.getSecondPlayerUserId() || user.getUserId().equals(game.getSecondPlayerUserId()) ) {
 				game.setSecondPlayerUserId(user.getUserId());
-				listing = game.getListing();
 			}
 			ofy.put(game);
 			
 			ofy.getTxn().commit();
 			
-			return listing;
+			return game;
 		} finally {
 			rollbackIfNeeded(ofy);
 		}
@@ -166,32 +160,32 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 	}
 	
 	@Override
-	public GameListing[] getMapNames() throws GameException {
+	public Game[] getMapNames() throws GameException {
 		Objectify em = DbUtil.createObjectify();
-		GameListing[] listings = gameEngine.getListings(gameDataAccessor.getMaps(em));
+		Game[] listings = gameEngine.getListings(gameDataAccessor.getMaps(em));
 		return listings;
 	}
 	
 	@Override
-	public GameListing[] getJoinableGameNames() throws GameException {
+	public Game[] getJoinableGameNames() throws GameException {
         String username = getUserId();
         
 		Objectify em = DbUtil.createObjectify();
-		GameListing[] listings = gameEngine.getListings(gameDataAccessor.getJoinableGames(em, username));
+		Game[] listings = gameEngine.getListings(gameDataAccessor.getJoinableGames(em, username));
 		return listings;
 	}
 
 	@Override
-	public GameListing[] getObservableGameNames() throws GameException {
+	public Game[] getObservableGameNames() throws GameException {
         String username = getUserId();
         
 		Objectify em = DbUtil.createObjectify();
-		GameListing[] listings = gameEngine.getListings(gameDataAccessor.getObservableGames(em, username));
+		Game[] listings = gameEngine.getListings(gameDataAccessor.getObservableGames(em, username));
 		return listings;
 	}
 
 	@Override
-	public GameListing createGameOrMap(String name, GameSettings settings, Marker[] markers, Long mapId) throws GameException {
+	public Game createGameOrMap(String name, Integer boardWidth, Integer boardHeight, Marker[] markers, Long mapId) throws GameException {
 		FieldVerifier.validateGameName(name);
 
 		User user = requireUser();
@@ -210,10 +204,8 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 			
 			//If we're a map, we use the settings passed to us and have no positions.
 			if ( null == mapId ) {
-				settings.setGame(gameKey);
-				Key<GameSettings> gameSettingsKey = createOfy.put(settings);
 				for ( Marker marker : markers ) {
-					marker.setSettingsKey(gameSettingsKey);
+					marker.setGame(gameKey);
 					createOfy.put(marker);
 				}
 			} else {
@@ -223,19 +215,15 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 				Objectify referenceOfy = DbUtil.beginTransaction();
 				try {
 					Game map = requireMap(referenceOfy, mapId);		
-					GameSettings mapSettings = referenceOfy.query(GameSettings.class).ancestor(map).get();
-					GameSettings gameSettings = mapSettings.copy();
-					gameSettings.setGame(gameKey);
-					Key<GameSettings> gameSettingsKey = createOfy.put(gameSettings);							
-					for ( Marker mapMarker :  referenceOfy.query(Marker.class).ancestor(mapSettings) ) {
+					for ( Marker mapMarker :  referenceOfy.query(Marker.class).ancestor(map) ) {
 						Marker gameMarker = mapMarker.copy();
-						gameMarker.setSettingsKey(gameSettingsKey);
+						gameMarker.setGame(gameKey);
 						Key<Marker> gameMarkerKey = createOfy.put(gameMarker);
 						
 						for ( Position mapPosition :  referenceOfy.query(Position.class).ancestor(map).filter("marker", mapMarker) ) {
 							Position gamePosition = mapPosition.copy();
 							gamePosition.setGame(gameKey);
-							gamePosition.setMarkerKey(gameMarkerKey);
+							gamePosition.setMarker(gameMarkerKey);
 							createOfy.put(gamePosition);
 						}
 					}
@@ -245,7 +233,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 			}
 			
 			createOfy.getTxn().commit();			
-			return game.getListing();
+			return game;
 		} finally {
 			rollbackIfNeeded(createOfy);
 		}

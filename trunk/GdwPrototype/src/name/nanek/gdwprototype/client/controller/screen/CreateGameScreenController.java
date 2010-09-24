@@ -1,12 +1,12 @@
 package name.nanek.gdwprototype.client.controller.screen;
 
 import name.nanek.gdwprototype.client.controller.PageController;
-import name.nanek.gdwprototype.client.model.GameListing;
 import name.nanek.gdwprototype.client.view.Page.Background;
 import name.nanek.gdwprototype.client.view.screen.CreateGameScreen;
 import name.nanek.gdwprototype.client.view.widget.GameAnchor;
 import name.nanek.gdwprototype.shared.FieldVerifier;
 import name.nanek.gdwprototype.shared.ValidationException;
+import name.nanek.gdwprototype.shared.model.Game;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -29,7 +29,7 @@ public class CreateGameScreenController extends ScreenController {
 
 	private static final int MAP_LIST_REFRESH_INTERVAL_MS = 2000;
 
-	private class RefreshMapListCallback implements AsyncCallback<GameListing[]> {
+	private class RefreshMapListCallback implements AsyncCallback<Game[]> {
 		public void onFailure(Throwable throwable) {
 			//Protect against spurious call after screen hidden.
 			if ( null == pageController ) return;
@@ -41,7 +41,7 @@ public class CreateGameScreenController extends ScreenController {
 					throwable);
 		}
 
-		public void onSuccess(final GameListing[] maps) {
+		public void onSuccess(final Game[] maps) {
 			//Protect against spurious call after screen hidden.
 			if ( null == pageController ) return;
 
@@ -56,7 +56,7 @@ public class CreateGameScreenController extends ScreenController {
 			screen.createGameMaps.clear();
 			int itemIndex = 0;
 			int newIndexForPreviouslySelectedValue = -1;
-			for (final GameListing gameListing : maps) {
+			for (final Game gameListing : maps) {
 				if ( null != gameListing ) {
 					String value = Long.toString(gameListing.getId());
 					if ( value.equals(previouslySelectedValue) ) {
@@ -90,7 +90,7 @@ public class CreateGameScreenController extends ScreenController {
 		}
 	}
 
-	private class CreateGameCallback implements AsyncCallback<GameListing> {
+	private class CreateGameCallback implements AsyncCallback<Game> {
 		public void onFailure(Throwable throwable) {
 			//Protect against spurious call after screen hidden.
 			if ( null == pageController ) return;
@@ -103,7 +103,7 @@ public class CreateGameScreenController extends ScreenController {
 					enableCreateGameButton);
 		}
 
-		public void onSuccess(GameListing gameListing) {
+		public void onSuccess(Game gameListing) {
 			//Go to the created game.
 			final String anchor = GameAnchor.generateAnchor(gameListing);
 			History.newItem(anchor);
@@ -203,7 +203,7 @@ public class CreateGameScreenController extends ScreenController {
 		screen.createGameButton.setEnabled(false);
 		
 		//Send data to server.
-		pageController.gameService.createGameOrMap(gameName, null, null, mapId, new CreateGameCallback());
+		pageController.gameService.createGameOrMap(gameName, null, null, null, mapId, new CreateGameCallback());
 	}
 
 	private void requestRefreshMapList() {

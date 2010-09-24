@@ -1,7 +1,7 @@
 package name.nanek.gdwprototype.client.view;
 
 import name.nanek.gdwprototype.client.controller.support.SoundPlayer;
-import name.nanek.gdwprototype.shared.model.Markers;
+import name.nanek.gdwprototype.shared.model.DefaultMarkers;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
@@ -40,7 +40,7 @@ public class HowToPlayDialog {
 		
 		int row = 0;
 		addHeading("Carrot", table, row++);
-		table.setWidget(row, 0, new Image("images/" + Markers.CARROT.source, 0, 0, Markers.MARKER_WIDTH_PX, Markers.MARKER_HEIGHT_PX));
+		table.setWidget(row, 0, new Image("images/" + DefaultMarkers.CARROT.source, 0, 0, DefaultMarkers.MARKER_WIDTH_PX, DefaultMarkers.MARKER_HEIGHT_PX));
 		table.getFlexCellFormatter().setColSpan(row, 0, 2);
 		table.getFlexCellFormatter().setAlignment(row, 0, 
 				HasHorizontalAlignment.ALIGN_CENTER, HasVerticalAlignment.ALIGN_MIDDLE);
@@ -49,20 +49,20 @@ public class HowToPlayDialog {
 				"as long as there's an open space adjacent to your home."));
 
 		addHeading("Home", table, row++);
-		table.setWidget(row, 0, new Image("images/" + Markers.PLAYER_TWO_WARREN.source, 0, 0, Markers.MARKER_WIDTH_PX, Markers.MARKER_HEIGHT_PX));
-		table.setWidget(row, 1, new Image("images/" + Markers.PLAYER_ONE_WARREN.source, 0, 0, Markers.MARKER_WIDTH_PX, Markers.MARKER_HEIGHT_PX));
+		table.setWidget(row, 0, new Image("images/" + DefaultMarkers.PLAYER_TWO_WARREN.source, 0, 0, DefaultMarkers.MARKER_WIDTH_PX, DefaultMarkers.MARKER_HEIGHT_PX));
+		table.setWidget(row, 1, new Image("images/" + DefaultMarkers.PLAYER_ONE_WARREN.source, 0, 0, DefaultMarkers.MARKER_WIDTH_PX, DefaultMarkers.MARKER_HEIGHT_PX));
 		table.setWidget(row++, 2, new HTML(
 				"Stomp the enemy's home with a stomper bunny to win! <br />" + 
 				"Protect your own home to survive."));
 
 		addHeading("Stomper", table, row++);
-		table.setWidget(row, 0, new Image("images/" + Markers.PLAYER_TWO_STOMPER.source, 0, 0, Markers.MARKER_WIDTH_PX, Markers.MARKER_HEIGHT_PX));
-		table.setWidget(row, 1, new Image("images/" + Markers.PLAYER_ONE_STOMPER.source, 0, 0, Markers.MARKER_WIDTH_PX, Markers.MARKER_HEIGHT_PX));
+		table.setWidget(row, 0, new Image("images/" + DefaultMarkers.PLAYER_TWO_STOMPER.source, 0, 0, DefaultMarkers.MARKER_WIDTH_PX, DefaultMarkers.MARKER_HEIGHT_PX));
+		table.setWidget(row, 1, new Image("images/" + DefaultMarkers.PLAYER_ONE_STOMPER.source, 0, 0, DefaultMarkers.MARKER_WIDTH_PX, DefaultMarkers.MARKER_HEIGHT_PX));
 		table.setWidget(row++, 2, new Label("Stomper bunnies remove enemies when placed on them."));
 
 		addHeading("Scout", table, row++);
-		table.setWidget(row, 0, new Image("images/" + Markers.PLAYER_TWO_SCOUT.source, 0, 0, Markers.MARKER_WIDTH_PX, Markers.MARKER_HEIGHT_PX));
-		table.setWidget(row, 1, new Image("images/" + Markers.PLAYER_ONE_SCOUT.source, 0, 0, Markers.MARKER_WIDTH_PX, Markers.MARKER_HEIGHT_PX));
+		table.setWidget(row, 0, new Image("images/" + DefaultMarkers.PLAYER_TWO_SCOUT.source, 0, 0, DefaultMarkers.MARKER_WIDTH_PX, DefaultMarkers.MARKER_HEIGHT_PX));
+		table.setWidget(row, 1, new Image("images/" + DefaultMarkers.PLAYER_ONE_SCOUT.source, 0, 0, DefaultMarkers.MARKER_WIDTH_PX, DefaultMarkers.MARKER_HEIGHT_PX));
 		table.setWidget(row++, 2, new Label("Scout bunnies can see far, but can't remove enemies."));
 
 		dialogVPanel.add(table);

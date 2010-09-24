@@ -2,7 +2,6 @@ package name.nanek.gdwprototype.shared.model;
 
 import java.util.ArrayList;
 
-import name.nanek.gdwprototype.client.model.Player;
 
 /**
  * Holds all available markers.
@@ -10,7 +9,7 @@ import name.nanek.gdwprototype.client.model.Player;
  * @author Lance Nanek
  *
  */
-public class Markers {
+public class DefaultMarkers {
 	//TODO the 1-bit transparency on the animated GIFs looks really bad
 	//maybe have separate PNG frames and switch between them via timers?
 	//alternatively, have images for every combination of marker and tile

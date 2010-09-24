@@ -11,13 +11,11 @@ import java.util.Map;
 import java.util.Random;
 
 import name.nanek.gdwprototype.client.model.GameDisplayInfo;
-import name.nanek.gdwprototype.client.model.GameListing;
-import name.nanek.gdwprototype.client.model.GamePlayInfo;
-import name.nanek.gdwprototype.client.model.Player;
+import name.nanek.gdwprototype.client.model.GameUpdateInfo;
 import name.nanek.gdwprototype.shared.exceptions.UserFriendlyMessageException;
 import name.nanek.gdwprototype.shared.model.Game;
-import name.nanek.gdwprototype.shared.model.GameSettings;
 import name.nanek.gdwprototype.shared.model.Marker;
+import name.nanek.gdwprototype.shared.model.Player;
 import name.nanek.gdwprototype.shared.model.Position;
 
 import com.google.appengine.api.users.User;
@@ -41,17 +39,14 @@ public class GameEngine {
 		
 		//Create the array of marker info.	
 
-		GameSettings gameSettings = em.query(GameSettings.class).ancestor(game).get();
-		List<Marker> markerList =  em.query(Marker.class).ancestor(gameSettings).list();
+		List<Marker> markerList =  em.query(Marker.class).ancestor(game).list();
 		Marker[] markers = markerList.toArray(new Marker[] {});
 
-		GameDisplayInfo info = new GameDisplayInfo(markers, 
-				gameSettings.getBoardHeight(), gameSettings.getBoardWidth(),
-				game.isMap(), game.getListing(), createPlayInfo(game, em));
+		GameDisplayInfo info = new GameDisplayInfo(markers, game, createPlayInfo(game, em));
 		return info;
 	}
 	
-	public GamePlayInfo createPlayInfo(Game game, Objectify em) {
+	public GameUpdateInfo createPlayInfo(Game game, Objectify em) {
 		if ( null == game ) return null;
 		
 		//Create the array of position info.
@@ -72,7 +67,7 @@ public class GameEngine {
 				userPlayingAs = Player.TWO;				
 			}
 		}	
-		GamePlayInfo info = new GamePlayInfo(getPositionsMap(em, game), isUsersTurn, userPlayingAs, needsSecondPlayer, 
+		GameUpdateInfo info = new GameUpdateInfo(getPositionsMap(em, game), isUsersTurn, userPlayingAs, needsSecondPlayer, 
 				game.getWinner(), 
 				game.isEnded(), game.getMoveCount(), game.isUnitDiedLastTurn(),
 				game.isCarrotEatenLastTurn(), game.getCurrentUsersTurn());
@@ -84,11 +79,8 @@ public class GameEngine {
 		
 		Key<Game> gameKey = new Key<Game>(Game.class, gameId);
 		Game game = em.get(gameKey);
-
-		Key<GameSettings> gameSettingsKey = em.query(GameSettings.class).ancestor(game).getKey();
-		GameSettings gameSettings = em.get(gameSettingsKey);		
 		
-		Key<Marker> movedMarkerKey = new Key<Marker>(gameSettingsKey, Marker.class, markerId);
+		Key<Marker> movedMarkerKey = new Key<Marker>(gameKey, Marker.class, markerId);
 		Marker movedMarker = em.get(movedMarkerKey);
 		if ( null == movedMarker ) {
 			throw new IllegalArgumentException("Could not find marker with specified ID.");
@@ -162,19 +154,20 @@ public class GameEngine {
 			Point homeWarrenLocation = findHomeWarren(game.getCurrentUsersTurn(), positions);
 			if ( null != homeWarrenLocation ) {
 				Point newUnitLocation = findNearbyOpenSpot(homeWarrenLocation, 
-						positions, gameSettings.getBoardHeight(), 
-						gameSettings.getBoardWidth());
+						positions, game.getBoardHeight(), 
+						game.getBoardWidth());
 				
 				if ( null != newUnitLocation ) {
-					List<Marker> markers = em.query(Marker.class).ancestor(gameSettings).list();
+					List<Marker> markers = em.query(Marker.class).ancestor(game).list();
 					Marker marker = getNewPlayerPiece(markers, game.getCurrentUsersTurn());
-					Key<Marker> markerKey = new Key<Marker>(gameSettingsKey, Marker.class, marker.getKeyId());
+					Key<Marker> markerKey = new Key<Marker>(gameKey, Marker.class, marker.getId());
 					Position position = new Position(newUnitLocation.row, newUnitLocation.column, markerKey, gameKey);
 					em.put(position);
 				}
 			}	
 		}
 		
+		//TODO win game if enemy has no movable pieces left as well
 		if ( enemyLostHome ) {
 			Player enemyPlayer = Player.other(game.getCurrentUsersTurn());
 			int enemyHomes = countMarkersWith(positions, Marker.Role.HOME, enemyPlayer);
@@ -201,7 +194,7 @@ public class GameEngine {
 	private Map<Position, Marker> getPositionsMap(Objectify em, Game game) {
 		Map<Position, Marker> positions = new HashMap<Position, Marker>();
 		for ( Position position : em.query(Position.class).ancestor(game) ) {
-			Marker marker = em.get(position.getMarkerKey());
+			Marker marker = em.get(position.getMarker());
 			positions.put(position, marker);
 		}
 		return positions;
@@ -383,17 +376,17 @@ public class GameEngine {
 		throw new IllegalStateException("Can't determine the current user.");
 	}
 
-	GameListing[] getListings(Iterable<Game> games) {
+	Game[] getListings(Iterable<Game> games) {
 		return getListings(games.iterator());		
 	}
 
-	GameListing[] getListings(Iterator<Game> games) {
-		ArrayList<GameListing> list = new ArrayList<GameListing>();
+	Game[] getListings(Iterator<Game> games) {
+		ArrayList<Game> list = new ArrayList<Game>();
 		while ( games.hasNext() ) {
 			Game game = games.next();
-			list.add(game.getListing());
+			list.add(game);
 		}
-		GameListing[] array = list.toArray(new GameListing[] {});
+		Game[] array = list.toArray(new Game[] {});
 		return array;		
 	}
 }

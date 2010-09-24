@@ -30,16 +30,27 @@ public class GameDataAccessor {
 		return q;
 	}	
 
-	public Iterable<Game> getJoinableGames(Objectify ofy, String userId) {
+	public Iterator<Game> getJoinableGames(Objectify ofy, String userId) {
 		//Joinable if created as a game and user is a player or there is no second player yet.
 		
-		Query<Game> q = ofy.query(Game.class)
+		Query<Game> playingAsFirstPlayer = ofy.query(Game.class)
 			.filter("map = ", false)
 			.filter("ended = ", false)
-			.filter("firstPlayerUserId = ", userId)
-			.filter("secondPlayerUserId = ", userId)
+			.filter("firstPlayerUserId = ", userId);
+		
+		Query<Game> playingAsSecondPlayer = ofy.query(Game.class)
+			.filter("map = ", false)
+			.filter("ended = ", false)
+			.filter("secondPlayerUserId = ", userId);
+		
+		Query<Game> needsSecondPlayer = ofy.query(Game.class)
+			.filter("map = ", false)
+			.filter("ended = ", false)
 			.filter("secondPlayerUserId = ", null);
-		return q;
+		
+		return Iterators.concat(playingAsFirstPlayer.iterator(), 
+				playingAsSecondPlayer.iterator(),
+				needsSecondPlayer.iterator());
 	}	
 
 	public Iterator<Game> getObservableGames(Objectify ofy, final String userId) {

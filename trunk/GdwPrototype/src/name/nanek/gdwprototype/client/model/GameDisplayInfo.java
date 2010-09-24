@@ -2,6 +2,7 @@ package name.nanek.gdwprototype.client.model;
 
 import java.io.Serializable;
 
+import name.nanek.gdwprototype.shared.model.Game;
 import name.nanek.gdwprototype.shared.model.Marker;
 
 /**
@@ -16,27 +17,18 @@ public class GameDisplayInfo implements Serializable {
 	
 	public Marker[] markers;
 
-	public int boardWidth;
+	public Game game;
 	
-	public int boardHeight;
-	
-	public boolean map;
-
-	public GameListing listing;
-	
-	public GamePlayInfo playInfo;
+	public GameUpdateInfo playInfo;
 		
+	@SuppressWarnings("unused") //Used by GWT serialization.
 	private GameDisplayInfo() {
 	}
 
-	public GameDisplayInfo(Marker[] markers, int boardHeight, int boardWidth, boolean map,
-			GameListing listing, GamePlayInfo playInfo) {
+	public GameDisplayInfo(Marker[] markers, Game game, GameUpdateInfo playInfo) {
 		this.markers = markers;
-		this.boardWidth = boardWidth;
-		this.boardHeight = boardHeight;
-		this.map = map;
 		this.playInfo = playInfo;
-		this.listing = listing;
+		this.game = game;
 	}
 
 }

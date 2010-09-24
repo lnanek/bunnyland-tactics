@@ -1,7 +1,6 @@
 package name.nanek.gdwprototype.server;
 
 import name.nanek.gdwprototype.shared.model.Game;
-import name.nanek.gdwprototype.shared.model.GameSettings;
 import name.nanek.gdwprototype.shared.model.Marker;
 import name.nanek.gdwprototype.shared.model.Position;
 
@@ -18,7 +17,6 @@ public final class DbUtil {
 	
 	static {
 		ObjectifyService.register(Game.class);
-		ObjectifyService.register(GameSettings.class);
 		ObjectifyService.register(Marker.class);
 		ObjectifyService.register(Position.class);
 	}
