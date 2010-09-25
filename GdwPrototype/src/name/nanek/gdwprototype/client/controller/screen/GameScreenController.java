@@ -420,12 +420,12 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 
 		int boardHeight = displayInfo.game.getBoardHeight();
 		int boardWidth = displayInfo.game.getBoardWidth();
-		
-		//Clear board.
-		// TODO more efficient algorithm? right now we make some things undraggable just to make them draggable again
-		clearDraggables();
 
 		//TODO keep track of game move number and only redo board if new move number?
+
+		//Clear draggables.
+		// TODO more efficient algorithm? right now we make some things undraggable just to make them draggable again
+		clearDraggables();
 
 		// TODO update visibility immediately on move instead of waiting for server update?		
 		boolean[][] visibleSquares = VisibilityCalculator.calculateVisibility(fogOfWarAs, boardWidth, boardHeight, info.positions);

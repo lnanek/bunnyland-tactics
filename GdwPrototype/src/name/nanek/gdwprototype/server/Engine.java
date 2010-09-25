@@ -12,6 +12,7 @@ import java.util.Random;
 
 import name.nanek.gdwprototype.client.model.GameDisplayInfo;
 import name.nanek.gdwprototype.client.model.GameUpdateInfo;
+import name.nanek.gdwprototype.server.model.Point;
 import name.nanek.gdwprototype.shared.exceptions.UserFriendlyMessageException;
 import name.nanek.gdwprototype.shared.model.Game;
 import name.nanek.gdwprototype.shared.model.Marker;
@@ -30,7 +31,7 @@ import com.googlecode.objectify.Objectify;
  * @author Lance Nanek
  *
  */
-public class GameEngine {
+public class Engine {
 
 	private static final Random random = new Random();
 

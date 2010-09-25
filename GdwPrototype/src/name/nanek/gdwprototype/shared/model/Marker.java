@@ -78,8 +78,8 @@ public class Marker implements Serializable, Comparable<Marker> {
 		return "gameBoardMarker" + titleCaseLayer;
 	}
 	
-	public static Marker makeTerrain(String name, String source) {
-		return new Marker(name, source, null, null, null, null, null, true);
+	public static Marker makeTerrain(String name, String source, int visibility) {
+		return new Marker(name, source, null, null, visibility, null, null, true);
 	}
 
 	public Marker copy() {

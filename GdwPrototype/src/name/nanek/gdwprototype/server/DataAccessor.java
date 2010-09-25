@@ -5,6 +5,7 @@ package name.nanek.gdwprototype.server;
 
 import java.util.Iterator;
 
+import name.nanek.gdwprototype.shared.exceptions.UserFriendlyMessageException;
 import name.nanek.gdwprototype.shared.model.Game;
 
 import com.google.common.base.Predicate;
@@ -18,7 +19,7 @@ import com.googlecode.objectify.Query;
  * @author Lance Nanek
  *
  */
-public class GameDataAccessor {
+public class DataAccessor {
 	//TODO some of the displayed collections in the UI are shuffling order on update. use ordered collections here and make sure sorted by something, like id/age at least
 
 	public Iterable<Game> getMaps(Objectify ofy) {
@@ -76,5 +77,25 @@ public class GameDataAccessor {
 		};
 		return Iterators.filter(q.iterator(), notFirstPlayerPredicate);
 		
+	}
+
+	Game requireGame(ServiceImpl serviceImpl, Objectify ofy, Long gameId) {
+		return requireGameOrMap(ofy, gameId, "Couldn't find requested game. It may have been deleted.");
+	}
+
+	Game requireMap(ServiceImpl serviceImpl, Objectify ofy, Long gameId) {
+		return requireGameOrMap(ofy, gameId, "Couldn't find requested map. It may have been deleted.");
+	}
+
+	Game requireGameOrMap(Objectify ofy, Long gameOrMapId, String errorMessage) {
+		if ( null == gameOrMapId ) {
+			throw new UserFriendlyMessageException(errorMessage);
+		}
+		
+		Game gameOrMap = ofy.get(Game.class, gameOrMapId);
+		if (null == gameOrMap) {
+			throw new UserFriendlyMessageException(errorMessage);
+		}
+		return gameOrMap;
 	}	
 }

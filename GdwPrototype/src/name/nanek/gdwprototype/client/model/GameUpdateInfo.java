@@ -17,9 +17,13 @@ public class GameUpdateInfo implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	//TODO just lookup marker from display info using the key on each position? would result in half the data needed each update
+	//TODO instead of sending markers, maybe lookup marker from display info saved on client using the key on each position? 
+	//would result in half the data needed each update
+	//even better, just send a Long[][][] with each marker ID or null for each x, y, and layer?
 	public Map<Position, Marker> positions;
 	
+	//TODO a lot of the below data duplicates fields on Game
+	//maybe send game itself instead, or make this a persisted child of game instead of having the needed properties on game itself
 	public boolean isUsersTurn;
 	
 	public Player playingAs;

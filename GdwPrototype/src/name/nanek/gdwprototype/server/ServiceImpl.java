@@ -5,13 +5,11 @@ import name.nanek.gdwprototype.client.model.GameUpdateInfo;
 import name.nanek.gdwprototype.client.service.GameService;
 import name.nanek.gdwprototype.shared.FieldVerifier;
 import name.nanek.gdwprototype.shared.exceptions.GameException;
-import name.nanek.gdwprototype.shared.exceptions.UserFriendlyMessageException;
 import name.nanek.gdwprototype.shared.model.Game;
 import name.nanek.gdwprototype.shared.model.Marker;
 import name.nanek.gdwprototype.shared.model.Player;
 import name.nanek.gdwprototype.shared.model.Position;
 
-import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
@@ -25,11 +23,16 @@ import com.googlecode.objectify.Objectify;
  * @author Lance Nanek
  */
 @SuppressWarnings("serial")
-public class GameServiceImpl extends RemoteServiceServlet implements GameService {
+public class ServiceImpl extends RemoteServiceServlet implements GameService {
+		
+	//TODO get all game logic moved into this
+	private Engine engine = new Engine();
 	
-	protected GameEngine gameEngine = new GameEngine();
+	//TODO get all DB logic moved into this
+	private DataAccessor dataAccessor = new DataAccessor();
 	
-	private GameDataAccessor gameDataAccessor = new GameDataAccessor();
+	//TODO reduce repetitive transaction handling by using an interceptor/filter? 
+	//or just having one method that handles command objects?
 	
 	@Override
 	public GameUpdateInfo moveMarker(Long gameId, Integer sourceRow, Integer sourceColumn, Integer destRow,
@@ -38,15 +41,15 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 		System.out.println("GameServiceImpl#moveMarker: " + gameId  + ", " + sourceRow + ", " + sourceColumn + ", " + destRow
 				 + ", " + destColumn + ", " + markerId);
 		
-		User user = requireUser();
+		User user = AppEngineUtil.requireUser();
 			
 		Objectify em = DbUtil.beginTransaction();
 		try {
-			GameUpdateInfo update = gameEngine.moveMarker(gameId, sourceRow, sourceColumn, destRow, destColumn, markerId, user, em);
+			GameUpdateInfo update = engine.moveMarker(gameId, sourceRow, sourceColumn, destRow, destColumn, markerId, user, em);
 			em.getTxn().commit();
 			return update;
 		} finally {
-			rollbackIfNeeded(em);
+			DbUtil.rollbackIfNeeded(em);
 		}		
 	}
 
@@ -54,25 +57,27 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 	public GameDisplayInfo getDisplayInfo(Long gameId) throws GameException {
 		Objectify em = DbUtil.beginTransaction();
 		try {
-			Game game = requireGame(em, gameId);
-			return gameEngine.createDisplayInfo(game, em);
+			Game game = dataAccessor.requireGame(this, em, gameId);
+			return engine.createDisplayInfo(game, em);
 
 			// Don't bother committing, this was read only anyway.
 		} finally {
-			rollbackIfNeeded(em);
+			DbUtil.rollbackIfNeeded(em);
 		}		
 	}
 	
+	//TODO accept an optional move number parameter representing what state the client already knows about
+	//return null to indicate no changes if the game's move number hasn't been incremented
 	@Override
 	public GameUpdateInfo getPositionsByGameId(Long gameId) throws GameException {
 		Objectify em = DbUtil.beginTransaction();
 		try {
-			Game game = requireGame(em, gameId);
-			return gameEngine.createPlayInfo(game, em);
+			Game game = dataAccessor.requireGame(this, em, gameId);
+			return engine.createPlayInfo(game, em);
 
 			// Don't bother committing, this was read only anyway.
 		} finally {
-			rollbackIfNeeded(em);
+			DbUtil.rollbackIfNeeded(em);
 		}
 	}
 
@@ -81,14 +86,14 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 		
 		Objectify em = DbUtil.beginTransaction();
 		try {
-			Game game = requireGame(em, gameId);
+			Game game = dataAccessor.requireGame(this, em, gameId);
 			game.setEnded(true);
 			game.setWinner(Player.other(surrenderer));
 			em.put(game);
 			
 			em.getTxn().commit();
 		} finally {
-			rollbackIfNeeded(em);
+			DbUtil.rollbackIfNeeded(em);
 		}
 	}
 
@@ -96,13 +101,13 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 	public void publishMap(Long mapId) throws GameException {
 		Objectify em = DbUtil.beginTransaction();
 		try {
-			Game map = requireMap(em, mapId);
+			Game map = dataAccessor.requireMap(this, em, mapId);
 			map.setEnded(true);
 			em.put(map);
 			
 			em.getTxn().commit();
 		} finally {
-			rollbackIfNeeded(em);
+			DbUtil.rollbackIfNeeded(em);
 		}
 	}
 	
@@ -111,21 +116,21 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 		
 		Objectify em = DbUtil.beginTransaction();
 		try {
-			Game game = requireGame(em, gameId);
+			Game game = dataAccessor.requireGame(this, em, gameId);
 			return game;
 		} finally {
-			rollbackIfNeeded(em);
+			DbUtil.rollbackIfNeeded(em);
 		}
 	}
 	
 	@Override
 	public Game attemptToJoinGame(final Long gameId) throws GameException {
 
-		final User user = requireUser();
+		final User user = AppEngineUtil.requireUser();
 	        
 		Objectify ofy = DbUtil.beginTransaction();
 		try {
-			Game game = requireGame(ofy, gameId);
+			Game game = dataAccessor.requireGame(this, ofy, gameId);
 			if ( user.getUserId().equals(game.getFirstPlayerUserId()) ) {
 				//User is already player one.
 				//TODO switch to hotseat mode?
@@ -138,7 +143,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 			
 			return game;
 		} finally {
-			rollbackIfNeeded(ofy);
+			DbUtil.rollbackIfNeeded(ofy);
 		}
 	}
 	
@@ -156,25 +161,25 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 	@Override
 	public Game[] getMapNames() throws GameException {
 		Objectify em = DbUtil.createObjectify();
-		Game[] listings = gameEngine.getListings(gameDataAccessor.getMaps(em));
+		Game[] listings = engine.getListings(dataAccessor.getMaps(em));
 		return listings;
 	}
 	
 	@Override
 	public Game[] getJoinableGameNames() throws GameException {
-        String username = getUserId();
+        String username = AppEngineUtil.getUserId();
         
 		Objectify em = DbUtil.createObjectify();
-		Game[] listings = gameEngine.getListings(gameDataAccessor.getJoinableGames(em, username));
+		Game[] listings = engine.getListings(dataAccessor.getJoinableGames(em, username));
 		return listings;
 	}
 
 	@Override
 	public Game[] getObservableGameNames() throws GameException {
-        String username = getUserId();
+        String username = AppEngineUtil.getUserId();
         
 		Objectify em = DbUtil.createObjectify();
-		Game[] listings = gameEngine.getListings(gameDataAccessor.getObservableGames(em, username));
+		Game[] listings = engine.getListings(dataAccessor.getObservableGames(em, username));
 		return listings;
 	}
 
@@ -182,7 +187,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 	public Game createGameOrMap(String name, Integer boardWidth, Integer boardHeight, Marker[] markers, Long mapId) throws GameException {
 		FieldVerifier.validateGameName(name);
 
-		User user = requireUser();
+		User user = AppEngineUtil.requireUser();
 		Objectify createOfy = DbUtil.beginTransaction();
 		try {
 			
@@ -208,7 +213,7 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 				//Each game/map is a separate entity group, so we need a second transaction for this.
 				Objectify referenceOfy = DbUtil.beginTransaction();
 				try {
-					Game map = requireMap(referenceOfy, mapId);		
+					Game map = dataAccessor.requireMap(this, referenceOfy, mapId);		
 					for ( Marker mapMarker :  referenceOfy.query(Marker.class).ancestor(map) ) {
 						Marker gameMarker = mapMarker.copy();
 						gameMarker.setGame(gameKey);
@@ -222,72 +227,15 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 						}
 					}
 				} finally {
-					rollbackIfNeeded(referenceOfy);
+					DbUtil.rollbackIfNeeded(referenceOfy);
 				}
 			}
 			
 			createOfy.getTxn().commit();			
 			return game;
 		} finally {
-			rollbackIfNeeded(createOfy);
+			DbUtil.rollbackIfNeeded(createOfy);
 		}
-	}
-	
-	private Game requireGame(Objectify ofy, Long gameId) {
-		return requireGameOrMap(ofy, gameId, "Couldn't find requested game. It may have been deleted.");
-	}
-	
-	private Game requireMap(Objectify ofy, Long gameId) {
-		return requireGameOrMap(ofy, gameId, "Couldn't find requested map. It may have been deleted.");
-	}
-	
-	private Game requireGameOrMap(Objectify ofy, Long gameOrMapId, String errorMessage) {
-		if ( null == gameOrMapId ) {
-			throw new UserFriendlyMessageException(errorMessage);
-		}
-		
-		Game gameOrMap = ofy.get(Game.class, gameOrMapId);
-		if (null == gameOrMap) {
-			throw new UserFriendlyMessageException(errorMessage);
-		}
-		return gameOrMap;
-	}
-	
-	private User requireUser() {
-		final User user = getUser();
-		if (user == null) {
-			//TODO maybe have a general purpose "need to login" exception with login URL?
-			//all RPC calls needing user information could detect and redirect users not logged in
-			throw new UserFriendlyMessageException("You need to login to join a game.");
-		}
-		return user;
-	}
-	
-	private void rollbackIfNeeded(Objectify ofy) {
-		if ( null == ofy ) {
-			return;
-		}
-		
-		Transaction tx = ofy.getTxn();
-		if ( null == tx ) {
-			return;
-		}
-		
-	    if (tx.isActive()) {
-	    	tx.rollback();
-	    }		
-	}
-
-	private User getUser() {
-        UserService userService = UserServiceFactory.getUserService();
-        User user = userService.getCurrentUser();
-        return user;
-	}
-
-	private String getUserId() {
-        UserService userService = UserServiceFactory.getUserService();
-        User user = userService.getCurrentUser();
-        return null != user ? user.getUserId() : null;
 	}
 
 }
