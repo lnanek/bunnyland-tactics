@@ -4,6 +4,7 @@ import name.nanek.gdwprototype.shared.model.Game;
 import name.nanek.gdwprototype.shared.model.Marker;
 import name.nanek.gdwprototype.shared.model.Position;
 
+import com.google.appengine.api.datastore.Transaction;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
 
@@ -27,6 +28,21 @@ public final class DbUtil {
 	
 	public static Objectify beginTransaction() {
 		return ObjectifyService.beginTransaction();
+	}
+
+	static void rollbackIfNeeded(Objectify ofy) {
+		if ( null == ofy ) {
+			return;
+		}
+		
+		Transaction tx = ofy.getTxn();
+		if ( null == tx ) {
+			return;
+		}
+		
+	    if (tx.isActive()) {
+	    	tx.rollback();
+	    }		
 	}
 	
 }

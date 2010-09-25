@@ -8,7 +8,7 @@
   <!-- Servlets -->
   <servlet>
     <servlet-name>gameServlet</servlet-name>
-    <servlet-class>name.nanek.gdwprototype.server.GameServiceImpl</servlet-class>
+    <servlet-class>name.nanek.gdwprototype.server.ServiceImpl</servlet-class>
   </servlet>
   
   <servlet-mapping>

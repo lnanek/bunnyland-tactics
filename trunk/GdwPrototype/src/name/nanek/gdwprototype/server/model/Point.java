@@ -1,4 +1,4 @@
-package name.nanek.gdwprototype.server;
+package name.nanek.gdwprototype.server.model;
 
 /**
  * A point on the game board.
@@ -6,11 +6,11 @@ package name.nanek.gdwprototype.server;
  * @author Lance Nanek
  *
  */
-class Point {
+public class Point {
 	
-	int row;
+	public int row;
 	
-	int column;
+	public int column;
 	
 	public Point() {};
 	

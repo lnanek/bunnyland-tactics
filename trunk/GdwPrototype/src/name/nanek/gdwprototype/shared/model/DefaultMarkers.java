@@ -54,9 +54,10 @@ public class DefaultMarkers {
 		PLAYER_TWO_STOMPER, 
 
 		CARROT,
-		Marker.makeTerrain("Tree", "tile_tree.png"), 
-		Marker.makeTerrain("Grass", "tile_grass.png"), 
-		Marker.makeTerrain("Hill", "tile_hill.png"), 
+		//TODO apply this visibility modifiers to units on them
+		Marker.makeTerrain("Tree", "tile_tree.png", -1), 
+		Marker.makeTerrain("Grass", "tile_grass.png", 0), 
+		Marker.makeTerrain("Hill", "tile_hill.png", 1), 
 		
 		FOG_OF_WAR,
 	};
