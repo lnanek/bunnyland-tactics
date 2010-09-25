@@ -53,27 +53,26 @@ public class GameScreenDropController extends SimpleDropController {
 		}
 
 		TableCellPanel source = gameScreenController.getDragSource();
+		GameSquare draggedImage = (GameSquare) context.draggable;
 
 		// Ignore drop on to palette, assume user is putting something back.
 		if ( isDropTargetPalette ) {
-			gameScreenController.moveMarker(source.getRow(), source.getColumn(), null, null, null, null);
+			gameScreenController.moveMarker(source.getRow(), source.getColumn(), null, null, draggedImage, null);
 
 			context.draggable.removeFromParent();
 			super.onDrop(context);
 			return;
 		}
-
-		GameSquare draggedImage = (GameSquare) context.draggable;
 		
-		GameSquare removedSquare = setMarker(draggedImage);
+		GameSquare removedSquare = setSquare(draggedImage);
 		Marker removedMarker = null != removedSquare ? removedSquare.marker : null;
 
 		gameScreenController.moveMarker(source.getRow(), source.getColumn(), dropTarget.getRow(), dropTarget.getColumn(),
-				draggedImage.marker.getId(), removedMarker);
+				draggedImage, removedMarker);
 		super.onDrop(context);
 	}
 	
-	private GameSquare setMarker(GameSquare newSquare) {
+	private GameSquare setSquare(GameSquare newSquare) {
 		GameSquare removedSquare = null;
 		Marker newMarker = newSquare.marker;
 		for( Widget check : dropTarget ) {
@@ -146,13 +145,16 @@ public class GameScreenDropController extends SimpleDropController {
 		if (sourceIsPalette) {
 			GameSquare draggedImage = (GameSquare) context.draggable;
 			GameSquare newImage = new GameSquare(draggedImage.marker, null);			
-			GameSquare removedSquare = setMarker(newImage);
+			GameSquare removedSquare = setSquare(newImage);
 			Marker removedMarker = null != removedSquare ? removedSquare.marker : null;
-			context.dragController.makeDraggable(newImage);
+
+			//We clear the draggables and reset them based on game state anyway. So commented out.
+			//context.dragController.makeDraggable(newImage);
+			//gameScreenController.draggables.add(newImage);
 
 			// TODO throw/catch an exception and veto? stale game state or
 			// something?
-			gameScreenController.moveMarker(null, null, dropTarget.getRow(), dropTarget.getColumn(), draggedImage.marker.getId(), removedMarker);
+			gameScreenController.moveMarker(null, null, dropTarget.getRow(), dropTarget.getColumn(), newImage, removedMarker);
 
 			throw new VetoDragException();
 		}

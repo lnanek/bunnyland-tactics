@@ -5,8 +5,8 @@ import java.util.Map;
 
 import name.nanek.gdwprototype.client.controller.support.SoundPlayer;
 import name.nanek.gdwprototype.client.view.screen.support.ScreenUtil;
-import name.nanek.gdwprototype.shared.model.Marker;
 import name.nanek.gdwprototype.shared.model.DefaultMarkers;
+import name.nanek.gdwprototype.shared.model.Marker;
 
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.TextBox;

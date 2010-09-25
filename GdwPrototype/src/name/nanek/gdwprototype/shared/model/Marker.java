@@ -30,7 +30,8 @@ public class Marker implements Serializable, Comparable<Marker> {
 	@Id private Long id;
 	
 	@SuppressWarnings("unused") //Used by ORM.
-	@Parent private Key<Game> game;
+	//Transient for performance, not needed on the client. Objectify ignores, but GWT doesn't.
+	@Parent private transient Key<Game> game;
     
 	public String source;
     

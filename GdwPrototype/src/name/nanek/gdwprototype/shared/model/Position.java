@@ -22,9 +22,13 @@ public class Position implements Serializable {
 	@SuppressWarnings("unused") //Used by ORM.
 	@Id private Long id;
 	
-	@Parent Key<Game> game;
+	@SuppressWarnings("unused") //Used by ORM.
+	//Transient for performance, not needed on the client. Objectify ignores, but GWT doesn't.
+	@Parent private transient Key<Game> game;
 	
-	private Key<Marker> marker;
+	//Transient for performance, not needed on the client. Objectify ignores, but GWT doesn't.
+	//TODO send this instead of a map of position to marker? can lookup marker on client from gamedisplaydata marker ids
+	private transient Key<Marker> marker;
 
 	private int row;
 

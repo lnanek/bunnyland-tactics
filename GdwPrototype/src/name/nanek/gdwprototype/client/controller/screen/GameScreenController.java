@@ -2,9 +2,9 @@ package name.nanek.gdwprototype.client.controller.screen;
 
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.Map;
 
 import name.nanek.gdwprototype.client.controller.PageController;
+import name.nanek.gdwprototype.client.controller.screen.support.GameScreenBoardController;
 import name.nanek.gdwprototype.client.controller.screen.support.GameScreenDropController;
 import name.nanek.gdwprototype.client.controller.screen.support.VisibilityCalculator;
 import name.nanek.gdwprototype.client.controller.support.ScreenControllers;
@@ -18,9 +18,7 @@ import name.nanek.gdwprototype.client.view.widget.GameSquare;
 import name.nanek.gdwprototype.client.view.widget.PaletteImage;
 import name.nanek.gdwprototype.client.view.widget.TableCellPanel;
 import name.nanek.gdwprototype.shared.model.Marker;
-import name.nanek.gdwprototype.shared.model.DefaultMarkers;
 import name.nanek.gdwprototype.shared.model.Player;
-import name.nanek.gdwprototype.shared.model.Position;
 
 import com.allen_sauer.gwt.dnd.client.DragEndEvent;
 import com.allen_sauer.gwt.dnd.client.DragHandler;
@@ -200,7 +198,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		}
 	}
 
-	private GameScreen gameScreen;
+	public GameScreen gameScreen;
 
 	private Long gameId;
 
@@ -212,7 +210,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 
 	private PageController pageController;
 	
-	private HashSet<GameSquare> draggables;
+	public HashSet<GameSquare> draggables;
 	
 	private boolean refreshGameBoardNeeded = true;
 
@@ -223,6 +221,8 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 	private Integer lastPlayedSoundForMoveCount;
 	
 	private TableCellPanel dragSource;
+	
+	private GameScreenBoardController boardController;
 	
 	//TODO don't refresh when window blurred
 	//detecting refocus seems dicey, chrome isn't calling properly when switch back to tab from another, 
@@ -250,13 +250,17 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 	}
 	
 	public void moveMarker(Integer sourceRow, Integer sourceColumn, Integer destRow, Integer destColumn,
-			Long movedMarkerId, final Marker replacedMarker) {
+			GameSquare draggedImage, final Marker replacedMarker) {
 
 		if ( null == pageController ) return;
 		
 		//TODO clearing and restoring draggables isn't needed for map building
 		clearDraggables();
+		
+		boardController.moveMarker(sourceRow, sourceColumn, destRow, destColumn,
+				draggedImage);
 
+		Long movedMarkerId = draggedImage.marker.getId();
 		pageController.gameService.moveMarker(gameId, sourceRow, sourceColumn, destRow, destColumn,
 				movedMarkerId, new MoveMarkerCallback());
 	}
@@ -420,49 +424,13 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		//Clear board.
 		// TODO more efficient algorithm? right now we make some things undraggable just to make them draggable again
 		clearDraggables();
+
 		//TODO keep track of game move number and only redo board if new move number?
-		//BUG because it is clearing everything and redoing it every update now, the unit animations restart from 0 before finishing
-		for (int row = 0; row < boardHeight; row++) {
-			for (int col = 0; col < boardWidth; col++) {				
-				TableCellPanel panel = (TableCellPanel) gameScreen.gameBoard.getWidget(row, col);
-				panel.clear();
-			}
-		}
 
 		// TODO update visibility immediately on move instead of waiting for server update?		
 		boolean[][] visibleSquares = VisibilityCalculator.calculateVisibility(fogOfWarAs, boardWidth, boardHeight, info.positions);
-
-		//Black out areas not visible using fog of war.
-		for (int row = 0; row < boardHeight; row++) {
-			for (int col = 0; col < boardWidth; col++) {	
-				if ( !visibleSquares[row][col] ) {
-					TableCellPanel panel = (TableCellPanel) gameScreen.gameBoard.getWidget(row, col);
-					Image image = new GameSquare(DefaultMarkers.FOG_OF_WAR, info.currentPlayersTurn);
-					panel.add(image);
-				}
-			}
-		}
-		
-		for (Map.Entry<Position, Marker> entry : info.positions.entrySet() ) {
-			Position position = entry.getKey();
-			Marker marker = entry.getValue();
-			int row = position.getRow();
-			int col = position.getColumn();
-			if ( !visibleSquares[row][col] ) {
-				continue;
-			}
-			
-			TableCellPanel panel = (TableCellPanel) gameScreen.gameBoard.getWidget(row, col);
-			GameSquare image = new GameSquare(marker, info.currentPlayersTurn);
-			panel.add(image);
-			if ( null != info.playingAs && info.isUsersTurn ) {
-				if ( displayInfo.game.isMap() || (!displayInfo.playInfo.ended && marker.player == displayInfo.playInfo.playingAs && null != marker.movementRange && marker.movementRange > 0 )) {
-					dragController.makeDraggable(image);
-					draggables.add(image);
-				}
-			}
-		}
-		
+		boardController.setPositions(info, dragController, visibleSquares);
+				
 		gameScreen.content.setVisible(true);
 	}
 
@@ -571,6 +539,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		if ( null == pageController ) return;
 		
 		displayInfo = info;
+		boardController = new GameScreenBoardController(this, info);
 		
 		String type = info.game.isMap() ? "Creating Map " : "Playing Game ";
 		pageController.setScreenTitle(type + info.game.getDisplayName(false));
