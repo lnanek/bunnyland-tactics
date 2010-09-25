@@ -65,7 +65,7 @@ public class GameScreenDropController extends SimpleDropController {
 		}
 		
 		GameSquare removedSquare = setSquare(draggedImage);
-		Marker removedMarker = null != removedSquare ? removedSquare.marker : null;
+		Marker removedMarker = null != removedSquare ? removedSquare.previousMarker : null;
 
 		gameScreenController.moveMarker(source.getRow(), source.getColumn(), dropTarget.getRow(), dropTarget.getColumn(),
 				draggedImage, removedMarker);
@@ -74,10 +74,10 @@ public class GameScreenDropController extends SimpleDropController {
 	
 	private GameSquare setSquare(GameSquare newSquare) {
 		GameSquare removedSquare = null;
-		Marker newMarker = newSquare.marker;
+		Marker newMarker = newSquare.previousMarker;
 		for( Widget check : dropTarget ) {
 			GameSquare checkSquare = (GameSquare) check;
-			if ( checkSquare.marker.getLayer() == newMarker.getLayer() ){
+			if ( checkSquare.previousMarker.getLayer() == newMarker.getLayer() ){
 				removedSquare = checkSquare;
 				dropTarget.remove(checkSquare);
 			}
@@ -118,7 +118,7 @@ public class GameScreenDropController extends SimpleDropController {
 			int destRow = dropTarget.getRow();
 			
 			GameSquare draggedImage = (GameSquare) context.draggable;
-			int movementRange = draggedImage.marker.movementRange;
+			int movementRange = draggedImage.previousMarker.movementRange;
 			int rowDistance = Math.abs(sourceRow - destRow);
 			int colDistance = Math.abs(sourceCol - destCol);
 			int totalDistance = rowDistance + colDistance;
@@ -144,9 +144,9 @@ public class GameScreenDropController extends SimpleDropController {
 		// from it.
 		if (sourceIsPalette) {
 			GameSquare draggedImage = (GameSquare) context.draggable;
-			GameSquare newImage = new GameSquare(draggedImage.marker, null);			
+			GameSquare newImage = new GameSquare(draggedImage.previousMarker, null);			
 			GameSquare removedSquare = setSquare(newImage);
-			Marker removedMarker = null != removedSquare ? removedSquare.marker : null;
+			Marker removedMarker = null != removedSquare ? removedSquare.previousMarker : null;
 
 			//We clear the draggables and reset them based on game state anyway. So commented out.
 			//context.dragController.makeDraggable(newImage);

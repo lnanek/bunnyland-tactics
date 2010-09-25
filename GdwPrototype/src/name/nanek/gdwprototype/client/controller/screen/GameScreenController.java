@@ -115,7 +115,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 				if ( gameSquare instanceof PaletteImage ) {
 					return;
 				}
-				Marker marker = gameSquare.marker;
+				Marker marker = gameSquare.previousMarker;
 				
 				TableCellPanel sourcePanel = (TableCellPanel) gameSquare.getParent();
 
@@ -260,7 +260,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		boardController.moveMarker(sourceRow, sourceColumn, destRow, destColumn,
 				draggedImage);
 
-		Long movedMarkerId = draggedImage.marker.getId();
+		Long movedMarkerId = draggedImage.previousMarker.getId();
 		pageController.gameService.moveMarker(gameId, sourceRow, sourceColumn, destRow, destColumn,
 				movedMarkerId, new MoveMarkerCallback());
 	}
