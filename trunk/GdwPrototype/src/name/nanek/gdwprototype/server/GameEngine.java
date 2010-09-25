@@ -49,11 +49,14 @@ public class GameEngine {
 	public GameUpdateInfo createPlayInfo(Game game, Objectify em) {
 		if ( null == game ) return null;
 		
-		//Create the array of position info.
-		//List<Position> positionList =  em.query(Position.class).filter("game", game).list();
-		//Position[] positions = positionList.toArray(new Position[] {});
+		return createPlayInfo(game, getPositionsMap(em, game));
+	}
+	
+	public GameUpdateInfo createPlayInfo(Game game, Map<Position, Marker> positions) {
+		if ( null == game ) return null;
 		
 		//Determine player/turn info.
+		//TODO just send the whole game object?
 		boolean needsSecondPlayer = null == game.getSecondPlayerUserId();		
 		UserService userService = UserServiceFactory.getUserService();
 		User user = userService.getCurrentUser();
@@ -67,14 +70,14 @@ public class GameEngine {
 				userPlayingAs = Player.TWO;				
 			}
 		}	
-		GameUpdateInfo info = new GameUpdateInfo(getPositionsMap(em, game), isUsersTurn, userPlayingAs, needsSecondPlayer, 
+		GameUpdateInfo info = new GameUpdateInfo(positions, isUsersTurn, userPlayingAs, needsSecondPlayer, 
 				game.getWinner(), 
 				game.isEnded(), game.getMoveCount(), game.isUnitDiedLastTurn(),
 				game.isCarrotEatenLastTurn(), game.getCurrentUsersTurn());
 		return info;
 	}
 	
-	public Game moveMarker(Long gameId, Integer sourceRow, Integer sourceColumn, Integer destRow, Integer destColumn,
+	public GameUpdateInfo moveMarker(Long gameId, Integer sourceRow, Integer sourceColumn, Integer destRow, Integer destColumn,
 			Long markerId, User user, Objectify em) {
 		
 		Key<Game> gameKey = new Key<Game>(Game.class, gameId);
@@ -131,11 +134,16 @@ public class GameEngine {
 						unitDiedThisTurn = true;
 					}
 				}
-				removePosition(removeCandidatePosition, em, game);
+				removePosition(removeCandidatePosition, em, game, positions);
 			}
 			
 			Position position = new Position(destRow, destColumn, movedMarkerKey, gameKey);
 			em.put(position);
+			
+			//Keep in memory positions map up to date. With datastore a query during a transaction returns the data
+			//at the start of the transaction, so we can't query for the updated state later in this transaction.
+			positions.put(position, movedMarker);
+			
 			changedPositions = true;
 		}
 
@@ -146,11 +154,7 @@ public class GameEngine {
 		}
 
 		//Now that move is complete, if a carrot was eaten, generate a new unit if a spot is available.
-		if ( carrotEatenThisTurn ) {
-			
-			//BUG we're in a transaction, so this returns board state from before the move
-			positions = getPositionsMap(em, game);
-			
+		if ( carrotEatenThisTurn ) {			
 			Point homeWarrenLocation = findHomeWarren(game.getCurrentUsersTurn(), positions);
 			if ( null != homeWarrenLocation ) {
 				Point newUnitLocation = findNearbyOpenSpot(homeWarrenLocation, 
@@ -163,6 +167,7 @@ public class GameEngine {
 					Key<Marker> markerKey = new Key<Marker>(gameKey, Marker.class, marker.getId());
 					Position position = new Position(newUnitLocation.row, newUnitLocation.column, markerKey, gameKey);
 					em.put(position);
+					positions.put(position, marker);
 				}
 			}	
 		}
@@ -188,7 +193,7 @@ public class GameEngine {
 		}
 		
 		em.put(game);
-		return game;
+		return createPlayInfo(game, positions);
 	}
 
 	private Map<Position, Marker> getPositionsMap(Objectify em, Game game) {
@@ -349,12 +354,13 @@ public class GameEngine {
 
 	private Position removeAnyPosition(Integer sourceRow, Integer sourceColumn, Objectify em, Game game, Map<Position, Marker> positions) {
 		Position position = findAnyPosition(sourceRow, sourceColumn, positions);
-		return removePosition(position, em, game);
+		return removePosition(position, em, game, positions);
 	}	
 
-	private Position removePosition(Position position, Objectify em, Game game) {
+	private Position removePosition(Position position, Objectify em, Game game, Map<Position, Marker> positions) {
 		if ( null != position ) {
 			em.delete(position);
+			positions.remove(position);
 			return position;
 		}
 		return null;
