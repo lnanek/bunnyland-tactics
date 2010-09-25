@@ -130,7 +130,7 @@ public class GameScreenBoardController {
 	public void moveMarker(Integer sourceRow, Integer sourceCol, Integer destRow, Integer destColumn,
 			GameSquare draggedImage) {
 
-		int layer = draggedImage.marker.getLayer().ordinal();
+		int layer = draggedImage.previousMarker.getLayer().ordinal();
 
 		if ( null != draggedImage && null != sourceRow && null != sourceCol ) {
 			squares[sourceRow][sourceCol][layer] = null;
