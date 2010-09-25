@@ -42,15 +42,9 @@ public class GameServiceImpl extends RemoteServiceServlet implements GameService
 			
 		Objectify em = DbUtil.beginTransaction();
 		try {
-			gameEngine.moveMarker(gameId, sourceRow, sourceColumn, destRow, destColumn, markerId, user, em);
+			GameUpdateInfo update = gameEngine.moveMarker(gameId, sourceRow, sourceColumn, destRow, destColumn, markerId, user, em);
 			em.getTxn().commit();
-			
-			//Query returns data from start of transaction, so we need a new transaction to build updated display data.
-			//Unfortunately this means the client might get an error returned despite a move actually happening.
-			//But I guess that was always possible via  network error before as well.
-			em = DbUtil.beginTransaction();
-			Game game = em.get(Game.class, gameId);
-			return gameEngine.createPlayInfo(game, em);
+			return update;
 		} finally {
 			rollbackIfNeeded(em);
 		}		
