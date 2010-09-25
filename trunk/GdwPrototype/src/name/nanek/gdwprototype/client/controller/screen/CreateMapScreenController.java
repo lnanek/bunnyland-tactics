@@ -7,9 +7,9 @@ import name.nanek.gdwprototype.client.view.Page.Background;
 import name.nanek.gdwprototype.client.view.screen.CreateMapScreen;
 import name.nanek.gdwprototype.client.view.widget.GameAnchor;
 import name.nanek.gdwprototype.shared.FieldVerifier;
+import name.nanek.gdwprototype.shared.model.DefaultMarkers;
 import name.nanek.gdwprototype.shared.model.Game;
 import name.nanek.gdwprototype.shared.model.Marker;
-import name.nanek.gdwprototype.shared.model.DefaultMarkers;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;

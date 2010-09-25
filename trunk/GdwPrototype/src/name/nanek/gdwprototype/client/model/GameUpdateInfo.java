@@ -17,6 +17,7 @@ public class GameUpdateInfo implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
+	//TODO just lookup marker from display info using the key on each position? would result in half the data needed each update
 	public Map<Position, Marker> positions;
 	
 	public boolean isUsersTurn;
