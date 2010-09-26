@@ -4,6 +4,8 @@
 package name.nanek.gdwprototype.server;
 
 import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
 
 import name.nanek.gdwprototype.shared.exceptions.UserFriendlyMessageException;
 import name.nanek.gdwprototype.shared.model.Game;
@@ -20,7 +22,6 @@ import com.googlecode.objectify.Query;
  *
  */
 public class DataAccessor {
-	//TODO some of the displayed collections in the UI are shuffling order on update. use ordered collections here and make sure sorted by something, like id/age at least
 
 	public Iterable<Game> getMaps(Objectify ofy) {
 		//Games created as a map and published (ended).
@@ -34,24 +35,33 @@ public class DataAccessor {
 	public Iterator<Game> getJoinableGames(Objectify ofy, String userId) {
 		//Joinable if created as a game and user is a player or there is no second player yet.
 		
-		Query<Game> playingAsFirstPlayer = ofy.query(Game.class)
-			.filter("map = ", false)
-			.filter("ended = ", false)
-			.filter("firstPlayerUserId = ", userId);
+		Set<Game> sortedAndDuplicatesRemoved = new TreeSet<Game>();
+
+		{
+			Query<Game> playingAsFirstPlayer = ofy.query(Game.class)
+				.filter("map = ", false)
+				.filter("ended = ", false)
+				.filter("firstPlayerUserId = ", userId);
+			sortedAndDuplicatesRemoved.addAll(playingAsFirstPlayer.list());
+		}
 		
-		Query<Game> playingAsSecondPlayer = ofy.query(Game.class)
-			.filter("map = ", false)
-			.filter("ended = ", false)
-			.filter("secondPlayerUserId = ", userId);
+		{
+			Query<Game> playingAsSecondPlayer = ofy.query(Game.class)
+				.filter("map = ", false)
+				.filter("ended = ", false)
+				.filter("secondPlayerUserId = ", userId);
+			sortedAndDuplicatesRemoved.addAll(playingAsSecondPlayer.list());
+		}
 		
-		Query<Game> needsSecondPlayer = ofy.query(Game.class)
-			.filter("map = ", false)
-			.filter("ended = ", false)
-			.filter("secondPlayerUserId = ", null);
+		{
+			Query<Game> needsSecondPlayer = ofy.query(Game.class)
+				.filter("map = ", false)
+				.filter("ended = ", false)
+				.filter("secondPlayerUserId = ", null);
+			sortedAndDuplicatesRemoved.addAll(needsSecondPlayer.list());
+		}
 		
-		return Iterators.concat(playingAsFirstPlayer.iterator(), 
-				playingAsSecondPlayer.iterator(),
-				needsSecondPlayer.iterator());
+		return sortedAndDuplicatesRemoved.iterator();
 	}	
 
 	public Iterator<Game> getObservableGames(Objectify ofy, final String userId) {
