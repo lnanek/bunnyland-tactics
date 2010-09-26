@@ -1,4 +1,4 @@
-package name.nanek.gdwprototype.server;
+package name.nanek.gdwprototype.server.support;
 
 import name.nanek.gdwprototype.shared.model.Game;
 import name.nanek.gdwprototype.shared.model.Marker;
@@ -30,7 +30,7 @@ public final class DbUtil {
 		return ObjectifyService.beginTransaction();
 	}
 
-	static void rollbackIfNeeded(Objectify ofy) {
+	public static void rollbackIfNeeded(Objectify ofy) {
 		if ( null == ofy ) {
 			return;
 		}
