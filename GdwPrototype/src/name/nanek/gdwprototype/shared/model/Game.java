@@ -6,6 +6,8 @@ import javax.persistence.Id;
 
 import name.nanek.gdwprototype.shared.model.support.StringUtil;
 
+import com.google.appengine.api.users.User;
+
 /**
  * A game or map.
  * 
@@ -42,6 +44,19 @@ public class Game implements Serializable, Comparable<Game> {
 	private int boardWidth = 8;
 
 	private int boardHeight = 8;
+
+	public int carrotGenerationPeriod = 3;
+
+	public int turnsUntilNextCarrotGenerated = carrotGenerationPeriod;	
+	
+	public Game() {
+	}
+	
+	public Game(String name, User user) {
+		setCreatorNickname(user.getNickname());
+		setName(name);
+		setFirstPlayerUserId(user.getUserId());
+	}
 	
 	public int getBoardWidth() {
 		return boardWidth;

@@ -203,7 +203,7 @@ public class CreateGameScreenController extends ScreenController {
 		screen.createGameButton.setEnabled(false);
 		
 		//Send data to server.
-		pageController.gameService.createGameOrMap(gameName, null, null, null, mapId, new CreateGameCallback());
+		pageController.gameService.createGame(gameName, mapId, new CreateGameCallback());
 	}
 
 	private void requestRefreshMapList() {

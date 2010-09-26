@@ -118,7 +118,8 @@ public class Engine {
 			
 			//TODO do checks on client side too for better ux?
 						
-			Position removeCandidatePosition = PositionUtil.find(positions, new LocationPredicate(destRow, destColumn, movedMarker.getLayer()));
+			Position removeCandidatePosition = 
+				PositionUtil.find(positions, new LocationPredicate(destRow, destColumn, movedMarker.getLayer()));
 			if ( null != removeCandidatePosition ) {
 				
 				//When map building, ground layer markers replace ground layer markers and 
@@ -166,51 +167,73 @@ public class Engine {
 			changedPositions = true;
 		}
 
-		//Now that move is complete, if a carrot was eaten, generate a new unit if a spot is available.
-		if ( carrotEatenThisTurn ) {			
-			Position homeWarrenLocation = PositionUtil.find(positions, new HomeWarrenPredicate(game.getCurrentPlayersTurn()));
-			if ( null != homeWarrenLocation ) {
-				Position newUnitLocation = PositionUtil.createNearbyOpenSpot(homeWarrenLocation, 
-						positions, game.getBoardHeight(), 
-						game.getBoardWidth());
-				
-				if ( null != newUnitLocation ) {
-					List<Marker> markers = em.query(Marker.class).ancestor(game).list();
-					Marker marker = MarkerUtil.getNewPlayerPiece(markers, game.getCurrentPlayersTurn());
-					Key<Marker> markerKey = new Key<Marker>(gameKey, Marker.class, marker.getId());
+		if ( !game.isMap() ) {
+
+			//Now that move is complete, if a carrot was eaten, generate a new unit if a spot is available.
+			if ( carrotEatenThisTurn ) {			
+				Position homeWarrenLocation = PositionUtil.find(positions, new HomeWarrenPredicate(game.getCurrentPlayersTurn()));
+				if ( null != homeWarrenLocation ) {
+					Position newUnitLocation = PositionUtil.createNearbyOpenSpot(homeWarrenLocation, 
+							positions, game.getBoardHeight(), 
+							game.getBoardWidth());
 					
-					newUnitLocation.setGame(gameKey);
-					newUnitLocation.setMarker(markerKey);					
-					em.put(newUnitLocation);
-					positions.put(newUnitLocation, marker);
+					if ( null != newUnitLocation ) {
+						List<Marker> markers = em.query(Marker.class).ancestor(game).list();
+						Marker marker = MarkerUtil.getNewPlayerPiece(markers, game.getCurrentPlayersTurn());
+						addPosition(em, gameKey, positions, newUnitLocation, marker);
+					}
+				}	
+			}
+			
+			Player enemyPlayer = Player.other(game.getCurrentPlayersTurn());
+			if ( enemyLostHome ) {
+				int enemyHomes = MarkerUtil.count(positions, Marker.Role.HOME, enemyPlayer);
+				if ( 0 == enemyHomes ) {
+					winGame(game);	
 				}
-			}	
-		}
-		
-		Player enemyPlayer = Player.other(game.getCurrentPlayersTurn());
-		if ( enemyLostHome ) {
-			int enemyHomes = MarkerUtil.count(positions, Marker.Role.HOME, enemyPlayer);
-			if ( 0 == enemyHomes ) {
-				winGame(game);	
+			} else if ( unitDiedThisTurn ) {
+				int enemyMovablePieces = MarkerUtil.countMovable(positions, enemyPlayer);
+				if ( 0 == enemyMovablePieces ) {
+					winGame(game);	
+				}
 			}
-		} else if ( unitDiedThisTurn ) {
-			int enemyMovablePieces = MarkerUtil.countMovable(positions, enemyPlayer);
-			if ( 0 == enemyMovablePieces ) {
-				winGame(game);	
+			
+			//Generate a carrot if needed.
+			if ( game.carrotGenerationPeriod > 0 ) {
+				game.turnsUntilNextCarrotGenerated--;
+				if ( game.turnsUntilNextCarrotGenerated <= 0 ) {
+					game.turnsUntilNextCarrotGenerated = game.carrotGenerationPeriod;
+					Position newCarrotPosition = PositionUtil.createOnRandomUnoccupiedGrass(positions);
+					if ( null != newCarrotPosition ) {
+						List<Marker> markers = em.query(Marker.class).ancestor(game).list();
+						Marker carrot = MarkerUtil.getMarker(markers, Marker.Role.CARROT, null);
+						addPosition(em, gameKey, positions, newCarrotPosition, carrot);
+					}	
+				}
 			}
-		}
-		
-		if ( changedPositions ) {
-			game.incrementMoveCount();
-			if ( !game.isMap() ) {
-				game.setUnitDiedLastTurn(unitDiedThisTurn);
-				game.setCarrotEatenLastTurn(carrotEatenThisTurn);
-				game.setNextUsersTurn();
+			
+			if ( changedPositions ) {
+				game.incrementMoveCount();
+				if ( !game.isMap() ) {
+					game.setUnitDiedLastTurn(unitDiedThisTurn);
+					game.setCarrotEatenLastTurn(carrotEatenThisTurn);
+					game.setNextUsersTurn();
+				}
 			}
 		}
 		
 		em.put(game);
 		return createPlayInfo(game, positions);
+	}
+
+	private void addPosition(Objectify em, Key<Game> gameKey, Map<Position, Marker> positions, Position position,
+			Marker marker) {
+		Key<Marker> markerKey = new Key<Marker>(gameKey, Marker.class, marker.getId());
+		
+		position.setGame(gameKey);
+		position.setMarker(markerKey);					
+		em.put(position);
+		positions.put(position, marker);
 	}
 
 	private void winGame(Game game) {

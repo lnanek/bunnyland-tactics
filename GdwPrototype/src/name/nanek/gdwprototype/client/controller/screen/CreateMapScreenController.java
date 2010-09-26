@@ -116,6 +116,8 @@ public class CreateMapScreenController extends ScreenController {
 		
 		int height = FieldVerifier.validateAndParseInt("Height", screen.boardHeightField, 2, 100);
 		int width = FieldVerifier.validateAndParseInt("Width", screen.boardWidthField, 2, 100);
+		int generateCarrotPeriod = FieldVerifier.validateAndParseInt("Turns Per New Carrot", 
+				screen.generateCarrotPeriodField, 0, 1000);
 
 		for( Map.Entry<Marker, TextBox> markerVisionRangeEntry : screen.playingPieceToVisibilityField.entrySet() ) {
 			Marker marker = markerVisionRangeEntry.getKey();
@@ -132,7 +134,8 @@ public class CreateMapScreenController extends ScreenController {
 		screen.createMapButton.setEnabled(false);
 		
 		//Send data to server.
-		pageController.gameService.createGameOrMap(gameName, width, height, DefaultMarkers.MAP_MAKING_PIECES, null, new CreateMapCallback());
+		pageController.gameService.createMap(gameName, generateCarrotPeriod, width, height,  
+				DefaultMarkers.MAP_MAKING_PIECES, new CreateMapCallback());
 	}
 		
 	@Override

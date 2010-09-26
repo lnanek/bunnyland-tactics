@@ -25,6 +25,7 @@ public class CreateMapScreen {
 	public final TextBox createMapNameField = new TextBox();
 	public final TextBox boardWidthField = new TextBox();
 	public final TextBox boardHeightField = new TextBox();
+	public final TextBox generateCarrotPeriodField = new TextBox();
 	public final Map<Marker, TextBox> playingPieceToVisibilityField = new HashMap<Marker, TextBox>();
 	public final Map<Marker, TextBox> playingPieceToMovementField = new HashMap<Marker, TextBox>();
 	
@@ -41,6 +42,9 @@ public class CreateMapScreen {
 		boardHeightField.setText("8");
 		content.add(ScreenUtil.labelAndWrap("Board Height: ", boardHeightField));
 
+		generateCarrotPeriodField.setText("3");
+		content.add(ScreenUtil.labelAndWrap("Turns Per New Carrot (0 for no new carrots): ", generateCarrotPeriodField));
+		
 		//TODO use a table and have columns for visibility and movement?
 		for ( Marker marker : DefaultMarkers.PLAYING_PIECES ) {
 			//Create visibility field for piece.

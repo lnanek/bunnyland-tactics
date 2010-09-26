@@ -25,8 +25,6 @@ public interface GameServiceAsync {
 
 	void getObservableGameNames(AsyncCallback<Game[]> callback) throws GameException;
 
-	void createGameOrMap(String input, Integer boardWidth, Integer boardHeight, Marker[] markers, Long mapId, AsyncCallback<Game> callback) throws GameException;
-
 	void getGameListingById(Long id, AsyncCallback<Game> callback) throws GameException;
 
 	void getPositionsByGameId(Long id, AsyncCallback<GameUpdateInfo> callback) throws GameException;
@@ -39,4 +37,9 @@ public interface GameServiceAsync {
 	void attemptToJoinGame(Long id, AsyncCallback<Game> callback) throws GameException;
 	
 	void getDisplayInfo(Long id, AsyncCallback<GameDisplayInfo> callback) throws GameException;
+	
+	void createMap(String name, Integer carrotGenerationPeriod, Integer boardWidth, Integer boardHeight,
+			Marker[] markers, AsyncCallback<Game> callback) throws GameException;
+
+	void createGame(String name, Long mapId, AsyncCallback<Game> callback) throws GameException;
 }

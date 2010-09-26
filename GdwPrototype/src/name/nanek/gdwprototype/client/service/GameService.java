@@ -35,13 +35,16 @@ public interface GameService extends RemoteService {
 
 	GameDisplayInfo getDisplayInfo(Long id) throws GameException;
 
-	Game createGameOrMap(String name, Integer boardWidth, Integer boardHeight, Marker[] markers, Long mapId) throws GameException;
-
 	GameUpdateInfo moveMarker(Long gameId, Integer sourceRow, Integer sourceColumn, Integer destRow,
 			Integer destColumn, Long markerId) throws GameException;
 	
 	String getLoginUrlIfNeeded(String returnUrl) throws GameException;
 	
 	Game attemptToJoinGame(Long id) throws GameException;
+
+	Game createMap(String name, Integer carrotGenerationPeriod, Integer boardWidth, Integer boardHeight,
+			Marker[] markers) throws GameException;
+
+	Game createGame(String name, Long mapId) throws GameException;
 
 }

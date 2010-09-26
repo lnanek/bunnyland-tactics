@@ -186,57 +186,74 @@ public class ServiceImpl extends RemoteServiceServlet implements GameService {
 	}
 
 	@Override
-	public Game createGameOrMap(String name, Integer boardWidth, Integer boardHeight, Marker[] markers, Long mapId) throws GameException {
+	public Game createMap(String name, Integer carrotGenerationPeriod, Integer boardWidth, Integer boardHeight, Marker[] markers) throws GameException {
 		FieldVerifier.validateGameName(name);
 
 		User user = AppEngineUtil.requireUser();
 		Objectify createOfy = DbUtil.beginTransaction();
 		try {
-			
-			Game game = new Game();
-			game.setCreatorNickname(user.getNickname());
-			game.setName(name);
-			game.setFirstPlayerUserId(user.getUserId());
-			game.setEnded(false);
-			if ( null == mapId ) {
-				game.setMap(true);
-			}
-			Key<Game> gameKey = createOfy.put(game);
-			
-			//If we're a map, we use the settings passed to us and have no positions.
-			if ( null == mapId ) {
-				for ( Marker marker : markers ) {
-					marker.setGame(gameKey);
-					createOfy.put(marker);
-				}
-			} else {
-				//Otherwise we're creating a game and have a map to start from.
-				//Copy settings and positions from map.
-				//Each game/map is a separate entity group, so we need a second transaction for this.
-				Objectify referenceOfy = DbUtil.beginTransaction();
-				try {
-					Game map = dataAccessor.requireMap(this, referenceOfy, mapId);		
-					for ( Marker mapMarker :  referenceOfy.query(Marker.class).ancestor(map) ) {
-						Marker gameMarker = mapMarker.copy();
-						gameMarker.setGame(gameKey);
-						Key<Marker> gameMarkerKey = createOfy.put(gameMarker);
-						
-						for ( Position mapPosition :  referenceOfy.query(Position.class).ancestor(map).filter("marker", mapMarker) ) {
-							Position gamePosition = mapPosition.copy();
-							gamePosition.setGame(gameKey);
-							gamePosition.setMarker(gameMarkerKey);
-							createOfy.put(gamePosition);
-						}
-					}
-				} finally {
-					DbUtil.rollbackIfNeeded(referenceOfy);
-				}
-			}
-			
+			Game map = new Game(name, user);
+			map.setMap(true);
+			map.setBoardWidth(boardWidth);
+			map.setBoardHeight(boardHeight);
+			map.carrotGenerationPeriod = carrotGenerationPeriod;
+
+			Key<Game> mapKey = createOfy.put(map);
+			for ( Marker marker : markers ) {
+				marker.setGame(mapKey);
+				createOfy.put(marker);
+			}		
 			createOfy.getTxn().commit();			
-			return game;
+			return map;
 		} finally {
 			DbUtil.rollbackIfNeeded(createOfy);
+		}
+	}
+
+
+
+	@Override
+	public Game createGame(String name, Long mapId) throws GameException {
+		FieldVerifier.validateGameName(name);
+
+		User user = AppEngineUtil.requireUser();
+		
+		//Each map or game is in a separate entity group so can't be accessed from the same transaction.
+		//So we need two transactions to copy settings from the map into the newly created game.
+		Objectify referenceOfy = DbUtil.beginTransaction();
+		try {
+			Game map = dataAccessor.requireMap(this, referenceOfy, mapId);	
+
+			Objectify createOfy = DbUtil.beginTransaction();
+			try {
+			
+				Game game = new Game(name, user);
+				game.setBoardHeight(map.getBoardHeight());
+				game.setBoardWidth(map.getBoardWidth());
+				game.turnsUntilNextCarrotGenerated = game.carrotGenerationPeriod = map.carrotGenerationPeriod;
+				Key<Game> gameKey = createOfy.put(game);
+				
+				for ( Marker mapMarker :  referenceOfy.query(Marker.class).ancestor(map) ) {
+					Marker gameMarker = mapMarker.copy();
+					gameMarker.setGame(gameKey);
+					Key<Marker> gameMarkerKey = createOfy.put(gameMarker);
+					
+					for ( Position mapPosition :  referenceOfy.query(Position.class).ancestor(map).filter("marker", mapMarker) ) {
+						Position gamePosition = mapPosition.copy();
+						gamePosition.setGame(gameKey);
+						gamePosition.setMarker(gameMarkerKey);
+						createOfy.put(gamePosition);
+					}
+				}
+				
+				createOfy.getTxn().commit();			
+				return game;
+				
+			} finally {
+				DbUtil.rollbackIfNeeded(createOfy);
+			}
+		} finally {
+			DbUtil.rollbackIfNeeded(referenceOfy);
 		}
 	}
 
