@@ -1,11 +1,9 @@
 package name.nanek.gdwprototype.client.model;
 
 import java.io.Serializable;
-import java.util.Map;
 
 import name.nanek.gdwprototype.shared.model.Marker;
 import name.nanek.gdwprototype.shared.model.Player;
-import name.nanek.gdwprototype.shared.model.Position;
 
 /**
  * Contains information needed to update a game board for a certain turn of play.
@@ -17,10 +15,9 @@ public class GameUpdateInfo implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
-	//TODO instead of sending markers, maybe lookup marker from display info saved on client using the key on each position? 
-	//would result in half the data needed each update
-	//even better, just send a Long[][][] with each marker ID or null for each x, y, and layer?
-	public Map<Position, Marker> positions;
+	//TODO consider sending long IDs and looking up from markers sent to client with game display info to improve performance
+	//TODO consider using a map keyed by x, y, layer instead of an array, might be quicker to send than a sparse array like this
+	public Marker[][][] positions;
 	
 	//TODO a lot of the below data duplicates fields on Game
 	//maybe send game itself instead, or make this a persisted child of game instead of having the needed properties on game itself
@@ -46,7 +43,7 @@ public class GameUpdateInfo implements Serializable {
 	private GameUpdateInfo() {
 	}
 
-	public GameUpdateInfo(Map<Position, Marker> positions, boolean isUsersTurn, Player playingAs, boolean needsSecondPlayer, 
+	public GameUpdateInfo(Marker[][][] positions, boolean isUsersTurn, Player playingAs, boolean needsSecondPlayer, 
 			Player winner, boolean ended,
 			int moveCount, boolean unitDiedLastTurn, boolean carrotEatenLastTurn, Player currentPlayersTurn) {
 		this.positions = positions;

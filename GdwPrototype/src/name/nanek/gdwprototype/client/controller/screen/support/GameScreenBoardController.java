@@ -1,7 +1,5 @@
 package name.nanek.gdwprototype.client.controller.screen.support;
 
-import java.util.Map;
-
 import name.nanek.gdwprototype.client.controller.screen.GameScreenController;
 import name.nanek.gdwprototype.client.model.GameDisplayInfo;
 import name.nanek.gdwprototype.client.model.GameUpdateInfo;
@@ -9,7 +7,6 @@ import name.nanek.gdwprototype.client.view.widget.GameSquare;
 import name.nanek.gdwprototype.client.view.widget.TableCellPanel;
 import name.nanek.gdwprototype.shared.model.DefaultMarkers;
 import name.nanek.gdwprototype.shared.model.Marker;
-import name.nanek.gdwprototype.shared.model.Position;
 
 import com.allen_sauer.gwt.dnd.client.DragController;
 
@@ -20,7 +17,7 @@ import com.allen_sauer.gwt.dnd.client.DragController;
  *
  */
 public class GameScreenBoardController {
-	//TODO this is very efficiency at avoiding DOM calls, but it can get out of sync with the actual DOM
+	//TODO this is very efficient at avoiding DOM calls, but it can get out of sync with the actual DOM
 	//maybe query the TableCellPanel instances more instead of keeping a separate array between updates?
 	//would also remove the need to call this class when something is dragged
 	
@@ -46,11 +43,9 @@ public class GameScreenBoardController {
 	 */
 	public void setPositions(GameUpdateInfo info, DragController dragController, boolean[][] visibleSquares) {
 
-		GameSquare[][][] updatedSquares = new GameSquare[displayInfo.game.getBoardHeight()][displayInfo.game.getBoardWidth()][Marker.Layer.values().length];
-
-		//Handle visibility.
 		for( int row = 0 ; row < visibleSquares.length; row++ ) {
 			for ( int col = 0; col < visibleSquares[row].length; col++ ) {
+				//Just show fog if the player can't see this square.
 				if ( !visibleSquares[row][col] ) {
 					int fogLayer = Marker.Layer.UI.ordinal();
 					GameSquare previousFog = squares[row][col][fogLayer];
@@ -64,60 +59,46 @@ public class GameScreenBoardController {
 						
 						GameSquare newSquare = new GameSquare(DefaultMarkers.FOG_OF_WAR, info.currentPlayersTurn);
 						panel.add(newSquare);
-						updatedSquares[row][col][fogLayer] = newSquare;	
-					} else {
-						updatedSquares[row][col][fogLayer] = previousFog;
-						squares[row][col][fogLayer] = null;
+						squares[row][col][fogLayer] = newSquare;	
 					}
+					continue;
+				}
+				
+				for ( int layer = 0; layer < Marker.Layer.values().length; layer++ ) {
+
+					Marker marker = info.positions[row][col][layer];
+					GameSquare previousSquare = squares[row][col][layer];
+
+					//No marker to show.
+					if ( null == marker ) {
+						//Remove previous marker if needed.
+						if ( null != previousSquare ) {
+							removeSquare(row, col, previousSquare);
+							squares[row][col][layer] = null;
+						}
+						continue;
+					//New marker, but no previous square, so create a square.
+					} else if ( null == previousSquare ) {
+						GameSquare newSquare = new GameSquare(marker, info.currentPlayersTurn);
+						TableCellPanel panel = (TableCellPanel) gameScreenController.gameScreen.gameBoard.getWidget(row, col);
+						panel.add(newSquare);
+						squares[row][col][layer] = newSquare;
+					//New marker and previous square, so update the square.
+					} else {
+						previousSquare.set(marker, info.currentPlayersTurn);
+					//Previous square, but no new marker, so remove it.
+					}
+
+					if ( null != info.playingAs && info.isUsersTurn ) {
+						if ( displayInfo.game.isMap() || (!displayInfo.playInfo.ended && marker.player == displayInfo.playInfo.playingAs && null != marker.movementRange && marker.movementRange > 0 )) {
+							GameSquare draggableSquare = squares[row][col][layer];
+							dragController.makeDraggable(draggableSquare);
+							gameScreenController.draggables.add(draggableSquare);
+						}
+					}	
 				}
 			}
 		}	
-		
-		//Handle all new positions.
-		for (Map.Entry<Position, Marker> entry : info.positions.entrySet() ) {
-			Position position = entry.getKey();
-			Marker marker = entry.getValue();
-			int row = position.getRow();
-			int col = position.getColumn();
-			if ( !visibleSquares[row][col] ){
-				continue;
-			}
-			
-			int layer = marker.getLayer().ordinal();
-
-			GameSquare previousSquare = squares[row][col][layer];
-			squares[row][col][layer] = null;
-			
-			if ( null == previousSquare ) {
-				GameSquare newSquare = new GameSquare(marker, info.currentPlayersTurn);
-				TableCellPanel panel = (TableCellPanel) gameScreenController.gameScreen.gameBoard.getWidget(row, col);
-				panel.add(newSquare);
-				updatedSquares[row][col][layer] = newSquare;
-			} else {
-				previousSquare.set(marker, info.currentPlayersTurn);
-				updatedSquares[row][col][layer] = previousSquare;
-			}
-
-			if ( null != info.playingAs && info.isUsersTurn ) {
-				if ( displayInfo.game.isMap() || (!displayInfo.playInfo.ended && marker.player == displayInfo.playInfo.playingAs && null != marker.movementRange && marker.movementRange > 0 )) {
-					GameSquare draggableSquare = updatedSquares[row][col][layer];
-					dragController.makeDraggable(draggableSquare);
-					gameScreenController.draggables.add(draggableSquare);
-				}
-			}		
-		}
-		
-		//Handle all old positions that weren't replaced.
-		for( int row = 0; row < squares.length; row++  ) {
-			for( int col = 0; col < squares[row].length; col++  ) {
-				for( int layer = 0; layer < squares[row][col].length; layer++  ) {
-					GameSquare removedSquare = squares[row][col][layer];
-					removeSquare(row, col, removedSquare);
-				}
-			}
-		}
-		
-		squares = updatedSquares;
 	}
 	
 	private void removeSquare(Integer row, Integer col, GameSquare removedSquare) {
@@ -132,11 +113,11 @@ public class GameScreenBoardController {
 
 		int layer = draggedImage.previousMarker.getLayer().ordinal();
 
-		if ( null != draggedImage && null != sourceRow && null != sourceCol ) {
+		if ( null != sourceRow && null != sourceCol ) {
 			squares[sourceRow][sourceCol][layer] = null;
 		}		
 		
-		if ( null != draggedImage && null != destRow && null != destColumn ) {
+		if ( null != destRow && null != destColumn ) {
 			squares[destRow][destColumn][layer] = draggedImage;
 		}	
 	}

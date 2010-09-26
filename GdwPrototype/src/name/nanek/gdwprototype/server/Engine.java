@@ -53,7 +53,7 @@ public class Engine {
 		return createPlayInfo(game, getPositionsMap(em, game));
 	}
 	
-	public GameUpdateInfo createPlayInfo(Game game, Map<Position, Marker> positions) {
+	public GameUpdateInfo createPlayInfo(Game game, Map<Position, Marker> positionsMap) {
 		if ( null == game ) return null;
 		
 		//Determine player/turn info.
@@ -71,10 +71,18 @@ public class Engine {
 				userPlayingAs = Player.TWO;				
 			}
 		}	
+		
+		Marker[][][] positions = new Marker[game.getBoardHeight()][game.getBoardWidth()][Marker.Layer.values().length];
+		for (Map.Entry<Position, Marker> entry : positionsMap.entrySet() ) {
+			Marker marker = entry.getValue();
+			Position position = entry.getKey();
+			positions[position.getRow()][position.getColumn()][marker.getLayer().ordinal()] = marker;
+		}
+		
 		GameUpdateInfo info = new GameUpdateInfo(positions, isUsersTurn, userPlayingAs, needsSecondPlayer, 
 				game.getWinner(), 
 				game.isEnded(), game.getMoveCount(), game.isUnitDiedLastTurn(),
-				game.isCarrotEatenLastTurn(), game.getCurrentUsersTurn());
+				game.isCarrotEatenLastTurn(), game.getCurrentPlayersTurn());
 		return info;
 	}
 	
@@ -125,7 +133,7 @@ public class Engine {
 					} else {
 						
 						if ( removeCandidateMarker.role == Marker.Role.HOME ) {
-							if ( removeCandidateMarker.player == game.getCurrentUsersTurn() ) {
+							if ( removeCandidateMarker.player == game.getCurrentPlayersTurn() ) {
 								//Can't go on your own warren.
 								throw new UserFriendlyMessageException("You can't stomp your own warren! Think of the children!");
 							} else {
@@ -150,13 +158,14 @@ public class Engine {
 
 		if (null != sourceColumn && null != sourceRow) {
 			// Source so delete it.
-			removeAnyPosition(sourceRow, sourceColumn, em, game, positions);
+			Position position = findPosition(sourceRow, sourceColumn, movedMarker.getLayer(), positions);
+			removePosition(position, em, game, positions);
 			changedPositions = true;
 		}
 
 		//Now that move is complete, if a carrot was eaten, generate a new unit if a spot is available.
 		if ( carrotEatenThisTurn ) {			
-			Point homeWarrenLocation = findHomeWarren(game.getCurrentUsersTurn(), positions);
+			Point homeWarrenLocation = findHomeWarren(game.getCurrentPlayersTurn(), positions);
 			if ( null != homeWarrenLocation ) {
 				Point newUnitLocation = findNearbyOpenSpot(homeWarrenLocation, 
 						positions, game.getBoardHeight(), 
@@ -164,7 +173,7 @@ public class Engine {
 				
 				if ( null != newUnitLocation ) {
 					List<Marker> markers = em.query(Marker.class).ancestor(game).list();
-					Marker marker = getNewPlayerPiece(markers, game.getCurrentUsersTurn());
+					Marker marker = getNewPlayerPiece(markers, game.getCurrentPlayersTurn());
 					Key<Marker> markerKey = new Key<Marker>(gameKey, Marker.class, marker.getId());
 					Position position = new Position(newUnitLocation.row, newUnitLocation.column, markerKey, gameKey);
 					em.put(position);
@@ -175,11 +184,11 @@ public class Engine {
 		
 		//TODO win game if enemy has no movable pieces left as well
 		if ( enemyLostHome ) {
-			Player enemyPlayer = Player.other(game.getCurrentUsersTurn());
+			Player enemyPlayer = Player.other(game.getCurrentPlayersTurn());
 			int enemyHomes = countMarkersWith(positions, Marker.Role.HOME, enemyPlayer);
 			if ( 0 == enemyHomes ) {
-				game.setWinner(game.getCurrentUsersTurn());
-				game.setCurrentUsersTurn(null);
+				game.setWinner(game.getCurrentPlayersTurn());
+				game.setCurrentPlayersTurn(null);
 				game.setEnded(true);	
 			}
 		}
@@ -338,26 +347,6 @@ public class Engine {
 		return null;
 	}
 
-	private Position findAnyPosition(Integer sourceRow, Integer sourceColumn, Map<Position, Marker> positions) {
-		if ( null == positions ) {
-			return null;
-		}
-		for (Map.Entry<Position, Marker> position : positions.entrySet() ) {
-			if (sourceRow.equals(position.getKey().getRow()) 
-					&& sourceColumn.equals(position.getKey().getColumn()) ) {
-				return position.getKey();
-			}
-		}
-		return null;
-	}
-	
-
-
-	private Position removeAnyPosition(Integer sourceRow, Integer sourceColumn, Objectify em, Game game, Map<Position, Marker> positions) {
-		Position position = findAnyPosition(sourceRow, sourceColumn, positions);
-		return removePosition(position, em, game, positions);
-	}	
-
 	private Position removePosition(Position position, Objectify em, Game game, Map<Position, Marker> positions) {
 		if ( null != position ) {
 			em.delete(position);
@@ -368,12 +357,12 @@ public class Engine {
 	}	
 	
 	public static boolean isUsersTurn(Game game, User user) {
-		if ( null == user || null == game.getCurrentUsersTurn() ) {
+		if ( null == user || null == game.getCurrentPlayersTurn() ) {
 			return false;
 		}
 		
 		String userId = user.getUserId();
-		switch ( game.getCurrentUsersTurn() ) {
+		switch ( game.getCurrentPlayersTurn() ) {
 			case ONE :
 				return userId.equals(game.getFirstPlayerUserId());
 			case TWO :

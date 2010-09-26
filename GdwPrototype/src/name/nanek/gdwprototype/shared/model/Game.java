@@ -12,7 +12,7 @@ import name.nanek.gdwprototype.shared.model.support.StringUtil;
  * @author Lance Nanek
  *
  */
-public class Game implements Serializable {
+public class Game implements Serializable, Comparable<Game> {
 	private static final long serialVersionUID = 1L;
 
 	@Id private Long id;
@@ -29,7 +29,7 @@ public class Game implements Serializable {
 	
 	private String secondPlayerUserId;
 	
-	private Player currentUsersTurn = Player.ONE;
+	private Player currentPlayersTurn = Player.ONE;
 	
 	private boolean ended;
 	
@@ -83,12 +83,12 @@ public class Game implements Serializable {
 		this.ended = ended;
 	}
 
-	public Player getCurrentUsersTurn() {
-		return currentUsersTurn;
+	public Player getCurrentPlayersTurn() {
+		return currentPlayersTurn;
 	}
 
-	public void setCurrentUsersTurn(Player currentUsersTurn) {
-		this.currentUsersTurn = currentUsersTurn;
+	public void setCurrentPlayersTurn(Player currentUsersTurn) {
+		this.currentPlayersTurn = currentUsersTurn;
 	}
 
 	public String getFirstPlayerUserId() {
@@ -124,7 +124,7 @@ public class Game implements Serializable {
 	}
 
 	public void setNextUsersTurn() {
-		currentUsersTurn = Player.other(currentUsersTurn);
+		currentPlayersTurn = Player.other(currentPlayersTurn);
 	}
 
 	public boolean isUnitDiedLastTurn() {
@@ -176,6 +176,15 @@ public class Game implements Serializable {
 			}
 		}
 		return gameName;
+	}
+
+	@Override
+	public int compareTo(Game o) {
+		if ( null == id || null == o.id ) {
+			throw new IllegalStateException("Comparison needs ID set.");
+		}
+		
+		return id.compareTo(o.id);
 	}
 	
 }

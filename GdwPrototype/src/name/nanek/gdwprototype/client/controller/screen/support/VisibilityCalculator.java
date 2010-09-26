@@ -1,10 +1,7 @@
 package name.nanek.gdwprototype.client.controller.screen.support;
 
-import java.util.Map;
-
 import name.nanek.gdwprototype.shared.model.Marker;
 import name.nanek.gdwprototype.shared.model.Player;
-import name.nanek.gdwprototype.shared.model.Position;
 
 /**
  * Calculates what parts of the game board a player can see.
@@ -23,7 +20,9 @@ public class VisibilityCalculator {
 		}
 	}
 	
-	public static boolean[][] calculateVisibility(Player fogOfWarAs, int boardWidth, int boardHeight, Map<Position, Marker> positions) {
+	public static boolean[][] calculateVisibility(Player fogOfWarAs, int boardWidth, int boardHeight, 
+			Marker[][][] positions) {
+		
 		boolean[][] visibleSquares = new boolean[boardHeight][boardWidth];	
 		if ( null == fogOfWarAs ) {
 			//TODO cache an all true grid?
@@ -31,28 +30,36 @@ public class VisibilityCalculator {
 			return visibleSquares;
 		}
 		
-		for (Map.Entry<Position, Marker> entry : positions.entrySet() ) {
-			Position position = entry.getKey();
-			Marker marker = entry.getValue();
-			int markerRow = position.getRow();
-			int markerCol = position.getColumn();
-			
-			if ( null == marker || null == marker.visionRange || marker.player != fogOfWarAs ) {
-				continue;
-			}
-
-			int startRow = Math.max(0,	markerRow - marker.visionRange);
-			int endRow = Math.min(boardHeight - 1,	markerRow + marker.visionRange);
-			int startCol = Math.max(0,	markerCol - marker.visionRange);
-			int endCol = Math.min(boardWidth - 1, markerCol + marker.visionRange);
-			
-			for (int row = startRow; row <= endRow; row++) {
-				for (int col = startCol; col <= endCol; col++) {
-					int rowDistance = Math.abs(markerRow - row);
-					int colDistance = Math.abs(markerCol - col);
-					int totalDistance = rowDistance + colDistance;
-					if (totalDistance <= marker.visionRange) {
-						visibleSquares[row][col] = true;
+		for ( int markerRow = 0; markerRow < boardHeight; markerRow++ ) {
+			for ( int markerCol = 0; markerCol < boardWidth; markerCol++ ) {
+				int visionRange = 0;
+				boolean belongsToPlayer = false;
+				for ( int layer = 0; layer < Marker.Layer.values().length; layer++ ) {
+					Marker marker = positions[markerRow][markerCol][layer];
+					if ( null == marker ) {
+						continue;
+					}
+					
+					visionRange += marker.visionRange;
+					if ( marker.player == fogOfWarAs ) {
+						belongsToPlayer = true;
+					}
+				}
+				if ( belongsToPlayer && visionRange > 0 ) {
+					int startRow = Math.max(0,	markerRow - visionRange);
+					int endRow = Math.min(boardHeight - 1,	markerRow + visionRange);
+					int startCol = Math.max(0,	markerCol - visionRange);
+					int endCol = Math.min(boardWidth - 1, markerCol + visionRange);
+					
+					for (int row = startRow; row <= endRow; row++) {
+						for (int col = startCol; col <= endCol; col++) {
+							int rowDistance = Math.abs(markerRow - row);
+							int colDistance = Math.abs(markerCol - col);
+							int totalDistance = rowDistance + colDistance;
+							if ( totalDistance <= visionRange ) {
+								visibleSquares[row][col] = true;
+							}
+						}
 					}
 				}
 			}
