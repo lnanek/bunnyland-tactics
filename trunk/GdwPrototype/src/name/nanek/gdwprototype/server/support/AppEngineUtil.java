@@ -1,4 +1,4 @@
-package name.nanek.gdwprototype.server;
+package name.nanek.gdwprototype.server.support;
 
 import name.nanek.gdwprototype.shared.exceptions.UserFriendlyMessageException;
 
@@ -6,9 +6,15 @@ import com.google.appengine.api.users.User;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 
+/**
+ * Calls App Engine specific methods.
+ * 
+ * @author Lance Nanek
+ *
+ */
 public class AppEngineUtil {
 
-	static User requireUser() {
+	public static User requireUser() {
 		final User user = AppEngineUtil.getUser();
 		if (user == null) {
 			//TODO maybe have a general purpose "need to login" exception with login URL?
@@ -18,13 +24,13 @@ public class AppEngineUtil {
 		return user;
 	}
 
-	static User getUser() {
+	public static User getUser() {
 	    UserService userService = UserServiceFactory.getUserService();
 	    User user = userService.getCurrentUser();
 	    return user;
 	}
 
-	static String getUserId() {
+	public static String getUserId() {
 	    UserService userService = UserServiceFactory.getUserService();
 	    User user = userService.getCurrentUser();
 	    return null != user ? user.getUserId() : null;

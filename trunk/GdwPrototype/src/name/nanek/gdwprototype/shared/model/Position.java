@@ -38,6 +38,10 @@ public class Position implements Serializable {
 	private Position() {
 	}
 
+	public Position(int row, int column) {
+		this(row, column, null, null);
+	}
+
 	public Position(int row, int column, Key<Marker> marker, Key<Game> game) {
 		this.row = row;
 		this.column = column;
