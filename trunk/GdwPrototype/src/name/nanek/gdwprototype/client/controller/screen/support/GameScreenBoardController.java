@@ -90,7 +90,7 @@ public class GameScreenBoardController {
 					}
 
 					if ( null != info.playingAs && info.isUsersTurn ) {
-						if ( displayInfo.game.isMap() || (!displayInfo.playInfo.ended && marker.player == displayInfo.playInfo.playingAs && null != marker.movementRange && marker.movementRange > 0 )) {
+						if ( displayInfo.game.isMap() || (!displayInfo.playInfo.ended && marker.player == displayInfo.playInfo.playingAs && marker.movementRange > 0 )) {
 							GameSquare draggableSquare = squares[row][col][layer];
 							dragController.makeDraggable(draggableSquare);
 							gameScreenController.draggables.add(draggableSquare);

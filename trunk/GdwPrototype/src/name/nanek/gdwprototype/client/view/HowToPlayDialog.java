@@ -40,20 +40,21 @@ public class HowToPlayDialog {
 		
 		int row = 0;
 		addHeading("Carrot", table, row++);
-		table.setWidget(row, 0, new Image("images/" + DefaultMarkers.CARROT.source, 0, 0, DefaultMarkers.MARKER_WIDTH_PX, DefaultMarkers.MARKER_HEIGHT_PX));
+		table.setWidget(row, 0, new Image("images/" + DefaultMarkers.CARROT.source, 0, 0, 
+				DefaultMarkers.MARKER_WIDTH_PX, DefaultMarkers.MARKER_HEIGHT_PX));
 		table.getFlexCellFormatter().setColSpan(row, 0, 2);
 		table.getFlexCellFormatter().setAlignment(row, 0, 
 				HasHorizontalAlignment.ALIGN_CENTER, HasVerticalAlignment.ALIGN_MIDDLE);
 		table.setWidget(row++, 1, new HTML(
-				"Find the carrots! Landing on a carrot earns you a new random bunny back home, <br />" + 
-				"as long as there's an open space adjacent to your home."));
+				"Eat carrots! Land on a carrot to get a new random bunny at your home.<br />" + 
+				"There must be an open space next to your home, however, or it is wasted."));
 
 		addHeading("Home", table, row++);
 		table.setWidget(row, 0, new Image("images/" + DefaultMarkers.PLAYER_TWO_WARREN.source, 0, 0, DefaultMarkers.MARKER_WIDTH_PX, DefaultMarkers.MARKER_HEIGHT_PX));
 		table.setWidget(row, 1, new Image("images/" + DefaultMarkers.PLAYER_ONE_WARREN.source, 0, 0, DefaultMarkers.MARKER_WIDTH_PX, DefaultMarkers.MARKER_HEIGHT_PX));
 		table.setWidget(row++, 2, new HTML(
 				"Stomp the enemy's home with a stomper bunny to win! <br />" + 
-				"Protect your own home to survive."));
+				"Protect your own home and bunnies to survive."));
 
 		addHeading("Stomper", table, row++);
 		table.setWidget(row, 0, new Image("images/" + DefaultMarkers.PLAYER_TWO_STOMPER.source, 0, 0, DefaultMarkers.MARKER_WIDTH_PX, DefaultMarkers.MARKER_HEIGHT_PX));
@@ -65,6 +66,33 @@ public class HowToPlayDialog {
 		table.setWidget(row, 1, new Image("images/" + DefaultMarkers.PLAYER_ONE_SCOUT.source, 0, 0, DefaultMarkers.MARKER_WIDTH_PX, DefaultMarkers.MARKER_HEIGHT_PX));
 		table.setWidget(row++, 2, new Label("Scout bunnies can see far, but can't remove enemies."));
 
+		addHeading("Hill", table, row++);
+		table.setWidget(row, 0, new Image("images/" + DefaultMarkers.HILL.source, 0, 0, 
+				DefaultMarkers.MARKER_WIDTH_PX, DefaultMarkers.MARKER_HEIGHT_PX));
+		table.getFlexCellFormatter().setColSpan(row, 0, 2);
+		table.getFlexCellFormatter().setAlignment(row, 0, 
+				HasHorizontalAlignment.ALIGN_CENTER, HasVerticalAlignment.ALIGN_MIDDLE);
+		table.setWidget(row++, 1, new HTML(
+				"Land on hills to see farther."));
+		
+		addHeading("Tree", table, row++);
+		table.setWidget(row, 0, new Image("images/" + DefaultMarkers.TREE.source, 0, 0, 
+				DefaultMarkers.MARKER_WIDTH_PX, DefaultMarkers.MARKER_HEIGHT_PX));
+		table.getFlexCellFormatter().setColSpan(row, 0, 2);
+		table.getFlexCellFormatter().setAlignment(row, 0, 
+				HasHorizontalAlignment.ALIGN_CENTER, HasVerticalAlignment.ALIGN_MIDDLE);
+		table.setWidget(row++, 1, new HTML(
+				"Avoid trees. They reduce how far you can see."));
+		
+		addHeading("Grass", table, row++);
+		table.setWidget(row, 0, new Image("images/" + DefaultMarkers.GRASS.source, 0, 0, 
+				DefaultMarkers.MARKER_WIDTH_PX, DefaultMarkers.MARKER_HEIGHT_PX));
+		table.getFlexCellFormatter().setColSpan(row, 0, 2);
+		table.getFlexCellFormatter().setAlignment(row, 0, 
+				HasHorizontalAlignment.ALIGN_CENTER, HasVerticalAlignment.ALIGN_MIDDLE);
+		table.setWidget(row++, 1, new HTML(
+				"Guard grass. Carrots grow on it every once in a while."));
+		
 		dialogVPanel.add(table);
 		
 		closeButton.addClickHandler(new ClickHandler() {

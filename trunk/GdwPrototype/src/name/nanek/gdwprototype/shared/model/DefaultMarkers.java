@@ -21,8 +21,15 @@ public class DefaultMarkers {
 	public static final int MARKER_WIDTH_PX = 64;
 
 	public static final Marker CARROT = 
-		new Marker("Carrot", "tile_carrot.png", null, null, null, null, Marker.Role.CARROT, true);
-	
+		new Marker("Carrot", "tile_carrot.png", null, null, 0, 0, Marker.Role.CARROT, true);
+
+	public static final Marker GRASS = 
+		new Marker("Grass", "tile_grass.png", null, null, 0, 0, Marker.Role.GRASS, true);
+
+	public static final Marker HILL = Marker.makeTerrain("Hill", "tile_hill.png", 1);
+
+	public static final Marker TREE = Marker.makeTerrain("Tree", "tile_tree.png", -1);
+
 	public static final Marker PLAYER_ONE_STOMPER = 
 		new Marker("Player 1 Stomper", "piece_player1_warrior.png", "piece_player1_warrior_jumping.gif", Player.ONE, 2, 2, Marker.Role.STOMPER, false);
 
@@ -42,7 +49,7 @@ public class DefaultMarkers {
 		new Marker("Player 2 Home", "piece_player2_home.png", null, Player.TWO, 1, 0, Marker.Role.HOME, false);
 	
 	public static final Marker FOG_OF_WAR = 
-		new Marker("You can't see this far.", "tile_fog_of_war.png", null, null, null, null, null, false);
+		new Marker("You can't see this far.", "tile_fog_of_war.png", null, null, 0, 0, null, false);
 	
 	public static final Marker[] ALL_MARKERS = new Marker[] { 
 		PLAYER_ONE_WARREN,
@@ -54,10 +61,9 @@ public class DefaultMarkers {
 		PLAYER_TWO_STOMPER, 
 
 		CARROT,
-		//TODO apply this visibility modifiers to units on them
-		Marker.makeTerrain("Tree", "tile_tree.png", -1), 
-		Marker.makeTerrain("Grass", "tile_grass.png", 0), 
-		Marker.makeTerrain("Hill", "tile_hill.png", 1), 
+		GRASS, 
+		TREE, 
+		HILL, 
 		
 		FOG_OF_WAR,
 	};

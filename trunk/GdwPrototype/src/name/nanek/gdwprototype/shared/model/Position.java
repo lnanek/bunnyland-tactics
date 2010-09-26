@@ -15,8 +15,6 @@ import com.googlecode.objectify.annotation.Parent;
  */
 public class Position implements Serializable {
 
-	public static enum Layer { TERRAIN, ITEM, PLAYER_PIECE }
-	
 	private static final long serialVersionUID = 1L;
 
 	@SuppressWarnings("unused") //Used by ORM.

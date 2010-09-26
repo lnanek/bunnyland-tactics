@@ -18,7 +18,7 @@ import com.googlecode.objectify.annotation.Parent;
 public class Marker implements Serializable, Comparable<Marker> {
 	
 	public enum Role {
-		HOME, STOMPER, SCOUT, CARROT,  
+		HOME, STOMPER, SCOUT, CARROT, GRASS, 
 	}
 	
 	public enum Layer {
@@ -39,9 +39,9 @@ public class Marker implements Serializable, Comparable<Marker> {
 
 	public Player player;
 
-	public Integer visionRange;
+	public int visionRange;
 
-	public Integer movementRange;
+	public int movementRange;
 
 	public String name;
 	
@@ -52,7 +52,7 @@ public class Marker implements Serializable, Comparable<Marker> {
 	protected Marker() {
 	}
 	
-	public Marker(String name, String source, String activeSource, Player player, Integer visionRange, Integer movementRange, Role role, boolean terrain) {
+	public Marker(String name, String source, String activeSource, Player player, int visionRange, int movementRange, Role role, boolean terrain) {
 		this.name = name;
 		this.source = source;
 		this.activeSource = activeSource;
@@ -79,7 +79,7 @@ public class Marker implements Serializable, Comparable<Marker> {
 	}
 	
 	public static Marker makeTerrain(String name, String source, int visibility) {
-		return new Marker(name, source, null, null, visibility, null, null, true);
+		return new Marker(name, source, null, null, visibility, 0, null, true);
 	}
 
 	public Marker copy() {
