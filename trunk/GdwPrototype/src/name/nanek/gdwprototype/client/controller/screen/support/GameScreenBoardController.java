@@ -20,13 +20,21 @@ public class GameScreenBoardController {
 	//TODO more efficient just to prepopulate the DOM with an image for every x, y, z and tweak those each update?
 	//would have lots of transparent images each draw (maybe test if no src works as transparent?)
 	
+	//BUG sometimes after a drag the dragged piece disappears for a brief instant then shows up
+	//maybe an update is in progress during the drag, the drag finishes, then the old update is displayed or something?
+	
 	private GameScreenController gameScreenController;
 	
 	private GameDisplayInfo displayInfo;
 	
-	public GameScreenBoardController(GameScreenController gameScreenController, GameDisplayInfo displayInfo) {
+	//FlexTable#getWidge(int row, int col) is a slow DOM operation, unfortunately, 
+	//so cache the panel locations, which don't change in the game currently anyway.
+	private TableCellPanel[][] panels;
+	
+	public GameScreenBoardController(GameScreenController gameScreenController, GameDisplayInfo displayInfo, TableCellPanel[][] panels) {
 		this.gameScreenController = gameScreenController;
 		this.displayInfo = displayInfo;
+		this.panels = panels;
 	}
 	
 	/**
@@ -39,8 +47,7 @@ public class GameScreenBoardController {
 		for( int row = 0 ; row < visibleSquares.length; row++ ) {
 			for ( int col = 0; col < visibleSquares[row].length; col++ ) {
 				
-				//TODO this is a slow DOM operation. cache them in an [][]? they don't move around like the squares
-				TableCellPanel panel = (TableCellPanel) gameScreenController.gameScreen.gameBoard.getWidget(row, col);
+				TableCellPanel panel = panels[row][col];
 				GameSquare[] squares = panel.children;
 				
 				//Just show fog if the player can't see this square.
@@ -79,7 +86,7 @@ public class GameScreenBoardController {
 					}
 
 					if ( null != info.playingAs && info.isUsersTurn ) {
-						if ( displayInfo.game.isMap() || (!displayInfo.playInfo.ended && marker.player == displayInfo.playInfo.playingAs && marker.movementRange > 0 )) {
+						if ( displayInfo.game.isMap() || (!info.ended && marker.player == info.playingAs && marker.movementRange > 0 )) {
 							dragController.makeDraggable(square);
 							gameScreenController.draggables.add(square);
 						}
