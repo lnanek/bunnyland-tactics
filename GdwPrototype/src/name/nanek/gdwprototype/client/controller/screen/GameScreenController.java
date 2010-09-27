@@ -536,7 +536,6 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		if ( null == pageController ) return;
 		
 		displayInfo = info;
-		boardController = new GameScreenBoardController(this, info);
 		
 		String type = info.game.isMap() ? "Creating Map " : "Playing Game ";
 		pageController.setScreenTitle(type + info.game.getDisplayName(false));
@@ -563,9 +562,12 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		//Fill board table for game size.
 		int height = info.game.getBoardHeight();
 		int width = info.game.getBoardWidth();
+		TableCellPanel[][] panels = new TableCellPanel[height][width];
+		boardController = new GameScreenBoardController(this, info, panels);
 		for (int column = 0; column < width; column++) {
 			for (int row = 0; row < height; row++) {
 				TableCellPanel panel = new TableCellPanel(null, gameScreen.gameBoard, row, column, row, column);
+				panels[row][column] = panel;
 				GameScreenDropController simpleDropController = new GameScreenDropController(panel, this);
 				dragController.registerDropController(simpleDropController);
 				

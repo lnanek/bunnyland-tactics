@@ -40,8 +40,8 @@ public class ServiceImpl extends RemoteServiceServlet implements GameService {
 	public GameUpdateInfo moveMarker(Long gameId, Integer sourceRow, Integer sourceColumn, Integer destRow,
 			Integer destColumn, Long markerId) throws GameException {
 		
-		System.out.println("GameServiceImpl#moveMarker: " + gameId  + ", " + sourceRow + ", " + sourceColumn + ", " + destRow
-				 + ", " + destColumn + ", " + markerId);
+		//System.out.println("GameServiceImpl#moveMarker: " + gameId  + ", " + sourceRow + ", " + sourceColumn + ", " + destRow
+		//		 + ", " + destColumn + ", " + markerId);
 		
 		User user = AppEngineUtil.requireUser();
 			
