@@ -9,6 +9,7 @@ import name.nanek.gdwprototype.client.controller.screen.OptionsScreenController;
 import name.nanek.gdwprototype.client.controller.screen.ScreenController;
 import name.nanek.gdwprototype.client.controller.screen.StartGameScreenController;
 import name.nanek.gdwprototype.client.controller.screen.StartObservationScreenController;
+import name.nanek.gdwprototype.client.controller.screen.StrategyScreenController;
 
 /**
  * Converts between history tokens and screen controllers.
@@ -28,7 +29,8 @@ public class ScreenControllers {
 		CREATE_GAME,
 		CREATE_MAP,
 		OPTIONS,
-		MENU,
+		STRATEGY,
+		MENU, //XXX Menu has to be last, because it has a special token of nothing as the default, which matches the prefix of anything.
 	}
 	
 	public static String getHistoryToken(Screen screen) {
@@ -58,6 +60,8 @@ public class ScreenControllers {
 				return new CreateMapScreenController();
 			case OPTIONS:
 				return new OptionsScreenController();
+			case STRATEGY:
+				return new StrategyScreenController();
 			default:
 				return new MenuScreenController();
 		}

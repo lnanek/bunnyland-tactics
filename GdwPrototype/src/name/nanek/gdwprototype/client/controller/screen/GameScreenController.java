@@ -518,7 +518,7 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		pageController.addScreen(gameScreen.content);	
 		gameScreen.setFogOfWarChangeListener(this);
 		//TODO remember players who have seen this before and don't show?
-		gameScreen.howToPlayDialog.show();
+		gameScreen.piecesDialog.show();
 
 		draggables = new HashSet<GameSquare>();
 		dragController = new PickupDragController(RootPanel.get(), false);

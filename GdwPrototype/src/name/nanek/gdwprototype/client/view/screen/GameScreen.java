@@ -1,7 +1,10 @@
 package name.nanek.gdwprototype.client.view.screen;
 
+import name.nanek.gdwprototype.client.controller.support.ScreenControllers;
 import name.nanek.gdwprototype.client.controller.support.SoundPlayer;
-import name.nanek.gdwprototype.client.view.HowToPlayDialog;
+import name.nanek.gdwprototype.client.controller.support.ScreenControllers.Screen;
+import name.nanek.gdwprototype.client.view.PiecesDialog;
+import name.nanek.gdwprototype.client.view.TerrainDialog;
 import name.nanek.gdwprototype.shared.model.Player;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -12,6 +15,7 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.Hyperlink;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RadioButton;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -24,6 +28,10 @@ import com.google.gwt.user.client.ui.VerticalPanel;
  */
 public class GameScreen {
 
+	public interface FogOfWarChangeListener {
+		void onFogOfWarChange(Player newFogOfWarAs);
+	}
+
 	public VerticalPanel content = new VerticalPanel();
 
 	public Label statusLabel = new Label();
@@ -32,7 +40,9 @@ public class GameScreen {
 	
 	public final Button publishMapButton = new Button("Publish Map");
 
-	public final Button howToPlayButton = new Button("How to Play");
+	public final Button piecesButton = new Button("Pieces");
+
+	public final Button terrainButton = new Button("Terrain");
 
 	public HorizontalPanel fogOfWarPanel = new HorizontalPanel();	
 
@@ -45,6 +55,8 @@ public class GameScreen {
 	public FlexTable markers = new FlexTable();
 	
 	public FlexTable gameBoard = new FlexTable();
+	
+	public PiecesDialog piecesDialog;
 	
 	private final class FogOfWarCheckboxValueChangeListener implements ValueChangeHandler<Boolean> {
 		Player player;
@@ -60,17 +72,14 @@ public class GameScreen {
 			}
 		}
 	}
-
-	public interface FogOfWarChangeListener {
-		void onFogOfWarChange(Player newFogOfWarAs);
-	}
 	
 	private FogOfWarChangeListener fogOfWarChangeListener;
 	
-	public HowToPlayDialog howToPlayDialog;
-	
+	private TerrainDialog terrainDialog;
+		
 	public GameScreen(SoundPlayer soundPlayer) {
-		howToPlayDialog = new HowToPlayDialog(soundPlayer);
+		piecesDialog = new PiecesDialog(soundPlayer);
+		terrainDialog = new TerrainDialog(soundPlayer);
 		
 		//Show game status and controls at top of screen.
 		content.add(statusLabel);
@@ -78,14 +87,36 @@ public class GameScreen {
 		HorizontalPanel controlsPanel = new HorizontalPanel();
 		controlsPanel.add(surrenderButton);
 		controlsPanel.add(publishMapButton);
-		controlsPanel.add(howToPlayButton);
-		howToPlayButton.addClickHandler(new ClickHandler() {
+		content.add(controlsPanel);
+		
+		content.add(new HTML("<br />"));
+		HorizontalPanel helpPanel = new HorizontalPanel();
+		helpPanel.add(new Label("How to Play: "));
+		helpPanel.add(new HTML("&nbsp;&nbsp;"));
+		helpPanel.add(piecesButton);
+		piecesButton.addClickHandler(new ClickHandler() {
 			@Override
 			public void onClick(ClickEvent event) {
-				howToPlayDialog.show();
+				piecesDialog.show();
 			}
 		});
-		content.add(controlsPanel);
+		//TODO space via CSS
+		helpPanel.add(new HTML("&nbsp;&nbsp;"));
+		helpPanel.add(terrainButton);
+		terrainButton.addClickHandler(new ClickHandler() {
+			@Override
+			public void onClick(ClickEvent event) {
+				terrainDialog.show();
+			}
+		});
+
+		helpPanel.add(new HTML("&nbsp;&nbsp;"));
+		Hyperlink strategyLink = new Hyperlink("Strategy", 
+				ScreenControllers.getHistoryToken(Screen.STRATEGY));
+		soundPlayer.addMenuClick(strategyLink);
+		helpPanel.add(strategyLink);
+		
+		content.add(helpPanel);
 
 		//Setup fog of war controls for observer and map builder.
 		fogOfWarPanel.add(new Label("Fog of War:"));
@@ -120,7 +151,7 @@ public class GameScreen {
 		//Start invisible until data is loaded.
 		content.setVisible(false);
 		
-		soundPlayer.addMenuClick(surrenderButton, publishMapButton, howToPlayButton, 
+		soundPlayer.addMenuClick(surrenderButton, publishMapButton, piecesButton, 
 				fogOfWarPlayerOneRadio, fogOfWarPlayerTwoRadio, fogOfWarNoneRadio);
 	}
 	
