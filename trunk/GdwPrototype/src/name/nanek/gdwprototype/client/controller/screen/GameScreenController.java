@@ -257,9 +257,6 @@ public class GameScreenController extends ScreenController implements FogOfWarCh
 		//TODO clearing and restoring draggables isn't needed for map building
 		clearDraggables();
 		
-		boardController.moveMarker(sourceRow, sourceColumn, destRow, destColumn,
-				draggedImage);
-
 		Long movedMarkerId = draggedImage.previousMarker.getId();
 		pageController.gameService.moveMarker(gameId, sourceRow, sourceColumn, destRow, destColumn,
 				movedMarkerId, new MoveMarkerCallback());

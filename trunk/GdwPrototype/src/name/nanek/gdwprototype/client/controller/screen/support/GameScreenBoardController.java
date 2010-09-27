@@ -17,23 +17,16 @@ import com.allen_sauer.gwt.dnd.client.DragController;
  *
  */
 public class GameScreenBoardController {
-	//TODO this is very efficient at avoiding DOM calls, but it can get out of sync with the actual DOM
-	//maybe query the TableCellPanel instances more instead of keeping a separate array between updates?
-	//would also remove the need to call this class when something is dragged
-	
 	//TODO more efficient just to prepopulate the DOM with an image for every x, y, z and tweak those each update?
 	//would have lots of transparent images each draw (maybe test if no src works as transparent?)
 	
 	private GameScreenController gameScreenController;
-	
-	private GameSquare[][][] squares;
 	
 	private GameDisplayInfo displayInfo;
 	
 	public GameScreenBoardController(GameScreenController gameScreenController, GameDisplayInfo displayInfo) {
 		this.gameScreenController = gameScreenController;
 		this.displayInfo = displayInfo;
-		squares = new GameSquare[displayInfo.game.getBoardHeight()][displayInfo.game.getBoardWidth()][Marker.Layer.values().length];
 	}
 	
 	/**
@@ -45,21 +38,20 @@ public class GameScreenBoardController {
 
 		for( int row = 0 ; row < visibleSquares.length; row++ ) {
 			for ( int col = 0; col < visibleSquares[row].length; col++ ) {
+				
+				//TODO this is a slow DOM operation. cache them in an [][]? they don't move around like the squares
+				TableCellPanel panel = (TableCellPanel) gameScreenController.gameScreen.gameBoard.getWidget(row, col);
+				GameSquare[] squares = panel.children;
+				
 				//Just show fog if the player can't see this square.
 				if ( !visibleSquares[row][col] ) {
 					int fogLayer = Marker.Layer.UI.ordinal();
-					GameSquare previousFog = squares[row][col][fogLayer];
+					GameSquare previousFog = squares[fogLayer];
 					
 					if ( null == previousFog ) {
-						TableCellPanel panel = (TableCellPanel) gameScreenController.gameScreen.gameBoard.getWidget(row, col);
-						panel.clear();	
-						for( int layer = 0; layer < Marker.Layer.values().length ; layer++ ) {
-							squares[row][col][layer] = null;
-						}
-						
+						panel.clear();						
 						GameSquare newSquare = new GameSquare(DefaultMarkers.FOG_OF_WAR, info.currentPlayersTurn);
 						panel.add(newSquare);
-						squares[row][col][fogLayer] = newSquare;	
 					}
 					continue;
 				}
@@ -67,58 +59,33 @@ public class GameScreenBoardController {
 				for ( int layer = 0; layer < Marker.Layer.values().length; layer++ ) {
 
 					Marker marker = info.positions[row][col][layer];
-					GameSquare previousSquare = squares[row][col][layer];
+					GameSquare square = squares[layer];
 
 					//No marker to show.
 					if ( null == marker ) {
 						//Remove previous marker if needed.
-						if ( null != previousSquare ) {
-							removeSquare(row, col, previousSquare);
-							squares[row][col][layer] = null;
+						if ( null != square ) {
+							panel.remove(square);
 						}
 						continue;
 					//New marker, but no previous square, so create a square.
-					} else if ( null == previousSquare ) {
-						GameSquare newSquare = new GameSquare(marker, info.currentPlayersTurn);
-						TableCellPanel panel = (TableCellPanel) gameScreenController.gameScreen.gameBoard.getWidget(row, col);
-						panel.add(newSquare);
-						squares[row][col][layer] = newSquare;
+					} else if ( null == square ) {
+						square = new GameSquare(marker, info.currentPlayersTurn);
+						panel.add(square);
 					//New marker and previous square, so update the square.
 					} else {
-						previousSquare.set(marker, info.currentPlayersTurn);
+						square.set(marker, info.currentPlayersTurn);
 					//Previous square, but no new marker, so remove it.
 					}
 
 					if ( null != info.playingAs && info.isUsersTurn ) {
 						if ( displayInfo.game.isMap() || (!displayInfo.playInfo.ended && marker.player == displayInfo.playInfo.playingAs && marker.movementRange > 0 )) {
-							GameSquare draggableSquare = squares[row][col][layer];
-							dragController.makeDraggable(draggableSquare);
-							gameScreenController.draggables.add(draggableSquare);
+							dragController.makeDraggable(square);
+							gameScreenController.draggables.add(square);
 						}
 					}	
 				}
 			}
-		}	
-	}
-	
-	private void removeSquare(Integer row, Integer col, GameSquare removedSquare) {
-		if ( null != removedSquare && null != row && null != col ) {
-			TableCellPanel panel = (TableCellPanel) gameScreenController.gameScreen.gameBoard.getWidget(row, col);
-			panel.remove(removedSquare);	
-		}		
-	}
-
-	public void moveMarker(Integer sourceRow, Integer sourceCol, Integer destRow, Integer destColumn,
-			GameSquare draggedImage) {
-
-		int layer = draggedImage.previousMarker.getLayer().ordinal();
-
-		if ( null != sourceRow && null != sourceCol ) {
-			squares[sourceRow][sourceCol][layer] = null;
-		}		
-		
-		if ( null != destRow && null != destColumn ) {
-			squares[destRow][destColumn][layer] = draggedImage;
 		}	
 	}
 
