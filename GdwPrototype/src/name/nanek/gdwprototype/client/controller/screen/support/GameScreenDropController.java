@@ -23,7 +23,6 @@ import name.nanek.gdwprototype.shared.model.Marker;
 import com.allen_sauer.gwt.dnd.client.DragContext;
 import com.allen_sauer.gwt.dnd.client.VetoDragException;
 import com.allen_sauer.gwt.dnd.client.drop.SimpleDropController;
-import com.google.gwt.user.client.ui.HasWidgets;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -85,15 +84,6 @@ public class GameScreenDropController extends SimpleDropController {
 		dropTarget.add(newSquare);
 		return removedSquare;
 	}
-	
-	public static boolean contains(HasWidgets widgets, Widget widget) {
-		for( Widget check : widgets ) {
-			if ( check == widget ){
-				return true;
-			}
-		}
-		return false;
-	}
 
 	public void onPreviewDrop(DragContext context) throws VetoDragException {
 
@@ -101,16 +91,16 @@ public class GameScreenDropController extends SimpleDropController {
 		if ( null == info ) {
 			throw new VetoDragException();
 		}
-		
+
 		// Veto drops to source, so picking up and dropping doesn't count as move.
-		if ( contains(dropTarget, context.draggable) ) {
+		TableCellPanel source = gameScreenController.getDragSource();
+		if ( source == dropTarget ) {
 			throw new VetoDragException();
 		}
 		
 		//Check unit can move this far.
 		//TODO check on server as well
 		if ( !info.game.isMap() ) {
-			TableCellPanel source = gameScreenController.getDragSource();
 			int sourceCol = source.getColumn();
 			int sourceRow = source.getRow();
 			
@@ -148,12 +138,7 @@ public class GameScreenDropController extends SimpleDropController {
 			GameSquare removedSquare = setSquare(newImage);
 			Marker removedMarker = null != removedSquare ? removedSquare.previousMarker : null;
 
-			//We clear the draggables and reset them based on game state anyway. So commented out.
-			//context.dragController.makeDraggable(newImage);
-			//gameScreenController.draggables.add(newImage);
-
-			// TODO throw/catch an exception and veto? stale game state or
-			// something?
+			// TODO throw/catch an exception and veto? stale game state or something?
 			gameScreenController.moveMarker(null, null, dropTarget.getRow(), dropTarget.getColumn(), newImage, removedMarker);
 
 			throw new VetoDragException();
@@ -167,10 +152,5 @@ public class GameScreenDropController extends SimpleDropController {
 		gameScreenController.notifyUserBadDrop();
 		throw new VetoDragException();
 	}
-
-	/*
-	 * @Override public void onPreviewDrop(DragContext context) throws
-	 * VetoDragException { if (dropTarget.getWidget() != null) { throw new
-	 * VetoDragException(); } super.onPreviewDrop(context); }
-	 */
+	
 }
