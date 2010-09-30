@@ -1,0 +1,65 @@
+Menu Screen Music
+	Name: Bombs, Blades & Bunnyninjas 2
+	Author: Rajunen
+	URL: http://www.newgrounds.com/audio/listen/257918
+	Filename: 257918_Bunnykill_4_Soundtrack___2.mp3
+	License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
+
+In-Game Music
+	Name: Japanese Lead (preview)
+	Author: Matieus (DjMateius)
+	URL: http://www.newgrounds.com/audio/listen/124568
+	Filename: 124568_Japanese_Lead.mp3
+	License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
+
+Win Game Music
+	Name: Anthem 2007 Samples - Backing Piano
+	Author: dataset
+	Band: WaveSounds
+	URL: http://www.freesound.org/samplesViewSingle.php?id=44538
+	Filename: 44538__dataset__Backing_Piano.wav
+	License: http://creativecommons.org/licenses/sampling+/1.0/
+
+Lose Game Music
+	Name: Pain and Desire remix RD 
+	Author: Matieus (DjMateius)
+	URL: http://www.newgrounds.com/audio/listen/132178
+	Filename: 132178_Desire_remix.mp3
+	License: http://creativecommons.org/licenses/by-nc-sa/3.0/legalcode
+	Notes: Cut to first 17 seconds to match win game music.
+
+In-Game Error Sound
+	Author: SoundJay.com
+	URL: http://www.soundjay.com/button/sounds/button-10.mp3
+	Filename: button-10.mp3
+	License: http://www.soundjay.com/tos.html
+
+Piece Placement Sound
+	Author: SoundJay.com
+	URL: http://www.soundjay.com/button/sounds/button-20.mp3
+	Filename: button-20.mp3
+	License: http://www.soundjay.com/tos.html
+
+Menu Screen Button Sound
+	Author: SoundJay.com
+	URL: http://www.soundjay.com/button/sounds/button-21.mp3
+	Filename: button-21.mp3
+	License: http://www.soundjay.com/tos.html
+
+Your Turn Sound
+	Author: Mike Koenig
+	URL: http://soundbible.com/1496-Japanese-Temple-Bell-Small.html
+	Filename: Japanese Temple Bell Small-SoundBible.com-113624364.mp3
+	License: http://creativecommons.org/licenses/by/3.0/legalcode
+
+Carrot Sound 
+	Author: SoundJay.com
+	URL: http://www.soundjay.com/human/sounds/crunching-1.mp3
+	Filename: crunching-1.mp3
+	License: http://www.soundjay.com/tos.html
+
+Dying Sound
+	Author: HardPCM
+	URL: http://www.freesound.org/samplesViewSingle.php?id=27383
+	Filename: 27383__HardPCM__HardKick001.wav
+	License: http://creativecommons.org/licenses/sampling+/1.0/
