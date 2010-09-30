@@ -14,12 +14,17 @@ import com.google.gwt.user.client.ui.Widget;
  *
  */
 public class TableCellPanel extends AbsolutePanel {
+	//TODO just wrap real container somehow, so don't have to override the interface as much?
+	//even with all this there's still the remove method on the children iterator which
+	//might make things out of sync...
 
 	private Integer row;
 
 	private Integer column;
 	
 	public GameSquare[] children = new GameSquare[Layer.values().length];
+	
+	private boolean isChanging;
 
 	public TableCellPanel(Widget widget, FlexTable table, int tableRow, int tableCol, Integer gameRow, Integer gameCol) {
 		super();
@@ -42,8 +47,17 @@ public class TableCellPanel extends AbsolutePanel {
 		}
 		GameSquare square = (GameSquare) w;
 		int layer = square.previousMarker.getLayer().ordinal();
-		children[layer] = null;
-		return super.remove(w);
+		try {
+			isChanging = true;
+			if ( super.remove(w) ) {
+				children[layer] = null;
+				return true;
+			}
+		} finally {
+			isChanging = false;
+			
+		}
+		return false;
 	}
 
 	@Override
@@ -59,22 +73,58 @@ public class TableCellPanel extends AbsolutePanel {
 		
 		GameSquare previousSquare = children[layer];
 		if ( null != previousSquare ) {
-			super.remove(previousSquare);
+			remove(previousSquare);
 		}
+		
 		children[layer] = square;
 		//0, 0 so that all pieces overlap.
-		super.add(w, 0, 0);
+		try {
+			isChanging = true;
+			super.add(w, 0, 0);
+		} finally {
+			isChanging = false;
+			
+		}
 	}
-	
-	
-	
-	//XXX wrap the real panel and only expose own methods? there are other add/remove methods not covered right now
-
+		
 	@Override
 	public void clear() {
-		for ( GameSquare child : children ) {
-			remove(child);
+		try {
+			isChanging = true;
+			super.clear();
+		} finally {
+			isChanging = false;
 		}
+		children = new GameSquare[Layer.values().length];
+	}
+
+	@Override
+	public void add(Widget w, int left, int top) {
+		add(w);
+	}
+
+	@Override
+	public void insert(Widget w, int left, int top, int beforeIndex) {
+		if ( !isChanging ) {
+			throw new UnsupportedOperationException();
+		}
+		super.insert(w, left, top, beforeIndex);
+	}
+
+	@Override
+	public void insert(Widget w, int beforeIndex) {
+		if ( !isChanging ) {
+			throw new UnsupportedOperationException();
+		}
+		super.insert(w, beforeIndex);
+	}
+
+	@Override
+	public boolean remove(int index) {
+		if ( !isChanging ) {
+			throw new UnsupportedOperationException();
+		}
+		return super.remove(index);
 	}
 
 	public Integer getRow() {
